@@ -1,9 +1,18 @@
 # Copyright 2013-2014 Simon Jagoe
 from __future__ import unicode_literals
 
-import inspect
+import os
 
 import unittest
+
+
+def find_top_level_directory(start_directory):
+    top_level = start_directory
+    while os.path.isfile(os.path.join(top_level, '__init__.py')):
+        top_level = os.path.dirname(top_level)
+        if top_level == os.path.dirname(top_level):
+            raise ValueError("Can't find top level directory")
+    return top_level
 
 
 class Loader(object):

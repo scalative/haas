@@ -1,12 +1,15 @@
 # Copyright 2013-2014 Simon Jagoe
 from __future__ import unicode_literals
 
+import os
+import shutil
+import tempfile
 import unittest as python_unittest
 
 from haas.testing import unittest
 
 from . import _test_cases
-from ..loader import Loader
+from ..loader import Loader, find_top_level_directory
 
 
 class LoaderTestMixin(object):
@@ -118,3 +121,39 @@ class TestLoadModule(LoaderTestMixin, unittest.TestCase):
         loader = Loader(test_suite_class=TestSuiteNotSubclass)
         suite = loader.load_module(_test_cases)
         self.assertSuiteClasses(suite, TestSuiteNotSubclass)
+
+
+class TestFindTopLevelDirectory(unittest.TestCase):
+
+    def setUp(self):
+        self.tmpdir = tempfile.mkdtemp()
+        self.dirs = dirs = ['first', 'second']
+        path = self.tmpdir
+        for dir_ in dirs:
+            path = os.path.join(path, dir_)
+            os.makedirs(path)
+            with open(os.path.join(path, '__init__.py'), 'w'):
+                pass
+
+    def tearDown(self):
+        shutil.rmtree(self.tmpdir)
+
+    def test_from_top_level_directory(self):
+        directory = find_top_level_directory(self.tmpdir)
+        self.assertEqual(directory, self.tmpdir)
+
+    def test_from_leaf_directory(self):
+        directory = find_top_level_directory(
+            os.path.join(self.tmpdir, *self.dirs))
+        self.assertEqual(directory, self.tmpdir)
+
+    def test_from_middle_directory(self):
+        directory = find_top_level_directory(
+            os.path.join(self.tmpdir, self.dirs[0]))
+        self.assertEqual(directory, self.tmpdir)
+
+    def test_from_nonpackage_directory(self):
+        nonpackage = os.path.join(self.tmpdir, self.dirs[0], 'nonpackage')
+        os.makedirs(nonpackage)
+        directory = find_top_level_directory(nonpackage)
+        self.assertEqual(directory, nonpackage)
