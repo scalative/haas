@@ -50,6 +50,11 @@ class TestFindTestMethodNames(LoaderTestMixin, unittest.TestCase):
         names = self.loader.find_test_method_names(_test_cases.TestCase)
         self.assertEqual(names, ['test_method'])
 
+    def test_finds_custom_test_names(self):
+        loader = Loader(test_method_prefix='non')
+        names = loader.find_test_method_names(_test_cases.TestCase)
+        self.assertEqual(names, ['non_test_public_method'])
+
 
 class TestLoadCase(LoaderTestMixin, unittest.TestCase):
 
