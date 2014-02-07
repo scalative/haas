@@ -1,17 +1,19 @@
 # Copyright 2013-2014 Simon Jagoe
+from __future__ import unicode_literals
+
 import os
 
 from setuptools import setup
 
 
-VERSION = u'0.0.1dev1'
+VERSION = '0.0.1dev1'
 
 
 def write_version_py(filename=None):
     if filename is None:
         filename = os.path.join(os.path.dirname(__file__),
                                 'haas', 'version.py')
-    ver = u"""\
+    ver = """\
 version = '{version}'
 """
     fh = open(filename, 'wb')
