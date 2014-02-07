@@ -12,11 +12,11 @@ def write_version_py(filename=None):
         filename = os.path.join(os.path.dirname(__file__),
                                 'haas', 'version.py')
     ver = u"""\
-version = '{}'
+version = '{version}'
 """
     fh = open(filename, 'wb')
     try:
-        fh.write(ver.format(VERSION).encode('utf-8'))
+        fh.write(ver.format(version=VERSION).encode('utf-8'))
     finally:
         fh.close()
 
