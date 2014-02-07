@@ -9,10 +9,6 @@ install:
   - pip install coverage
   - pip install coveralls
   - python setup.py install
-before_script:
-  - mkdir testrunner
-  - cp .coveragerc testrunner/
-  - cd testrunner
 script:
   - coverage run --branch -m unittest discover -v haas
 notifications:
