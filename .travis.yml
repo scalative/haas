@@ -1,0 +1,22 @@
+language: python
+python:
+  - 3.3
+  - 3.2
+  - 2.7
+  - 2.6
+install:
+  - if ! [[ $TRAVIS_PYTHON_VERSION > '2.6' ]]; then pip install unittest2 ; fi
+  - pip install coverage
+  - pip install coveralls
+  - python setup.py install
+before_script:
+  - mkdir testrunner
+  - cp .coveragerc testrunner/
+  - cd testrunner
+script:
+  - coverage run --branch -m unittest discover -v haas
+notifications:
+  email:
+    - travis-ci@simonjagoe.com
+after_success:
+  coveralls
