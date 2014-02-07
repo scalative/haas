@@ -1,4 +1,6 @@
 # Copyright 2013-2014 Simon Jagoe
+from __future__ import unicode_literals
+
 import unittest as python_unittest
 
 from haas.testing import unittest
