@@ -1,4 +1,6 @@
 # Copyright 2013-2014 Simon Jagoe
+from __future__ import unicode_literals
+
 import inspect
 
 import unittest
@@ -26,7 +28,7 @@ class Loader(object):
         """
         names = [name for name in dir(testcase)
                  if name.startswith(self.test_method_prefix)
-                 and inspect.ismethod(getattr(testcase, name))]
+                 and hasattr(getattr(testcase, name), '__call__')]
         return names
 
     def load_test(self, testcase, method_name):
