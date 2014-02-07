@@ -1,4 +1,6 @@
 # Copyright 2013-2014 Simon Jagoe
+import unittest as python_unittest
+
 from haas.testing import unittest
 
 from . import _test_cases
@@ -32,7 +34,7 @@ class TestLoadTest(LoaderTestMixin, unittest.TestCase):
 
     def test_creates_instance_for_valid_test(self):
         test = self.loader.load_test(_test_cases.TestCase, 'test_method')
-        self.assertIsInstance(test, unittest.TestCase)
+        self.assertIsInstance(test, python_unittest.TestCase)
         self.assertIsInstance(test, _test_cases.TestCase)
 
     def test_raises_for_invalid_test(self):
@@ -60,18 +62,18 @@ class TestLoadCase(LoaderTestMixin, unittest.TestCase):
 
     def test_creates_unittest_testsuite(self):
         suite = self.loader.load_case(_test_cases.TestCase)
-        self.assertIsInstance(suite, unittest.TestSuite)
+        self.assertIsInstance(suite, python_unittest.TestSuite)
 
     def test_creates_custom_testsuite_subclass(self):
         loader = Loader(test_suite_class=TestSuiteSubclass)
         suite = loader.load_case(_test_cases.TestCase)
-        self.assertIsInstance(suite, unittest.TestSuite)
+        self.assertIsInstance(suite, python_unittest.TestSuite)
         self.assertIsInstance(suite, TestSuiteSubclass)
 
     def test_creates_custom_testsuite_not_subclass(self):
         loader = Loader(test_suite_class=TestSuiteNotSubclass)
         suite = loader.load_case(_test_cases.TestCase)
-        self.assertNotIsInstance(suite, unittest.TestSuite)
+        self.assertNotIsInstance(suite, python_unittest.TestSuite)
         self.assertIsInstance(suite, TestSuiteNotSubclass)
 
     def test_raises_for_invalid_test(self):
@@ -97,7 +99,7 @@ class TestLoadModule(LoaderTestMixin, unittest.TestCase):
 
     def test_load_all_cases_in_module(self):
         suite = self.loader.load_module(_test_cases)
-        self.assertSuiteClasses(suite, unittest.TestSuite)
+        self.assertSuiteClasses(suite, python_unittest.TestSuite)
         sub_suites = list(suite)
         self.assertEqual(len(sub_suites), 1)
         cases = list(sub_suites[0])
