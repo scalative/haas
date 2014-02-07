@@ -1,5 +1,5 @@
 # Copyright 2013-2014 Simon Jagoe
-import unittest
+from haas.testing import unittest
 
 from . import _test_cases
 from ..loader import Loader
