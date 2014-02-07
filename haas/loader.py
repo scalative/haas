@@ -39,6 +39,9 @@ class Loader(object):
             An unbound method of a :class:`unittest.TestCase`
 
         """
+        if not issubclass(testcase, unittest.TestCase):
+            raise TypeError(
+                'Test case must be a subclass of unittest.TestCase')
         return testcase(methodName=method_name)
 
     def load_case(self, testcase):
