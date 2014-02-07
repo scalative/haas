@@ -1,2 +1,4 @@
 *~
 *.pyc
+/haas/version.py
+/haas.egg-info
