@@ -123,10 +123,10 @@ class TestLoadModule(LoaderTestMixin, unittest.TestCase):
         self.assertSuiteClasses(suite, TestSuiteNotSubclass)
 
 
-class TestFindTopLevelDirectory(unittest.TestCase):
+class TestDiscoveryMixin(object):
 
     def setUp(self):
-        self.tmpdir = tempfile.mkdtemp()
+        self.tmpdir = os.path.abspath(tempfile.mkdtemp())
         self.dirs = dirs = ['first', 'second']
         path = self.tmpdir
         for dir_ in dirs:
@@ -134,9 +134,17 @@ class TestFindTopLevelDirectory(unittest.TestCase):
             os.makedirs(path)
             with open(os.path.join(path, '__init__.py'), 'w'):
                 pass
+        destdir = os.path.join(self.tmpdir, *dirs)
+        base = os.path.splitext(_test_cases.__file__)[0]
+        srcfile = '{0}.py'.format(base)
+        shutil.copyfile(
+            srcfile, os.path.join(destdir, 'test_cases.py'))
 
     def tearDown(self):
         shutil.rmtree(self.tmpdir)
+
+
+class TestFindTopLevelDirectory(TestDiscoveryMixin, unittest.TestCase):
 
     def test_from_top_level_directory(self):
         directory = find_top_level_directory(self.tmpdir)
@@ -157,3 +165,58 @@ class TestFindTopLevelDirectory(unittest.TestCase):
         os.makedirs(nonpackage)
         directory = find_top_level_directory(nonpackage)
         self.assertEqual(directory, nonpackage)
+
+    def test_relative_directory(self):
+        relative = os.path.join(self.tmpdir, self.dirs[0], '..', *self.dirs)
+        directory = find_top_level_directory(relative)
+        self.assertEqual(directory, self.tmpdir)
+
+
+class TestDiscoveryByPath(TestDiscoveryMixin, unittest.TestCase):
+
+    def get_test_cases(self, suite):
+        for test in suite:
+            if isinstance(test, python_unittest.TestCase):
+                yield test
+            else:
+                for test_ in self.get_test_cases(test):
+                    yield test_
+
+    def setUp(self):
+        TestDiscoveryMixin.setUp(self)
+        self.loader = Loader()
+
+    def tearDown(self):
+        del self.loader
+        TestDiscoveryMixin.tearDown(self)
+
+    def assertSuite(self, suite):
+        self.assertIsInstance(suite, python_unittest.TestSuite)
+        tests = list(self.get_test_cases(suite))
+        self.assertEqual(len(tests), 1)
+        test, = tests
+        self.assertIsInstance(test, python_unittest.TestCase)
+        self.assertEqual(test._testMethodName, 'test_method')
+
+    def test_from_top_level_directory(self):
+        suite = self.loader.discover(self.tmpdir)
+        self.assertSuite(suite)
+
+    def test_from_leaf_directory(self):
+        suite = self.loader.discover(os.path.join(self.tmpdir, *self.dirs))
+        self.assertSuite(suite)
+
+    def test_from_middle_directory(self):
+        suite = self.loader.discover(os.path.join(self.tmpdir, self.dirs[0]))
+        self.assertSuite(suite)
+
+    def test_from_nonpackage_directory(self):
+        nonpackage = os.path.join(self.tmpdir, self.dirs[0], 'nonpackage')
+        os.makedirs(nonpackage)
+        suite = self.loader.discover(nonpackage)
+        self.assertEqual(len(list(suite)), 0)
+
+    def test_relative_directory(self):
+        relative = os.path.join(self.tmpdir, self.dirs[0], '..', *self.dirs)
+        suite = self.loader.discover(relative)
+        self.assertSuite(suite)

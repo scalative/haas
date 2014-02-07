@@ -2,7 +2,9 @@
 from __future__ import unicode_literals
 
 import os
+import sys
 
+from fnmatch import fnmatch
 import unittest
 
 
@@ -12,7 +14,24 @@ def find_top_level_directory(start_directory):
         top_level = os.path.dirname(top_level)
         if top_level == os.path.dirname(top_level):
             raise ValueError("Can't find top level directory")
-    return top_level
+    return os.path.abspath(top_level)
+
+
+def match_path(filename, filepath, pattern):
+    return fnmatch(filename, pattern)
+
+
+def get_module_name(top_level_directory, filepath):
+    modulepath = os.path.splitext(os.path.normpath(filepath))[0]
+    relpath = os.path.relpath(modulepath, top_level_directory)
+    if os.path.isabs(relpath) or relpath.startswith('..'):
+        raise ValueError('Path not within project: {0}'.format(filepath))
+    return relpath.replace(os.path.sep, '.')
+
+
+def get_module_by_name(name):
+    __import__(name)
+    return sys.modules[name]
 
 
 class Loader(object):
@@ -97,3 +116,30 @@ class Loader(object):
         cases = self.get_test_cases_from_module(module)
         suites = [self.load_case(case) for case in cases]
         return self.test_suite_class(suites)
+
+    def discover(self, start_directory, top_level_directory=None,
+                 pattern='test*.py'):
+        if os.path.isdir(start_directory):
+            return self.discover_by_directory(
+                start_directory, top_level_directory=top_level_directory,
+                 pattern=pattern)
+
+    def discover_by_directory(self, start_directory, top_level_directory=None,
+                 pattern='test*.py'):
+        if top_level_directory is None:
+            top_level_directory = find_top_level_directory(
+                start_directory)
+        if top_level_directory not in sys.path:
+            sys.path.insert(0, top_level_directory)
+        tests = self._discover_tests(
+            start_directory, top_level_directory, pattern)
+        return self.test_suite_class(list(tests))
+
+    def _discover_tests(self, start_directory, top_level_directory, pattern):
+        for curdir, dirnames, filenames in os.walk(start_directory):
+            for filename in filenames:
+                filepath = os.path.join(curdir, filename)
+                if not match_path(filename, filepath, pattern):
+                    continue
+                module_name = get_module_name(top_level_directory, filepath)
+                yield self.load_module(get_module_by_name(module_name))
