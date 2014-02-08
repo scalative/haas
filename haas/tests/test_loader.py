@@ -1,12 +1,18 @@
 # Copyright 2013-2014 Simon Jagoe
 from __future__ import unicode_literals
 
+import os
+import shutil
+import sys
+import tempfile
 import unittest as python_unittest
 
-from haas.testing import unittest
+from mock import patch
+
+from haas.testing import unittest, expected_failure
 
 from . import _test_cases
-from ..loader import Loader
+from ..loader import Loader, find_top_level_directory, get_module_name
 
 
 class LoaderTestMixin(object):
@@ -118,3 +124,158 @@ class TestLoadModule(LoaderTestMixin, unittest.TestCase):
         loader = Loader(test_suite_class=TestSuiteNotSubclass)
         suite = loader.load_module(_test_cases)
         self.assertSuiteClasses(suite, TestSuiteNotSubclass)
+
+
+class TestDiscoveryMixin(object):
+
+    def setUp(self):
+        self.tmpdir = os.path.abspath(tempfile.mkdtemp())
+        self.dirs = dirs = ['tests', 'tests']
+        path = self.tmpdir
+        for dir_ in dirs:
+            path = os.path.join(path, dir_)
+            os.makedirs(path)
+            with open(os.path.join(path, '__init__.py'), 'w'):
+                pass
+        destdir = os.path.join(self.tmpdir, *dirs)
+        base = os.path.splitext(_test_cases.__file__)[0]
+        srcfile = '{0}.py'.format(base)
+        shutil.copyfile(
+            srcfile, os.path.join(destdir, 'test_cases.py'))
+
+    def tearDown(self):
+        shutil.rmtree(self.tmpdir)
+
+
+class TestFindTopLevelDirectory(TestDiscoveryMixin, unittest.TestCase):
+
+    def test_from_top_level_directory(self):
+        directory = find_top_level_directory(self.tmpdir)
+        self.assertEqual(directory, self.tmpdir)
+
+    def test_from_leaf_directory(self):
+        directory = find_top_level_directory(
+            os.path.join(self.tmpdir, *self.dirs))
+        self.assertEqual(directory, self.tmpdir)
+
+    def test_from_middle_directory(self):
+        directory = find_top_level_directory(
+            os.path.join(self.tmpdir, self.dirs[0]))
+        self.assertEqual(directory, self.tmpdir)
+
+    def test_from_nonpackage_directory(self):
+        nonpackage = os.path.join(self.tmpdir, self.dirs[0], 'nonpackage')
+        os.makedirs(nonpackage)
+        directory = find_top_level_directory(nonpackage)
+        self.assertEqual(directory, nonpackage)
+
+    def test_relative_directory(self):
+        relative = os.path.join(self.tmpdir, self.dirs[0], '..', *self.dirs)
+        directory = find_top_level_directory(relative)
+        self.assertEqual(directory, self.tmpdir)
+
+    def test_no_top_level(self):
+        os_path_dirname = os.path.dirname
+        def dirname(path):
+            if os.path.basename(os_path_dirname(path)) not in self.dirs:
+                return path
+            return os_path_dirname(path)
+        with patch('os.path.dirname', dirname):
+            with self.assertRaises(ValueError):
+                find_top_level_directory(os.path.join(self.tmpdir, *self.dirs))
+
+
+
+class TestGetModuleName(TestDiscoveryMixin, unittest.TestCase):
+
+    def test_module_in_project(self):
+        module_path = os.path.join(self.tmpdir, *self.dirs)
+        module_name = get_module_name(self.tmpdir, module_path)
+        self.assertEqual(module_name, 'tests.tests')
+
+    def test_module_not_in_project_deep(self):
+        module_path = os.path.join(self.tmpdir, *self.dirs)
+        with self.assertRaises(ValueError):
+            get_module_name(os.path.dirname(__file__), module_path)
+
+    def test_module_not_in_project_relpath(self):
+        module_path = os.path.abspath(
+            os.path.join(self.tmpdir, '..', *self.dirs))
+        with self.assertRaises(ValueError):
+            get_module_name(self.tmpdir, module_path)
+
+
+class TestDiscoveryByPath(TestDiscoveryMixin, unittest.TestCase):
+
+    def get_test_cases(self, suite):
+        for test in suite:
+            if isinstance(test, python_unittest.TestCase):
+                yield test
+            else:
+                for test_ in self.get_test_cases(test):
+                    yield test_
+
+    def setUp(self):
+        TestDiscoveryMixin.setUp(self)
+        self.loader = Loader()
+
+    def tearDown(self):
+        del self.loader
+        TestDiscoveryMixin.tearDown(self)
+
+    def assertSuite(self, suite):
+        self.assertIsInstance(suite, python_unittest.TestSuite)
+        tests = list(self.get_test_cases(suite))
+        self.assertEqual(len(tests), 1)
+        test, = tests
+        self.assertIsInstance(test, python_unittest.TestCase)
+        self.assertEqual(test._testMethodName, 'test_method')
+
+    def test_from_top_level_directory(self):
+        suite = self.loader.discover(self.tmpdir)
+        self.assertSuite(suite)
+
+    def test_from_leaf_directory(self):
+        suite = self.loader.discover(os.path.join(self.tmpdir, *self.dirs))
+        self.assertSuite(suite)
+
+    def test_from_middle_directory(self):
+        suite = self.loader.discover(os.path.join(self.tmpdir, self.dirs[0]))
+        self.assertSuite(suite)
+
+    def test_from_nonpackage_directory(self):
+        nonpackage = os.path.join(self.tmpdir, self.dirs[0], 'nonpackage')
+        os.makedirs(nonpackage)
+        suite = self.loader.discover(nonpackage)
+        self.assertEqual(len(list(suite)), 0)
+
+    def test_relative_directory(self):
+        relative = os.path.join(self.tmpdir, self.dirs[0], '..', *self.dirs)
+        suite = self.loader.discover(relative)
+        self.assertSuite(suite)
+
+    def test_given_correct_top_level_directory(self):
+        suite = self.loader.discover(
+            self.tmpdir, top_level_directory=self.tmpdir)
+        self.assertSuite(suite)
+
+    def test_given_incorrect_top_level_directory(self):
+        with self.assertRaises(ImportError):
+            self.loader.discover(
+                self.tmpdir,
+                top_level_directory=os.path.dirname(self.tmpdir),
+            )
+
+    def test_top_level_directory_on_path(self):
+        sys.path.insert(0, self.tmpdir)
+        try:
+            suite = self.loader.discover(self.tmpdir)
+        finally:
+            sys.path.remove(self.tmpdir)
+        self.assertSuite(suite)
+
+
+class TestDiscoveryByModule(TestDiscoveryMixin, unittest.TestCase):
+
+    def test_not_implemented(self):
+        self.assertIsNone(Loader().discover('haas.missingmodule'))
