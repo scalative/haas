@@ -6,6 +6,8 @@ import shutil
 import tempfile
 import unittest as python_unittest
 
+from mock import patch
+
 from haas.testing import unittest
 
 from . import _test_cases
@@ -127,7 +129,7 @@ class TestDiscoveryMixin(object):
 
     def setUp(self):
         self.tmpdir = os.path.abspath(tempfile.mkdtemp())
-        self.dirs = dirs = ['first', 'second']
+        self.dirs = dirs = ['tests', 'tests']
         path = self.tmpdir
         for dir_ in dirs:
             path = os.path.join(path, dir_)
@@ -170,6 +172,16 @@ class TestFindTopLevelDirectory(TestDiscoveryMixin, unittest.TestCase):
         relative = os.path.join(self.tmpdir, self.dirs[0], '..', *self.dirs)
         directory = find_top_level_directory(relative)
         self.assertEqual(directory, self.tmpdir)
+
+    def test_no_top_level(self):
+        os_path_dirname = os.path.dirname
+        def dirname(path):
+            if os.path.basename(os_path_dirname(path)) not in self.dirs:
+                return path
+            return os_path_dirname(path)
+        with patch('os.path.dirname', dirname):
+            with self.assertRaises(ValueError):
+                find_top_level_directory(os.path.join(self.tmpdir, *self.dirs))
 
 
 class TestDiscoveryByPath(TestDiscoveryMixin, unittest.TestCase):
