@@ -5,7 +5,8 @@ import os
 import sys
 
 from fnmatch import fnmatch
-import unittest
+
+from .testing import unittest
 
 
 def get_relpath(top_level_directory, fullpath):
@@ -59,8 +60,11 @@ def find_module_by_name(full_name):
         try:
             module = get_module_by_name(module_name)
         except ImportError:
-            module_name, attribute = module_name.rsplit('.', 1)
-            module_attributes.append(attribute)
+            if '.' in module_name:
+                module_name, attribute = module_name.rsplit('.', 1)
+                module_attributes.append(attribute)
+            else:
+                raise
         else:
             break
     return module, list(reversed(module_attributes))
