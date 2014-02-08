@@ -5,7 +5,8 @@ import os
 import sys
 
 from fnmatch import fnmatch
-import unittest
+
+from .testing import unittest
 
 
 def get_relpath(top_level_directory, fullpath):
