@@ -130,7 +130,7 @@ class TestDiscoveryMixin(object):
 
     def setUp(self):
         self.tmpdir = os.path.abspath(tempfile.mkdtemp())
-        self.dirs = dirs = ['tests', 'tests']
+        self.dirs = dirs = ['haas_test_package', 'tests']
         path = self.tmpdir
         for dir_ in dirs:
             path = os.path.join(path, dir_)
@@ -145,6 +145,14 @@ class TestDiscoveryMixin(object):
 
     def tearDown(self):
         shutil.rmtree(self.tmpdir)
+
+    def get_test_cases(self, suite):
+        for test in suite:
+            if isinstance(test, python_unittest.TestCase):
+                yield test
+            else:
+                for test_ in self.get_test_cases(test):
+                    yield test_
 
 
 class TestFindTopLevelDirectory(TestDiscoveryMixin, unittest.TestCase):
@@ -191,7 +199,7 @@ class TestGetModuleName(TestDiscoveryMixin, unittest.TestCase):
     def test_module_in_project(self):
         module_path = os.path.join(self.tmpdir, *self.dirs)
         module_name = get_module_name(self.tmpdir, module_path)
-        self.assertEqual(module_name, 'tests.tests')
+        self.assertEqual(module_name, '.'.join(self.dirs))
 
     def test_module_not_in_project_deep(self):
         module_path = os.path.join(self.tmpdir, *self.dirs)
@@ -207,19 +215,13 @@ class TestGetModuleName(TestDiscoveryMixin, unittest.TestCase):
 
 class TestDiscoveryByPath(TestDiscoveryMixin, unittest.TestCase):
 
-    def get_test_cases(self, suite):
-        for test in suite:
-            if isinstance(test, python_unittest.TestCase):
-                yield test
-            else:
-                for test_ in self.get_test_cases(test):
-                    yield test_
-
     def setUp(self):
         TestDiscoveryMixin.setUp(self)
         self.loader = Loader()
 
     def tearDown(self):
+        if self.tmpdir in sys.path:
+            sys.path.remove(self.tmpdir)
         del self.loader
         TestDiscoveryMixin.tearDown(self)
 
