@@ -263,7 +263,7 @@ class TestDiscoveryByPath(TestDiscoveryMixin, unittest.TestCase):
         with self.assertRaises(ImportError):
             self.loader.discover(
                 self.tmpdir,
-                top_level_directory='/',
+                top_level_directory=os.path.dirname(self.tmpdir),
             )
 
     def test_top_level_directory_on_path(self):
