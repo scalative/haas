@@ -4,9 +4,9 @@
 #
 # This software may be modified and distributed under the terms
 # of the 3-clause BSD license.  See the LICENSE.txt file for details.
-import sys
+import sys  # pragma: no cover
 
-from .main import main
+from .main import main  # pragma: no cover
 
 
 if __name__ == '__main__':
