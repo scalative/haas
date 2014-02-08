@@ -52,6 +52,20 @@ def assert_start_importable(top_level_directory, start_directory):
             raise ImportError('Start directory is not importable')
 
 
+def find_module_by_name(full_name):
+    module_name = full_name
+    module_attributes = []
+    while True:
+        try:
+            module = get_module_by_name(module_name)
+        except ImportError:
+            module_name, attribute = module_name.rsplit('.', 1)
+            module_attributes.append(attribute)
+        else:
+            break
+    return module, list(reversed(module_attributes))
+
+
 class Loader(object):
 
     def __init__(self, test_suite_class=None, test_method_prefix='test',
@@ -141,6 +155,50 @@ class Loader(object):
             return self.discover_by_directory(
                 start_directory, top_level_directory=top_level_directory,
                  pattern=pattern)
+        else:
+            return self.discover_by_module(
+                start_directory, top_level_directory=top_level_directory,
+                pattern=pattern)
+
+    def discover_by_module(self, module_name, top_level_directory=None,
+                           pattern='test*.py'):
+        # If the top level directory is given, the module may only be
+        # importable with that in the path.
+        if top_level_directory is not None and \
+                top_level_directory not in sys.path:
+            sys.path.insert(0, top_level_directory)
+
+        module, case_attributes = find_module_by_name(module_name)
+        dirname, basename = os.path.split(module.__file__)
+        basename = os.path.splitext(basename)[0]
+        if len(case_attributes) == 0 and basename == '__init__':
+            # Discover in a package
+            return self.discover_by_directory(
+                dirname, top_level_directory, pattern=pattern)
+        elif len(case_attributes) == 0:
+            # Discover all in a module
+            return self.load_module(module)
+
+        return self.discover_single_case(module, case_attributes)
+
+    def discover_single_case(self, module, case_attributes):
+        # Find single case
+        case = module
+        for index, component in enumerate(case_attributes):
+            case = getattr(case, component, None)
+            if case is None:
+                return self.test_suite_class()
+            elif issubclass(case, unittest.TestCase):
+                rest = case_attributes[index + 1:]
+                print rest
+                if len(rest) > 1:
+                    raise ValueError('Too many components in module path')
+                elif len(rest) == 1:
+                    return self.test_suite_class([self.load_test(case, *rest)])
+                return self.load_case(case)
+
+        # No cases matched, return empty suite
+        return self.test_suite_class()
 
     def discover_by_directory(self, start_directory, top_level_directory=None,
                               pattern='test*.py'):

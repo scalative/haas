@@ -279,5 +279,82 @@ class TestDiscoveryByPath(TestDiscoveryMixin, unittest.TestCase):
 
 class TestDiscoveryByModule(TestDiscoveryMixin, unittest.TestCase):
 
-    def test_not_implemented(self):
-        self.assertIsNone(Loader().discover('haas.missingmodule'))
+    def setUp(self):
+        TestDiscoveryMixin.setUp(self)
+        self.loader = Loader()
+
+    def tearDown(self):
+        package = '.'.join(self.dirs)
+        while True:
+            if package in sys.modules:
+                del sys.modules[package]
+            if '.' in package:
+                package, _ = package.rsplit('.', 1)
+            else:
+                break
+        if self.tmpdir in sys.path:
+            sys.path.remove(self.tmpdir)
+        del self.loader
+        TestDiscoveryMixin.tearDown(self)
+
+    def test_discover_package(self):
+        suite = self.loader.discover(
+            '.'.join(self.dirs),
+            top_level_directory=self.tmpdir,
+        )
+        tests = list(self.get_test_cases(suite))
+        self.assertEqual(len(tests), 1)
+        test, = tests
+        self.assertIsInstance(test, python_unittest.TestCase)
+        self.assertEqual(test._testMethodName, 'test_method')
+
+    def test_discover_package_no_top_level(self):
+        suite = self.loader.discover('haas.tests')
+        tests = list(self.get_test_cases(suite))
+        self.assertGreater(len(tests), 1)
+
+    def test_discover_module(self):
+        module = '{0}.test_cases'.format('.'.join(self.dirs))
+        suite = self.loader.discover(module, top_level_directory=self.tmpdir)
+        tests = list(self.get_test_cases(suite))
+        self.assertEqual(len(tests), 1)
+        test, = tests
+        self.assertIsInstance(test, python_unittest.TestCase)
+        self.assertEqual(test._testMethodName, 'test_method')
+
+    def test_discover_case(self):
+        module = '{0}.test_cases.TestCase'.format('.'.join(self.dirs))
+        suite = self.loader.discover(module, top_level_directory=self.tmpdir)
+        tests = list(self.get_test_cases(suite))
+        self.assertEqual(len(tests), 1)
+        test, = tests
+        self.assertIsInstance(test, python_unittest.TestCase)
+        self.assertEqual(test._testMethodName, 'test_method')
+
+    def test_discover_missing_case(self):
+        module = '{0}.test_cases.MissingTestCase'.format('.'.join(self.dirs))
+        suite = self.loader.discover(module, top_level_directory=self.tmpdir)
+        tests = list(self.get_test_cases(suite))
+        self.assertEqual(len(tests), 0)
+
+    def test_discover_not_case(self):
+        module = '{0}.test_cases.NotTestCase'.format('.'.join(self.dirs))
+        suite = self.loader.discover(module, top_level_directory=self.tmpdir)
+        tests = list(self.get_test_cases(suite))
+        self.assertEqual(len(tests), 0)
+
+    def test_discover_method(self):
+        module = '{0}.test_cases.TestCase.test_method'.format(
+            '.'.join(self.dirs))
+        suite = self.loader.discover(module, top_level_directory=self.tmpdir)
+        tests = list(self.get_test_cases(suite))
+        self.assertEqual(len(tests), 1)
+        test, = tests
+        self.assertIsInstance(test, python_unittest.TestCase)
+        self.assertEqual(test._testMethodName, 'test_method')
+
+    def test_discover_too_many_components(self):
+        module = '{0}.test_cases.TestCase.test_method.nothing'.format(
+            '.'.join(self.dirs))
+        with self.assertRaises(ValueError):
+            self.loader.discover(module, top_level_directory=self.tmpdir)
