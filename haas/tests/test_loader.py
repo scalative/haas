@@ -3,6 +3,7 @@ from __future__ import unicode_literals
 
 import os
 import shutil
+import sys
 import tempfile
 import unittest as python_unittest
 
@@ -232,3 +233,27 @@ class TestDiscoveryByPath(TestDiscoveryMixin, unittest.TestCase):
         relative = os.path.join(self.tmpdir, self.dirs[0], '..', *self.dirs)
         suite = self.loader.discover(relative)
         self.assertSuite(suite)
+
+    def test_given_correct_top_level_directory(self):
+        suite = self.loader.discover(
+            self.tmpdir, top_level_directory=self.tmpdir)
+        self.assertSuite(suite)
+
+    def test_given_incorrect_top_level_directory(self):
+        with self.assertRaises(ImportError):
+            self.loader.discover(
+                self.tmpdir, top_level_directory=os.path.dirname(self.tmpdir))
+
+    def test_top_level_directory_on_path(self):
+        sys.path.insert(0, self.tmpdir)
+        try:
+            suite = self.loader.discover(self.tmpdir)
+        finally:
+            sys.path.remove(self.tmpdir)
+        self.assertSuite(suite)
+
+
+class TestDiscoveryByModule(TestDiscoveryMixin, unittest.TestCase):
+
+    def test_not_implemented(self):
+        self.assertIsNone(Loader().discover('haas.missingmodule'))
