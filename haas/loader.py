@@ -190,7 +190,6 @@ class Loader(object):
                 return self.test_suite_class()
             elif issubclass(case, unittest.TestCase):
                 rest = case_attributes[index + 1:]
-                print rest
                 if len(rest) > 1:
                     raise ValueError('Too many components in module path')
                 elif len(rest) == 1:
