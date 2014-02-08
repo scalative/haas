@@ -9,7 +9,7 @@ import unittest as python_unittest
 
 from mock import patch
 
-from haas.testing import unittest
+from haas.testing import unittest, expected_failure
 
 from . import _test_cases
 from ..loader import Loader, find_top_level_directory, get_module_name
@@ -260,9 +260,12 @@ class TestDiscoveryByPath(TestDiscoveryMixin, unittest.TestCase):
         self.assertSuite(suite)
 
     def test_given_incorrect_top_level_directory(self):
-        with self.assertRaises(ImportError):
-            self.loader.discover(
-                self.tmpdir, top_level_directory=os.path.dirname(self.tmpdir))
+        with expected_failure(sys.version_info >= (3, 3)):
+            with self.assertRaises(ImportError):
+                self.loader.discover(
+                    self.tmpdir,
+                    top_level_directory=os.path.dirname(self.tmpdir),
+                )
 
     def test_top_level_directory_on_path(self):
         sys.path.insert(0, self.tmpdir)

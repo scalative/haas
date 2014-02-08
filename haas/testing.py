@@ -12,9 +12,21 @@ else:
 
 
 @contextmanager
-def expected_failure():
-    try:
+def expected_failure(condition=True):
+    """Conditional expected failure context manager.
+
+    Paramaters
+    ----------
+    conditional : boolean
+        If True, the context will be expected failure, otherwise it is
+        expected to succeed.
+
+    """
+    if condition:
+        try:
+            yield
+        except Exception:
+            raise _ExpectedFailure(sys.exc_info())
+        raise _UnexpectedSuccess()
+    else:
         yield
-    except Exception:
-        raise _ExpectedFailure(sys.exc_info())
-    raise _UnexpectedSuccess()

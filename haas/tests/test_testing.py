@@ -15,3 +15,7 @@ class TestExpectedFailureContextManager(unittest.TestCase):
     def test_decorator_unexpected_success(self):
         with expected_failure():
             pass
+
+    def test_decorator_success(self):
+        with expected_failure(False):
+            pass
