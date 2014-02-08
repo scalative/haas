@@ -12,7 +12,7 @@ from mock import patch
 from haas.testing import unittest
 
 from . import _test_cases
-from ..loader import Loader, find_top_level_directory
+from ..loader import Loader, find_top_level_directory, get_module_name
 
 
 class LoaderTestMixin(object):
@@ -183,6 +183,26 @@ class TestFindTopLevelDirectory(TestDiscoveryMixin, unittest.TestCase):
         with patch('os.path.dirname', dirname):
             with self.assertRaises(ValueError):
                 find_top_level_directory(os.path.join(self.tmpdir, *self.dirs))
+
+
+
+class TestGetModuleName(TestDiscoveryMixin, unittest.TestCase):
+
+    def test_module_in_project(self):
+        module_path = os.path.join(self.tmpdir, *self.dirs)
+        module_name = get_module_name(self.tmpdir, module_path)
+        self.assertEqual(module_name, 'tests.tests')
+
+    def test_module_not_in_project_deep(self):
+        module_path = os.path.join(self.tmpdir, *self.dirs)
+        with self.assertRaises(ValueError):
+            get_module_name(os.path.dirname(__file__), module_path)
+
+    def test_module_not_in_project_relpath(self):
+        module_path = os.path.abspath(
+            os.path.join(self.tmpdir, '..', *self.dirs))
+        with self.assertRaises(ValueError):
+            get_module_name(self.tmpdir, module_path)
 
 
 class TestDiscoveryByPath(TestDiscoveryMixin, unittest.TestCase):
