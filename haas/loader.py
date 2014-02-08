@@ -8,6 +8,14 @@ from fnmatch import fnmatch
 import unittest
 
 
+def get_relpath(top_level_directory, fullpath):
+    normalized = os.path.normpath(fullpath)
+    relpath = os.path.relpath(normalized, top_level_directory)
+    if os.path.isabs(relpath) or relpath.startswith('..'):
+        raise ValueError('Path not within project: {0}'.format(fullpath))
+    return relpath
+
+
 def find_top_level_directory(start_directory):
     top_level = start_directory
     while os.path.isfile(os.path.join(top_level, '__init__.py')):
@@ -23,15 +31,25 @@ def match_path(filename, filepath, pattern):
 
 def get_module_name(top_level_directory, filepath):
     modulepath = os.path.splitext(os.path.normpath(filepath))[0]
-    relpath = os.path.relpath(modulepath, top_level_directory)
-    if os.path.isabs(relpath) or relpath.startswith('..'):
-        raise ValueError('Path not within project: {0}'.format(filepath))
+    relpath = get_relpath(top_level_directory, modulepath)
     return relpath.replace(os.path.sep, '.')
 
 
 def get_module_by_name(name):
     __import__(name)
     return sys.modules[name]
+
+
+def assert_start_importable(top_level_directory, start_directory):
+    relpath = get_relpath(top_level_directory, start_directory)
+    path = top_level_directory
+    for component in relpath.split(os.path.sep):
+        if component == '.':
+            continue
+        path = os.path.join(path, component)
+        if path != top_level_directory and \
+                not os.path.isfile(os.path.join(path, '__init__.py')):
+            raise ImportError('Start directory is not importable')
 
 
 class Loader(object):
@@ -125,10 +143,14 @@ class Loader(object):
                  pattern=pattern)
 
     def discover_by_directory(self, start_directory, top_level_directory=None,
-                 pattern='test*.py'):
+                              pattern='test*.py'):
+        start_directory = os.path.abspath(start_directory)
         if top_level_directory is None:
             top_level_directory = find_top_level_directory(
                 start_directory)
+
+        assert_start_importable(top_level_directory, start_directory)
+
         if top_level_directory not in sys.path:
             sys.path.insert(0, top_level_directory)
         tests = self._discover_tests(

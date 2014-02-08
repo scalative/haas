@@ -260,12 +260,11 @@ class TestDiscoveryByPath(TestDiscoveryMixin, unittest.TestCase):
         self.assertSuite(suite)
 
     def test_given_incorrect_top_level_directory(self):
-        with expected_failure(sys.version_info >= (3, 3)):
-            with self.assertRaises(ImportError):
-                self.loader.discover(
-                    self.tmpdir,
-                    top_level_directory=os.path.dirname(self.tmpdir),
-                )
+        with self.assertRaises(ImportError):
+            self.loader.discover(
+                self.tmpdir,
+                top_level_directory='/',
+            )
 
     def test_top_level_directory_on_path(self):
         sys.path.insert(0, self.tmpdir)
