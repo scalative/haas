@@ -12,7 +12,12 @@ from mock import patch
 from haas.testing import unittest, expected_failure
 
 from . import _test_cases
-from ..loader import Loader, find_top_level_directory, get_module_name
+from ..loader import (
+    Loader,
+    find_top_level_directory,
+    find_module_by_name,
+    get_module_name,
+)
 
 
 class LoaderTestMixin(object):
@@ -144,6 +149,12 @@ class TestDiscoveryMixin(object):
             srcfile, os.path.join(destdir, 'test_cases.py'))
 
     def tearDown(self):
+        package = '.'.join(self.dirs)
+        for key in list(sys.modules.keys()):
+            if key in sys.modules and key.startswith(self.dirs[0]):
+                del sys.modules[key]
+        if self.tmpdir in sys.path:
+            sys.path.remove(self.tmpdir)
         shutil.rmtree(self.tmpdir)
 
     def get_test_cases(self, suite):
@@ -193,7 +204,6 @@ class TestFindTopLevelDirectory(TestDiscoveryMixin, unittest.TestCase):
                 find_top_level_directory(os.path.join(self.tmpdir, *self.dirs))
 
 
-
 class TestGetModuleName(TestDiscoveryMixin, unittest.TestCase):
 
     def test_module_in_project(self):
@@ -213,6 +223,48 @@ class TestGetModuleName(TestDiscoveryMixin, unittest.TestCase):
             get_module_name(self.tmpdir, module_path)
 
 
+class TestFindModuleByName(TestDiscoveryMixin, unittest.TestCase):
+
+    def setUp(self):
+        TestDiscoveryMixin.setUp(self)
+        sys.path.insert(0, self.tmpdir)
+
+    def tearDown(self):
+        sys.path.remove(self.tmpdir)
+        TestDiscoveryMixin.tearDown(self)
+
+    def test_package_in_project(self):
+        module, case_attributes = find_module_by_name('.'.join(self.dirs))
+        dirname = os.path.join(self.tmpdir, *self.dirs)
+        filename = os.path.join(dirname, '__init__')
+        self.assertEqual(os.path.splitext(module.__file__)[0], filename)
+
+    def test_missing_package_in_project(self):
+        module_name = '.'.join(self.dirs + ['missing'])
+        module, case_attributes = find_module_by_name(module_name)
+        dirname = os.path.join(self.tmpdir, *self.dirs)
+        filename = os.path.join(dirname, '__init__')
+        self.assertEqual(os.path.splitext(module.__file__)[0], filename)
+        self.assertEqual(case_attributes, ['missing'])
+
+    def test_module_attribute_in_project(self):
+        module_name = '.'.join(self.dirs + ['test_cases'])
+        test_case_name = '.'.join([module_name, 'TestCase'])
+        try:
+            module, case_attributes = find_module_by_name(test_case_name)
+            module_file = module.__file__
+        finally:
+            del sys.modules[module_name]
+        dirname = os.path.join(self.tmpdir, *self.dirs)
+        filename = os.path.join(dirname, 'test_cases')
+        self.assertEqual(os.path.splitext(module_file)[0], filename)
+        self.assertEqual(case_attributes, ['TestCase'])
+
+    def test_missing_top_level_package_in_project(self):
+        with self.assertRaises(ImportError):
+            find_module_by_name('no_module')
+
+
 class TestDiscoveryByPath(TestDiscoveryMixin, unittest.TestCase):
 
     def setUp(self):
@@ -220,8 +272,6 @@ class TestDiscoveryByPath(TestDiscoveryMixin, unittest.TestCase):
         self.loader = Loader()
 
     def tearDown(self):
-        if self.tmpdir in sys.path:
-            sys.path.remove(self.tmpdir)
         del self.loader
         TestDiscoveryMixin.tearDown(self)
 
@@ -284,16 +334,6 @@ class TestDiscoveryByModule(TestDiscoveryMixin, unittest.TestCase):
         self.loader = Loader()
 
     def tearDown(self):
-        package = '.'.join(self.dirs)
-        while True:
-            if package in sys.modules:
-                del sys.modules[package]
-            if '.' in package:
-                package, _ = package.rsplit('.', 1)
-            else:
-                break
-        if self.tmpdir in sys.path:
-            sys.path.remove(self.tmpdir)
         del self.loader
         TestDiscoveryMixin.tearDown(self)
 
