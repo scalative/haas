@@ -20,21 +20,37 @@ Feature Ideas
 =============
 
 * Default ``Loader``, ``TestSuite``, ``TestRunner``, ``TestResult``
+
   * Possible to override defaults using plugins
+
   * Defaults classes take options via command line or config file
+
 * System-level plugins
+
   * Allow plugins to be easily contributed
+
   * Plugins loaded at startup before running any user code
+
   * Plugins optionally enabled and disabled through command line flags
+
     * Plugin options loaded before plugin functionality
+
   * Possible plugin functionality
+
     * Pre-testing environment configuration
+
     * Custom loader, runner, results collection, reporting, ???
+
 * Project-level plugins
+
   * Allow projects to contribute project-specific plugins
+
   * Specified by command-line
+
   * Specified by config file
+
 * Plugin config read from config file in project directory
+
   * Config file specified on command line
 
 
