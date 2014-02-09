@@ -24,6 +24,7 @@ from ..discoverer import (
     get_module_name,
 )
 from ..loader import Loader
+from ..suite import TestSuite
 
 
 class TestDiscoveryMixin(object):
@@ -172,7 +173,7 @@ class TestDiscoveryByPath(TestDiscoveryMixin, unittest.TestCase):
         TestDiscoveryMixin.tearDown(self)
 
     def assertSuite(self, suite):
-        self.assertIsInstance(suite, python_unittest.TestSuite)
+        self.assertIsInstance(suite, TestSuite)
         tests = list(self.get_test_cases(suite))
         self.assertEqual(len(tests), 1)
         test, = tests

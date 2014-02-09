@@ -7,6 +7,7 @@
 from __future__ import unicode_literals
 
 from .testing import unittest
+from .suite import TestSuite
 
 
 class Loader(object):
@@ -18,7 +19,7 @@ class Loader(object):
         self._test_method_prefix = test_method_prefix
 
         if test_suite_class is None:
-            test_suite_class = unittest.TestSuite
+            test_suite_class = TestSuite
         self._test_suite_class = test_suite_class
 
         if test_case_class is None:
