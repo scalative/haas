@@ -8,7 +8,7 @@ from __future__ import unicode_literals
 
 from mock import Mock, patch
 
-from .test_loader import TestDiscoveryMixin
+from ..discoverer import Discoverer
 from ..loader import Loader
 from ..main import main
 from ..testing import unittest
@@ -28,7 +28,7 @@ class TestMain(unittest.TestCase):
 
         main(['argv0', 'haas'])
         runner_class.assert_called_once_with()
-        suite = Loader().discover('haas')
+        suite = Discoverer(Loader()).discover('haas')
         run.assert_called_once_with(suite)
 
         result.wasSuccessful.assert_called_once_with()

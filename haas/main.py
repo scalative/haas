@@ -9,6 +9,7 @@ from __future__ import unicode_literals
 import argparse
 import os
 
+from .discoverer import Discoverer
 from .loader import Loader
 from .testing import unittest
 
@@ -25,7 +26,8 @@ def parse_args(argv):
 def main(argv):
     args = parse_args(argv)
     loader = Loader()
-    suite = loader.discover(args.start)
+    discoverer = Discoverer(loader)
+    suite = discoverer.discover(args.start)
     runner = unittest.TextTestRunner()
     result = runner.run(suite)
     return not result.wasSuccessful()
