@@ -54,7 +54,6 @@ class _TestSuiteState(object):
 
         self._class_setup_failed = not self._run_setup(
             current_class, 'setUpClass', current_class.__name__)
-        self._previous_class = current_class
 
     def setup(self, test):
         current_class = test.__class__
@@ -62,6 +61,9 @@ class _TestSuiteState(object):
         self._teardown_previous_class(current_class)
         self._setup_module(module)
         self._setup_class(current_class)
+
+        self._previous_class = current_class
+
         return not (self._class_setup_failed or self._module_setup_failed)
 
     def _teardown_previous_class(self, current_class):

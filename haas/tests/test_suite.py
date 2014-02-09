@@ -7,6 +7,7 @@
 from __future__ import unicode_literals
 
 from contextlib import contextmanager
+from itertools import count
 import sys
 
 from ..suite import TestSuite, _TestSuiteState
@@ -55,6 +56,8 @@ class MockTestCase(object):
         cls.teardown = False
         cls.setup_raise = False
         cls.teardown_raise = False
+        if hasattr(cls, '__unittest_skip__'):
+            del cls.__unittest_skip__
 
     def run(self, *args, **kwargs):
         pass
@@ -92,6 +95,7 @@ class TestTestSuiteState(unittest.TestCase):
         for klass in (MockTestCase, MockTestCaseSetup,
                       MockTestCaseTeardown, MockTestCaseSetupTeardown):
             klass.reset()
+        self._name_count = count(0)
         self.assertStateReset()
 
     def tearDown(self):
@@ -108,6 +112,7 @@ class TestTestSuiteState(unittest.TestCase):
             self.assertFalse(klass.teardown)
             self.assertFalse(klass.setup_raise)
             self.assertFalse(klass.teardown_raise)
+            self.assertFalse(hasattr(klass, '__unittest_skip__'))
 
     def test_setup_none(self):
         self.assertTrue(self.state.setup(None))
@@ -117,7 +122,7 @@ class TestTestSuiteState(unittest.TestCase):
 
     @contextmanager
     def _temporary_module(self, klass, module):
-        module_name = 'haas_test_module_name'
+        module_name = 'haas_test_module_{0}'.format(next(self._name_count))
         self.assertNotIn(module_name, sys.modules)
         sys.modules[module_name] = module
         old_module = klass.__module__
@@ -129,32 +134,59 @@ class TestTestSuiteState(unittest.TestCase):
             klass.__module__ = old_module
             del sys.modules[module_name]
 
-    def _run_test(self, klass, module, setup_raise, teardown_raise,
-                  class_setup, class_teardown, module_setup, module_teardown):
+    @contextmanager
+    def _run_test_context(self, klass, module, setup_raise, teardown_raise,
+                          class_setup, class_teardown, module_setup,
+                          module_teardown):
         klass.setup_raise = setup_raise
         klass.teardown_raise = teardown_raise
         test = klass()
-        module = module(
-            setup_raise=setup_raise,
-            teardown_raise=teardown_raise,
-        )
+        if module is not None:
+            module = module(
+                setup_raise=setup_raise,
+                teardown_raise=teardown_raise,
+            )
 
         with self._temporary_module(klass, module):
             self.assertEqual(self.state.setup(test), not setup_raise)
             self.assertEqual(klass.setup, class_setup)
-            self.assertEqual(module.setup, module_setup)
             self.assertFalse(klass.teardown)
-            self.assertFalse(module.teardown)
+            if module is not None:
+                self.assertEqual(module.setup, module_setup)
+                self.assertFalse(module.teardown)
+
+            yield
 
             self.state.teardown()
             self.assertEqual(klass.setup, class_setup)
-            self.assertEqual(module.setup, module_setup)
             self.assertEqual(klass.teardown, class_teardown)
-            self.assertEqual(module.teardown, module_teardown)
+            if module is not None:
+                self.assertEqual(module.setup, module_setup)
+                self.assertEqual(module.teardown, module_teardown)
+
+    def _run_test(self, klass, module, setup_raise, teardown_raise,
+                  class_setup, class_teardown, module_setup, module_teardown):
+        with self._run_test_context(
+                klass, module, setup_raise, teardown_raise,
+                class_setup, class_teardown, module_setup, module_teardown):
+            pass
 
     def test_call_setup_without_setup_or_teardown(self):
         self._run_test(
             klass=MockTestCase,
+            module=MockModule,
+            setup_raise=False,
+            teardown_raise=False,
+            class_setup=False,
+            class_teardown=False,
+            module_setup=False,
+            module_teardown=False,
+        )
+
+    def test_setup_skip(self):
+        MockTestCaseSetupTeardown.__unittest_skip__ = True
+        self._run_test(
+            klass=MockTestCaseSetupTeardown,
             module=MockModule,
             setup_raise=False,
             teardown_raise=False,
@@ -283,6 +315,60 @@ class TestTestSuiteState(unittest.TestCase):
             module_setup=True,
             module_teardown=True,
         )
+
+    def test_setup_module_none(self):
+        self._run_test(
+            klass=MockTestCase,
+            module=None,
+            setup_raise=False,
+            teardown_raise=False,
+            class_setup=False,
+            class_teardown=False,
+            module_setup=False,
+            module_teardown=False,
+        )
+
+    # def test_multiple_setup_teardown_different_class_module(self):
+    #     with self._run_test_context(
+    #             klass=MockTestCaseSetupTeardown,
+    #             module=MockModuleSetupTeardown,
+    #             setup_raise=False,
+    #             teardown_raise=False,
+    #             class_setup=True,
+    #             class_teardown=True,
+    #             module_setup=True,
+    #             module_teardown=True):
+    #         self._run_test(
+    #             klass=MockTestCaseSetup,
+    #             module=MockModuleSetup,
+    #             setup_raise=False,
+    #             teardown_raise=False,
+    #             class_setup=True,
+    #             class_teardown=False,
+    #             module_setup=True,
+    #             module_teardown=False,
+    #         )
+
+    # def test_multiple_setup_teardown_same_class_module(self):
+    #     with self._run_test_context(
+    #             klass=MockTestCaseSetupTeardown,
+    #             module=MockModuleSetupTeardown,
+    #             setup_raise=False,
+    #             teardown_raise=False,
+    #             class_setup=True,
+    #             class_teardown=True,
+    #             module_setup=True,
+    #             module_teardown=True):
+    #         self._run_test(
+    #             klass=MockTestCaseSetupTeardown,
+    #             module=MockModuleSetupTeardown,
+    #             setup_raise=False,
+    #             teardown_raise=False,
+    #             class_setup=True,
+    #             class_teardown=False,
+    #             module_setup=True,
+    #             module_teardown=False,
+    #         )
 
 
 class TestTestSuiteCount(unittest.TestCase):
