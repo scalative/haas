@@ -11,16 +11,25 @@ from .testing import unittest
 
 class Loader(object):
 
-    def __init__(self, test_suite_class=None, test_method_prefix='test',
+    def __init__(self, test_suite_class=None, test_case_class=None,
+                 test_method_prefix='test',
                  **kwargs):
         super(Loader, self).__init__(**kwargs)
         self._test_method_prefix = test_method_prefix
+
         if test_suite_class is None:
             test_suite_class = unittest.TestSuite
         self._test_suite_class = test_suite_class
 
+        if test_case_class is None:
+            test_case_class = unittest.TestCase
+        self._test_case_class = test_case_class
+
     def create_suite(self, tests=()):
         return self._test_suite_class(tests)
+
+    def is_test_case(self, klass):
+        return issubclass(klass, self._test_case_class)
 
     def find_test_method_names(self, testcase):
         """Return a list of test method names in the provided ``TestCase``
@@ -48,9 +57,10 @@ class Loader(object):
             An unbound method of a :class:`unittest.TestCase`
 
         """
-        if not issubclass(testcase, unittest.TestCase):
+        if not self.is_test_case(testcase):
             raise TypeError(
-                'Test case must be a subclass of unittest.TestCase')
+                'Test case must be a subclass of '
+                '{0.__module__}.{0.__name__}'.format(self._test_case_class))
         return testcase(methodName=method_name)
 
     def load_case(self, testcase):
@@ -80,7 +90,7 @@ class Loader(object):
         module_items = (getattr(module, name) for name in dir(module))
         return [item for item in module_items
                 if isinstance(item, type)
-                and issubclass(item, unittest.TestCase)]
+                and self.is_test_case(item)]
 
     def load_module(self, module):
         """Create and return a test suite containing all cases loaded from the

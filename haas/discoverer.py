@@ -10,8 +10,6 @@ from fnmatch import fnmatch
 import os
 import sys
 
-from .testing import unittest
-
 
 def get_relpath(top_level_directory, fullpath):
     normalized = os.path.normpath(fullpath)
@@ -120,7 +118,7 @@ class Discoverer(object):
             case = getattr(case, component, None)
             if case is None:
                 return loader.create_suite()
-            elif issubclass(case, unittest.TestCase):
+            elif loader.is_test_case(case):
                 rest = case_attributes[index + 1:]
                 if len(rest) > 1:
                     raise ValueError('Too many components in module path')
