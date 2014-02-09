@@ -109,11 +109,9 @@ class TestSuite(object):
         return iter(self._tests)
 
     def __eq__(self, other):
-        try:
-            other_iter = iter(other)
-        except TypeError:
+        if not isinstance(other, TestSuite):
             return NotImplemented
-        return list(self) == list(other_iter)
+        return list(self) == list(other)
 
     def __ne__(self, other):
         return not (self == other)
