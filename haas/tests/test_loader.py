@@ -6,10 +6,6 @@
 # of the 3-clause BSD license.  See the LICENSE.txt file for details.
 from __future__ import unicode_literals
 
-import os
-import shutil
-import sys
-import tempfile
 import unittest as python_unittest
 
 from haas.testing import unittest
@@ -30,6 +26,12 @@ class LoaderTestMixin(object):
 class TestSuiteSubclass(unittest.TestSuite):
 
     pass
+
+
+class TestCaseSubclass(unittest.TestCase):
+
+    def test_method(self):
+        pass
 
 
 class TestSuiteNotSubclass(object):
@@ -55,6 +57,16 @@ class TestLoadTest(LoaderTestMixin, unittest.TestCase):
     def test_raises_for_test_suite(self):
         with self.assertRaises(TypeError):
             self.loader.load_test(_test_cases.TestSuite, 'test_method')
+
+    def test_create_custom_class(self):
+        loader = Loader(test_case_class=TestCaseSubclass)
+        test = loader.load_test(TestCaseSubclass, 'test_method')
+        self.assertIsInstance(test, TestCaseSubclass)
+
+    def test_create_custom_class_raises(self):
+        loader = Loader(test_case_class=TestCaseSubclass)
+        with self.assertRaises(TypeError):
+            loader.load_test(unittest.TestCase, 'test_method')
 
 
 class TestFindTestMethodNames(LoaderTestMixin, unittest.TestCase):
