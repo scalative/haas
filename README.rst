@@ -6,8 +6,9 @@ haas: Extensible Python Test Runner
    :target: https://travis-ci.org/sjagoe/haas
    :alt: Build status
 
-.. image:: https://coveralls.io/repos/sjagoe/haas/badge.png
-   :target: https://coveralls.io/r/sjagoe/haas
+
+.. image:: https://coveralls.io/repos/sjagoe/haas/badge.png?branch=master
+   :target: https://coveralls.io/r/sjagoe/haas?branch=master
    :alt: Coverage status
 
 
