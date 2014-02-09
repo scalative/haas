@@ -15,11 +15,31 @@ from .testing import unittest
 
 
 def parse_args(argv):
-    parser = argparse.ArgumentParser()
+    parser = argparse.ArgumentParser(prog='haas')
+    parser.add_argument('-v', '--verbose', action='store_true', default=False,
+                        help='Verbose output')
+    parser.add_argument('-q', '--quiet', action='store_true', default=False,
+                        help='Quiet output')
+    parser.add_argument('-f', '--failfast', action='store_true', default=False,
+                        help='Stop on first fail or error')
+    parser.add_argument('-c', '--catch', dest='catch_interrupt',
+                        action='store_true', default=False,
+                        help=('(Ignored) Catch ctrl-C and display results so '
+                              'far'))
+    parser.add_argument('-b', '--buffer', action='store_true', default=False,
+                        help='Buffer stdout and stderr during tests')
     parser.add_argument(
         'start', nargs='?', default=os.getcwd(),
         help=('Directory or dotted package/module name to start searching for '
               'tests'))
+    parser.add_argument('-p', '--pattern', default='test*.py',
+                        help="Pattern to match tests ('test*.py' default)")
+    parser.add_argument('-t', '--top-level-directory', default=None,
+                        help=('Top level directory of project (defaults to '
+                              'start directory)'))
+    parser.add_argument('-s', '--start-directory', action='store_const',
+                        const=None,
+                        help="Ignored (compatibility with unittest)")
     return parser.parse_args(argv[1:])
 
 
@@ -27,7 +47,20 @@ def main(argv):
     args = parse_args(argv)
     loader = Loader()
     discoverer = Discoverer(loader)
-    suite = discoverer.discover(args.start)
-    runner = unittest.TextTestRunner()
+    suite = discoverer.discover(
+        start_directory=args.start,
+        top_level_directory=args.top_level_directory,
+        pattern=args.pattern,
+    )
+    verbosity = 1
+    if args.verbose:
+        verbosity += 1
+    if args.quiet:
+        verbosity -= 1
+    runner = unittest.TextTestRunner(
+        verbosity=verbosity,
+        failfast=args.failfast,
+        buffer=args.buffer,
+    )
     result = runner.run(suite)
     return not result.wasSuccessful()
