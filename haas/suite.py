@@ -8,7 +8,7 @@ from __future__ import unicode_literals
 
 import logging
 import sys
-from unittest.suite import _ErrorHolder
+from .error_holder import ErrorHolder
 
 logger = logging.getLogger(__name__)
 
@@ -27,8 +27,7 @@ class _TestSuiteState(object):
             setup()
         except Exception:
             error = '{0} ({1})'.format(setup_name, error_name)
-            # FIXME: _ErrorHolder
-            self._result.addError(_ErrorHolder(error), sys.exc_info())
+            self._result.addError(ErrorHolder(error), sys.exc_info())
             return False
         return True
 
