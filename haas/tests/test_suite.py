@@ -51,6 +51,9 @@ class MockTestCase(object):
     setup_raise = False
     teardown_raise = False
 
+    def __init__(self):
+        self.was_run = False
+
     @classmethod
     def reset(cls):
         cls.setup = False
@@ -60,8 +63,9 @@ class MockTestCase(object):
         if hasattr(cls, '__unittest_skip__'):
             del cls.__unittest_skip__
 
-    def run(self, *args, **kwargs):
-        pass
+    def run(self, result):
+        self.was_run = True
+        return result
 
     def __call__(self, *args, **kwargs):
         return self.run(*args, **kwargs)
@@ -89,14 +93,12 @@ class MockTestCaseSetupTeardown(MockTestCaseSetup, MockTestCaseTeardown):
     pass
 
 
-class TestTestSuiteState(unittest.TestCase):
+class ResetClassStateMixin(object):
 
     def setUp(self):
-        self.state = _TestSuiteState(unittest.TestResult())
         for klass in (MockTestCase, MockTestCaseSetup,
                       MockTestCaseTeardown, MockTestCaseSetupTeardown):
             klass.reset()
-        self._name_count = count(0)
         self.assertStateReset()
 
     def tearDown(self):
@@ -104,7 +106,6 @@ class TestTestSuiteState(unittest.TestCase):
                       MockTestCaseTeardown, MockTestCaseSetupTeardown):
             klass.reset()
         self.assertStateReset()
-        del self.state
 
     def assertStateReset(self):
         for klass in (MockTestCase, MockTestCaseSetup,
@@ -114,6 +115,18 @@ class TestTestSuiteState(unittest.TestCase):
             self.assertFalse(klass.setup_raise)
             self.assertFalse(klass.teardown_raise)
             self.assertFalse(hasattr(klass, '__unittest_skip__'))
+
+
+class TestTestSuiteState(ResetClassStateMixin, unittest.TestCase):
+
+    def setUp(self):
+        self.state = _TestSuiteState(unittest.TestResult())
+        self._name_count = count(0)
+        ResetClassStateMixin.setUp(self)
+
+    def tearDown(self):
+        ResetClassStateMixin.tearDown(self)
+        del self.state
 
     def test_setup_none(self):
         self.assertTrue(self.state.setup(None))
@@ -372,7 +385,6 @@ class TestTestSuiteState(unittest.TestCase):
         self.assertFalse(module.teardown)
 
     def test_multiple_setup_teardown_same_class_module(self):
-        print
         with self._run_test_context(
                 klass=MockTestCaseSetupTeardown,
                 module_factory=MockModuleSetupTeardown,
@@ -499,3 +511,52 @@ class TestTestSuiteEquality(unittest.TestCase):
             ],
         )
         self.assertEqual(suite, suite2)
+
+
+class TestRunningTestSuite(ResetClassStateMixin, unittest.TestCase):
+
+    def setUp(self):
+        ResetClassStateMixin.setUp(self)
+        self.case_1 = MockTestCaseSetupTeardown()
+        self.case_2 = MockTestCase()
+        self.suite = TestSuite(
+            tests=[
+                TestSuite(
+                    tests=[
+                        self.case_1,
+                        TestSuite(),
+                        TestSuite(),
+                    ],
+                ),
+                self.case_2,
+                TestSuite(),
+            ],
+        )
+
+    def tearDown(self):
+        del self.suite
+        del self.case_1
+        del self.case_2
+        ResetClassStateMixin.tearDown(self)
+
+    def test_run_suite_run(self):
+        result = object()
+        returned_result = self.suite.run(result)
+        self.assertIs(result, returned_result)
+        self.assertTrue(self.case_1.was_run)
+        self.assertTrue(self.case_2.was_run)
+
+    def test_run_suite_call(self):
+        result = object()
+        returned_result = self.suite(result)
+        self.assertIs(result, returned_result)
+        self.assertTrue(self.case_1.was_run)
+        self.assertTrue(self.case_2.was_run)
+
+    def test_run_suite_setup_error(self):
+        self.case_1.__class__.setup_raise = True
+        result = unittest.TestResult()
+        returned_result = self.suite.run(result)
+        self.assertIs(result, returned_result)
+        self.assertFalse(self.case_1.was_run)
+        self.assertTrue(self.case_2.was_run)
