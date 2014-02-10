@@ -8,3 +8,14 @@ try:
     from haas.version import version as __version__
 except ImportError:  # pragma: no cover
     __version__ = 'notset'
+
+import logging
+
+
+class NullHandler(logging.Handler):  # pragma: no cover
+    def emit(self, record):
+        pass
+
+
+logger = logging.getLogger(__name__)
+logger.addHandler(NullHandler())
