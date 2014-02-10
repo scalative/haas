@@ -4,6 +4,11 @@
 #
 # This software may be modified and distributed under the terms
 # of the 3-clause BSD license.  See the LICENSE.txt file for details.
+__all__ = [
+    'expected_failure',
+    'unittest',
+]
+
 from contextlib import contextmanager
 import sys
 
@@ -11,7 +16,7 @@ import sys
 if sys.version_info[:2] == (2, 6):  # pragma: no cover
     import unittest2 as unittest
     from unittest2.case import _ExpectedFailure, _UnexpectedSuccess
-else:
+else:  # pragma: no cover
     import unittest
     from unittest.case import _ExpectedFailure, _UnexpectedSuccess
 
@@ -22,7 +27,7 @@ def expected_failure(condition=True):
 
     Paramaters
     ----------
-    conditional : boolean
+    condition : boolean
         If True, the context will be expected failure, otherwise it is
         expected to succeed.
 
