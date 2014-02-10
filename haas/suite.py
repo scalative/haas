@@ -6,8 +6,11 @@
 # of the 3-clause BSD license.  See the LICENSE.txt file for details.
 from __future__ import unicode_literals
 
+import logging
 import sys
 from unittest.suite import _ErrorHolder
+
+logger = logging.getLogger(__name__)
 
 
 class _TestSuiteState(object):
@@ -40,22 +43,31 @@ class _TestSuiteState(object):
         if module is None:
             return
 
+        logger.debug('Set up module: %r', module_name)
         self._module_setup_failed = not self._run_setup(
             module, 'setUpModule', module_name)
 
     def _setup_class(self, current_class):
         previous_class = self._previous_class
         if previous_class == current_class:
+            logger.debug('Class has not changed; not setting up class %r',
+                         current_class)
             return
         if self._module_setup_failed:
+            logger.debug('Module setup failed; not setting up class %r',
+                         previous_class)
             return
         if getattr(current_class, '__unittest_skip__', False):
+            logger.debug('Class skipped; not setting up class %r',
+                         current_class)
             return
 
+        logger.debug('Set up class: %r', current_class)
         self._class_setup_failed = not self._run_setup(
             current_class, 'setUpClass', current_class.__name__)
 
     def setup(self, test):
+        logger.debug('Setup module and class for %r', test)
         current_class = test.__class__
         module = current_class.__module__
         self._teardown_previous_class(current_class)
@@ -69,26 +81,39 @@ class _TestSuiteState(object):
     def _teardown_previous_class(self, current_class):
         previous_class = self._previous_class
         if previous_class is None:
+            logger.debug('No previous class to tear down')
             return
         if current_class == self._previous_class:
+            logger.debug('Class has not changed; not tearing down class %r',
+                         previous_class)
             return
         if self._class_setup_failed:
+            logger.debug(
+                'Previous class setup failed; not tearing down class %r',
+                previous_class)
             self._class_setup_failed = False
             return
         if self._module_setup_failed:
+            logger.debug('Module setup failed; not tearing down class %r',
+                         previous_class)
             return
         if getattr(previous_class, '__unittest_skip__', False):
+            logger.debug('Previous class skipped; not tearing down class %r',
+                         previous_class)
             return
 
+        logger.debug('Tear down previous class: %r', previous_class)
         self._run_setup(
             previous_class, 'tearDownClass', previous_class.__name__)
 
     def _teardown_module(self, module_name):
         if self._module_setup_failed:
+            logger.debug('Module setup failed; not tearing down module %r',
+                         module_name)
             self._module_setup_failed = False
             return
 
-        module = sys.modules[module_name]
+        module = sys.modules.get(module_name)
         if module is None:
             return
 
