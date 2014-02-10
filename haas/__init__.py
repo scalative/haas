@@ -12,7 +12,7 @@ except ImportError:  # pragma: no cover
 import logging
 
 
-class NullHandler(logging.Handler):
+class NullHandler(logging.Handler):  # pragma: no cover
     def emit(self, record):
         pass
 
