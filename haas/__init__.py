@@ -9,7 +9,13 @@ try:
 except ImportError:  # pragma: no cover
     __version__ = 'notset'
 
-
 import logging
+
+
+class NullHandler(logging.Handler):
+    def emit(self, record):
+        pass
+
+
 logger = logging.getLogger(__name__)
-logger.addHandler(logging.NullHandler())
+logger.addHandler(NullHandler())
