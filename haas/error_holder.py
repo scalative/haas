@@ -3,7 +3,7 @@
 # Copyright the CPython developers and contributors.
 
 
-class ErrorHolder(object):  # pragma : no cover
+class ErrorHolder(object):
     """
     Placeholder for a TestCase inside a result. As far as a TestResult
     is concerned, this looks exactly like a unit test. Used to insert
