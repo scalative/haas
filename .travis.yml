@@ -12,6 +12,7 @@ install:
 script:
   - if [[ $TRAVIS_PYTHON_VERSION == '2.6' ]]; then coverage run --branch -m unittest2.__main__ discover -v -t . haas; fi
   - if [[ $TRAVIS_PYTHON_VERSION != '2.6' ]]; then coverage run --branch -m unittest discover -v -t . haas; fi
+  - python -m haas
 notifications:
   email:
     - travis-ci@simonjagoe.com
