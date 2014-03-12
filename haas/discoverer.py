@@ -73,24 +73,72 @@ def find_top_level_directory(start_directory):
 
 
 class Discoverer(object):
+    """The ``Discoverer`` is responsible for finding tests that can be
+    loaded by a :class:`~haas.loader.Loader`.
+
+    """
 
     def __init__(self, loader, **kwargs):
         super(Discoverer, self).__init__(**kwargs)
         self._loader = loader
 
-    def discover(self, start_directory, top_level_directory=None,
-                 pattern='test*.py'):
-        if os.path.isdir(start_directory):
+    def discover(self, start, top_level_directory=None, pattern='test*.py'):
+        """Do test case discovery.
+
+        This is the top-level entry-point for test discovery.
+
+        If the ``start`` argument is a drectory, then ``haas`` will
+        discover all tests in the package contained in that directory.
+
+        If the ``start`` argument is not a directory, it is assumed to
+        be a package or module name and tests in the package or module
+        are loaded.
+
+        FIXME: This needs a better description.
+
+        Parameters
+        ----------
+        start : str
+            The directory, package, module, class or test to load.
+        top_level_directory : str
+            The path to the top-level directoy of the project.  This is
+            the parent directory of the project'stop-level Python
+            package.
+        pattern : str
+            The glob pattern to match the filenames of modules to search
+            for tests.
+
+        """
+        if os.path.isdir(start):
+            start_directory = start
             return self.discover_by_directory(
                 start_directory, top_level_directory=top_level_directory,
                 pattern=pattern)
         else:
+            package_or_module = start
             return self.discover_by_module(
-                start_directory, top_level_directory=top_level_directory,
+                package_or_module, top_level_directory=top_level_directory,
                 pattern=pattern)
 
     def discover_by_module(self, module_name, top_level_directory=None,
                            pattern='test*.py'):
+        """Find all tests in a package or module, or load a single test case if
+        a class or test inside a module was specified.
+
+        Parameters
+        ----------
+        module_name : str
+            The dotted package name, module name or TestCase class and
+            test method.
+        top_level_directory : str
+            The path to the top-level directoy of the project.  This is
+            the parent directory of the project'stop-level Python
+            package.
+        pattern : str
+            The glob pattern to match the filenames of modules to search
+            for tests.
+
+        """
         # If the top level directory is given, the module may only be
         # importable with that in the path.
         if top_level_directory is not None and \
@@ -111,6 +159,19 @@ class Discoverer(object):
         return self.discover_single_case(module, case_attributes)
 
     def discover_single_case(self, module, case_attributes):
+        """Find and load a single TestCase or TestCase method from a module.
+
+        Parameters
+        ----------
+        module : module
+            The imported Python module containing the TestCase to be
+            loaded.
+        case_attributes : list of str
+            A list of length 1 or 2.  The first component must be the
+            name of a TestCase subclass.  The second component must be
+            the name of a method in the TestCase.
+
+        """
         # Find single case
         case = module
         loader = self._loader
@@ -132,6 +193,21 @@ class Discoverer(object):
 
     def discover_by_directory(self, start_directory, top_level_directory=None,
                               pattern='test*.py'):
+        """Run test discovery in a directory.
+
+        Parameters
+        ----------
+        start_directory : str
+            The package directory in which to start test discovery.
+        top_level_directory : str
+            The path to the top-level directoy of the project.  This is
+            the parent directory of the project'stop-level Python
+            package.
+        pattern : str
+            The glob pattern to match the filenames of modules to search
+            for tests.
+
+        """
         start_directory = os.path.abspath(start_directory)
         if top_level_directory is None:
             top_level_directory = find_top_level_directory(

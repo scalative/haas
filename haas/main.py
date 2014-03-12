@@ -65,7 +65,7 @@ def main(argv):
     loader = Loader()
     discoverer = Discoverer(loader)
     suite = discoverer.discover(
-        start_directory=args.start,
+        start=args.start,
         top_level_directory=args.top_level_directory,
         pattern=args.pattern,
     )
