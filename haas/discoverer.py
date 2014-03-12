@@ -42,6 +42,9 @@ def assert_start_importable(top_level_directory, start_directory):
 
 
 def get_module_by_name(name):
+    """Import a module and return the imported module object.
+
+    """
     __import__(name)
     return sys.modules[name]
 
@@ -64,6 +67,15 @@ def find_module_by_name(full_name):
 
 
 def find_top_level_directory(start_directory):
+    """Finds the top-level directory of a project given a start directory
+    inside the project.
+
+    Parameters
+    ----------
+    start_directory : str
+        The directory in which test discovery will start.
+
+    """
     top_level = start_directory
     while os.path.isfile(os.path.join(top_level, '__init__.py')):
         top_level = os.path.dirname(top_level)
