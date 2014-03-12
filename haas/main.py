@@ -15,6 +15,14 @@ from .testing import unittest
 
 
 def parse_args(argv):
+    """Parse command-line arguments.
+
+    Parameters
+    ----------
+    argv : list
+        The script's full argument list including the script itself.
+
+    """
     parser = argparse.ArgumentParser(prog='haas')
     verbosity = parser.add_mutually_exclusive_group()
     verbosity.add_argument('-v', '--verbose', action='store_const', default=1,
@@ -45,6 +53,14 @@ def parse_args(argv):
 
 
 def main(argv):
+    """Execute haas.
+
+    Parameters
+    ----------
+    argv : list
+        The script's full argument list including the script itself.
+
+    """
     args = parse_args(argv)
     loader = Loader()
     discoverer = Discoverer(loader)
