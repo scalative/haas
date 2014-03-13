@@ -13,17 +13,12 @@ from .discoverer import Discoverer
 from .environment import Environment
 from .loader import Loader
 from .logging import configure_logging
-from .plugin_manager import PluginManager
+from .plugin_manager import PluginError, PluginManager
 from .testing import unittest
 
 
-def parse_args(argv):
-    """Parse command-line arguments.
-
-    Parameters
-    ----------
-    argv : list
-        The script's full argument list including the script itself.
+def create_argument_parser():
+    """Creates the argument parser for haas.
 
     """
     parser = argparse.ArgumentParser(prog='haas')
@@ -55,7 +50,7 @@ def parse_args(argv):
                         choices=['critical', 'fatal', 'error', 'warning',
                                  'info', 'debug'],
                         help='Log level for haas logging')
-    return parser.parse_known_args(argv[1:])
+    return parser
 
 
 class HaasApplication(object):
@@ -63,15 +58,19 @@ class HaasApplication(object):
     def __init__(self, argv, **kwargs):
         super(HaasApplication, self).__init__(**kwargs)
         self.argv = argv
-        self.args, self.unparsed_args = parse_args(argv)
+        self.parser = create_argument_parser()
+        self.args, self.unparsed_args = self.parser.parse_known_args(argv[1:])
         if self.args.log_level is not None:
             configure_logging(self.args.log_level)
         self.plugin_manager = PluginManager()
 
     def run(self):
         args = self.args
-        environment_plugin = self.plugin_manager.load_plugin(
-            args.environment_manager)
+        try:
+            environment_plugin = self.plugin_manager.load_plugin(
+                args.environment_manager)
+        except PluginError as e:
+            self.parser.exit(2, 'haas: error: {0}\n'.format(e))
         if environment_plugin is not None:
             environment_plugin = [environment_plugin]
         with Environment(environment_plugin):
