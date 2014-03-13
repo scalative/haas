@@ -6,25 +6,74 @@
 # of the 3-clause BSD license.  See the LICENSE.txt file for details.
 from __future__ import unicode_literals
 
-from .environment import Environment
+import argparse
+import os
+
+from .discoverer import Discoverer
+from .loader import Loader
+from .testing import unittest
+
+
+def parse_args(argv):
+    """Parse command-line arguments.
+
+    Parameters
+    ----------
+    argv : list
+        The script's full argument list including the script itself.
+
+    """
+    parser = argparse.ArgumentParser(prog='haas')
+    verbosity = parser.add_mutually_exclusive_group()
+    verbosity.add_argument('-v', '--verbose', action='store_const', default=1,
+                           dest='verbosity', const=2, help='Verbose output')
+    verbosity.add_argument('-q', '--quiet', action='store_const', const=0,
+                           dest='verbosity', help='Quiet output')
+    parser.add_argument('-f', '--failfast', action='store_true', default=False,
+                        help='Stop on first fail or error')
+    parser.add_argument('-c', '--catch', dest='catch_interrupt',
+                        action='store_true', default=False,
+                        help=('(Ignored) Catch ctrl-C and display results so '
+                              'far'))
+    parser.add_argument('-b', '--buffer', action='store_true', default=False,
+                        help='Buffer stdout and stderr during tests')
+    parser.add_argument(
+        'start', nargs='?', default=os.getcwd(),
+        help=('Directory or dotted package/module name to start searching for '
+              'tests'))
+    parser.add_argument('-p', '--pattern', default='test*.py',
+                        help="Pattern to match tests ('test*.py' default)")
+    parser.add_argument('-t', '--top-level-directory', default=None,
+                        help=('Top level directory of project (defaults to '
+                              'start directory)'))
+    parser.add_argument('-s', '--start-directory', action='store_const',
+                        const=None,
+                        help=('Ignored; use the start argument instead '
+                              '(compatibility with unittest)'))
+    parser.add_argument('--config', help='Ignored (reserved)')
+    return parser.parse_known_args(argv[1:])
 
 
 class HaasApplication(object):
 
-    def __init__(self, discoverer, runner, environment=None, **kwargs):
+    def __init__(self, argv, **kwargs):
         super(HaasApplication, self).__init__(**kwargs)
-        self.discoverer = discoverer
-        self.runner = runner
-        if environment is None:
-            environment = Environment()
-        self.global_environment = environment
+        self.argv = argv
+        self.args, self.unparsed_args = parse_args(argv)
 
-    def run(self, args):
-        with self.global_environment:
-            suite = self.discoverer.discover(
-                start=args.start,
-                top_level_directory=args.top_level_directory,
-                pattern=args.pattern,
-            )
-            result = self.runner.run(suite)
-            return not result.wasSuccessful()
+    def run(self):
+        args = self.args
+        loader = Loader()
+        discoverer = Discoverer(loader)
+        suite = discoverer.discover(
+            start=args.start,
+            top_level_directory=args.top_level_directory,
+            pattern=args.pattern,
+        )
+        runner = unittest.TextTestRunner(
+            verbosity=args.verbosity,
+            failfast=args.failfast,
+            buffer=args.buffer,
+        )
+        result = runner.run(suite)
+        return not result.wasSuccessful()
