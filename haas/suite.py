@@ -127,6 +127,10 @@ class _TestSuiteState(object):
 
 
 class TestSuite(object):
+    """A ``TestSuite`` is a container of test cases and allows executing
+    many test cases while managing the state of the overall suite.
+
+    """
 
     def __init__(self, tests=()):
         self._tests = tuple(tests)
@@ -143,9 +147,23 @@ class TestSuite(object):
         return not (self == other)
 
     def __call__(self, *args, **kwds):
+        """Run all tests in the suite.
+
+        Parameters
+        ----------
+        result : unittest.result.TestResult
+
+        """
         return self.run(*args, **kwds)
 
     def run(self, result):
+        """Run all tests in the suite.
+
+        Parameters
+        ----------
+        result : unittest.result.TestResult
+
+        """
         state = _TestSuiteState(result)
         for test in self:
             if state.setup(test):
@@ -154,4 +172,7 @@ class TestSuite(object):
         return result
 
     def countTestCases(self):
+        """Return the total number of tests contained in this suite.
+
+        """
         return sum(test.countTestCases() for test in self)
