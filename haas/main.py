@@ -10,6 +10,7 @@ import argparse
 import os
 
 from .discoverer import Discoverer
+from .haas_application import HaasApplication
 from .loader import Loader
 from .testing import unittest
 
@@ -64,15 +65,10 @@ def main(argv):
     args = parse_args(argv)
     loader = Loader()
     discoverer = Discoverer(loader)
-    suite = discoverer.discover(
-        start=args.start,
-        top_level_directory=args.top_level_directory,
-        pattern=args.pattern,
-    )
     runner = unittest.TextTestRunner(
         verbosity=args.verbosity,
         failfast=args.failfast,
         buffer=args.buffer,
     )
-    result = runner.run(suite)
-    return not result.wasSuccessful()
+    application = HaasApplication(discoverer, runner)
+    return application.run(args)
