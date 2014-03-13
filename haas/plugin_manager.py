@@ -6,27 +6,44 @@
 # of the 3-clause BSD license.  See the LICENSE.txt file for details.
 from __future__ import absolute_import, unicode_literals
 
-from .utils import find_module_by_name
+import logging
+
+from .utils import get_module_by_name
+
+logger = logging.getLogger(__name__)
+
+
+class PluginError(Exception):
+
+    pass
 
 
 class PluginManager(object):
 
     def load_plugin_class(self, class_spec):
-        if class_spec is None:
-            return None
+        if class_spec is None or '.' not in class_spec:
+            msg = 'Malformed plugin factory specification {0!r}'.format(
+                class_spec)
+            logger.error(msg)
+            raise PluginError(msg)
+        module_name, factory_name = class_spec.rsplit('.', 1)
         try:
-            module, module_attributes = find_module_by_name(class_spec)
+            module = get_module_by_name(module_name)
         except ImportError:
-            return None
-        if len(module_attributes) != 1:
-            return None
-        klass = getattr(module, module_attributes[0], None)
-        if klass is None:
-            return None
+            msg = 'Unable to import {0!r}'.format(class_spec)
+            logger.exception(msg)
+            raise PluginError(msg)
+        try:
+            klass = getattr(module, factory_name)
+        except AttributeError:
+            msg = 'Module %r has no attribute {0!r}'.format(
+                module.__name__, factory_name)
+            logger.error(msg)
+            raise PluginError(msg)
         return klass
 
     def load_plugin(self, class_spec):
-        klass = self.load_plugin_class(class_spec)
-        if klass is None:
+        if class_spec is None:
             return None
+        klass = self.load_plugin_class(class_spec)
         return klass()
