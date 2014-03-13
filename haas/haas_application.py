@@ -12,6 +12,7 @@ import os
 from .discoverer import Discoverer
 from .environment import Environment
 from .loader import Loader
+from .logging import configure_logging
 from .plugin_manager import PluginManager
 from .testing import unittest
 
@@ -50,6 +51,10 @@ def parse_args(argv):
                               'start directory)'))
     parser.add_argument('--environment-manager',
                         help='Class to use as the environment manager')
+    parser.add_argument('--log-level', default=None,
+                        choices=['critical', 'fatal', 'error', 'warning',
+                                 'info', 'debug'],
+                        help='Log level for haas logging')
     return parser.parse_known_args(argv[1:])
 
 
@@ -59,6 +64,8 @@ class HaasApplication(object):
         super(HaasApplication, self).__init__(**kwargs)
         self.argv = argv
         self.args, self.unparsed_args = parse_args(argv)
+        if self.args.log_level is not None:
+            configure_logging(self.args.log_level)
         self.plugin_manager = PluginManager()
 
     def run(self):
