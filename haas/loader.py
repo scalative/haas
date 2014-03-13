@@ -11,6 +11,10 @@ from .suite import TestSuite
 
 
 class Loader(object):
+    """Load individual test cases from modules and wrap them in the
+    :class:`~haas.suite.Suite` container.
+
+    """
 
     def __init__(self, test_suite_class=None, test_case_class=None,
                  test_method_prefix='test',
@@ -27,9 +31,20 @@ class Loader(object):
         self._test_case_class = test_case_class
 
     def create_suite(self, tests=()):
+        """Create a test suite using the confugured test suite class.
+
+        Parameters
+        ----------
+        tests : sequence
+            Sequence of TestCase instances.
+
+        """
         return self._test_suite_class(tests)
 
     def is_test_case(self, klass):
+        """Check if a class is a TestCase.
+
+        """
         return issubclass(klass, self._test_case_class)
 
     def find_test_method_names(self, testcase):
