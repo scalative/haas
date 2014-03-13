@@ -48,13 +48,8 @@ def parse_args(argv):
     parser.add_argument('-t', '--top-level-directory', default=None,
                         help=('Top level directory of project (defaults to '
                               'start directory)'))
-    parser.add_argument('-s', '--start-directory', action='store_const',
-                        const=None,
-                        help=('Ignored; use the start argument instead '
-                              '(compatibility with unittest)'))
-    parser.add_argument('--config', help='Ignored (reserved)')
     parser.add_argument('--environment-manager',
-                        help='Class to use as the test environment manager')
+                        help='Class to use as the environment manager')
     return parser.parse_known_args(argv[1:])
 
 
