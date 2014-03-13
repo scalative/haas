@@ -10,6 +10,8 @@ from fnmatch import fnmatch
 import os
 import sys
 
+from .utils import find_module_by_name, get_module_by_name
+
 
 def get_relpath(top_level_directory, fullpath):
     normalized = os.path.normpath(fullpath)
@@ -39,31 +41,6 @@ def assert_start_importable(top_level_directory, start_directory):
         if path != top_level_directory and \
                 not os.path.isfile(os.path.join(path, '__init__.py')):
             raise ImportError('Start directory is not importable')
-
-
-def get_module_by_name(name):
-    """Import a module and return the imported module object.
-
-    """
-    __import__(name)
-    return sys.modules[name]
-
-
-def find_module_by_name(full_name):
-    module_name = full_name
-    module_attributes = []
-    while True:
-        try:
-            module = get_module_by_name(module_name)
-        except ImportError:
-            if '.' in module_name:
-                module_name, attribute = module_name.rsplit('.', 1)
-                module_attributes.append(attribute)
-            else:
-                raise
-        else:
-            break
-    return module, list(reversed(module_attributes))
 
 
 def find_top_level_directory(start_directory):
