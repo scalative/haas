@@ -10,8 +10,10 @@ import argparse
 import os
 
 from .discoverer import Discoverer
+from .environment import Environment
 from .loader import Loader
 from .testing import unittest
+from .utils import find_module_by_name
 
 
 def parse_args(argv):
@@ -51,6 +53,8 @@ def parse_args(argv):
                         help=('Ignored; use the start argument instead '
                               '(compatibility with unittest)'))
     parser.add_argument('--config', help='Ignored (reserved)')
+    parser.add_argument('--environment-manager',
+                        help='Class to use as the test environment manager')
     return parser.parse_known_args(argv[1:])
 
 
@@ -61,19 +65,36 @@ class HaasApplication(object):
         self.argv = argv
         self.args, self.unparsed_args = parse_args(argv)
 
+    def load_plugin_class(self, class_spec):
+        if class_spec is None:
+            return None
+        try:
+            module, module_attributes = find_module_by_name(class_spec)
+        except ImportError:
+            return None
+        if len(module_attributes) != 1:
+            return None
+        klass = getattr(module, module_attributes[0], None)
+        if klass is None:
+            return None
+        return [klass()]
+
     def run(self):
         args = self.args
-        loader = Loader()
-        discoverer = Discoverer(loader)
-        suite = discoverer.discover(
-            start=args.start,
-            top_level_directory=args.top_level_directory,
-            pattern=args.pattern,
-        )
-        runner = unittest.TextTestRunner(
-            verbosity=args.verbosity,
-            failfast=args.failfast,
-            buffer=args.buffer,
-        )
-        result = runner.run(suite)
-        return not result.wasSuccessful()
+        environment_plugin = self.load_plugin_class(
+            args.environment_manager)
+        with Environment(environment_plugin):
+            loader = Loader()
+            discoverer = Discoverer(loader)
+            suite = discoverer.discover(
+                start=args.start,
+                top_level_directory=args.top_level_directory,
+                pattern=args.pattern,
+            )
+            runner = unittest.TextTestRunner(
+                verbosity=args.verbosity,
+                failfast=args.failfast,
+                buffer=args.buffer,
+            )
+            result = runner.run(suite)
+            return not result.wasSuccessful()
