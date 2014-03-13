@@ -12,8 +12,8 @@ import os
 from .discoverer import Discoverer
 from .environment import Environment
 from .loader import Loader
+from .plugin_manager import PluginManager
 from .testing import unittest
-from .utils import find_module_by_name
 
 
 def parse_args(argv):
@@ -64,25 +64,14 @@ class HaasApplication(object):
         super(HaasApplication, self).__init__(**kwargs)
         self.argv = argv
         self.args, self.unparsed_args = parse_args(argv)
-
-    def load_plugin_class(self, class_spec):
-        if class_spec is None:
-            return None
-        try:
-            module, module_attributes = find_module_by_name(class_spec)
-        except ImportError:
-            return None
-        if len(module_attributes) != 1:
-            return None
-        klass = getattr(module, module_attributes[0], None)
-        if klass is None:
-            return None
-        return [klass()]
+        self.plugin_manager = PluginManager()
 
     def run(self):
         args = self.args
-        environment_plugin = self.load_plugin_class(
+        environment_plugin = self.plugin_manager.load_plugin(
             args.environment_manager)
+        if environment_plugin is not None:
+            environment_plugin = [environment_plugin]
         with Environment(environment_plugin):
             loader = Loader()
             discoverer = Discoverer(loader)
