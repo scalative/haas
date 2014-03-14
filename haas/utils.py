@@ -6,6 +6,7 @@
 # of the 3-clause BSD license.  See the LICENSE.txt file for details.
 from __future__ import absolute_import, unicode_literals
 
+import haas
 import logging
 import sys
 
@@ -27,7 +28,7 @@ def configure_logging(level):
     handler = logging.StreamHandler()
     handler.setFormatter(formatter)
     handler.setLevel(actual_level)
-    logger = logging.getLogger('haas')
+    logger = logging.getLogger(haas.__name__)
     logger.addHandler(handler)
     logger.setLevel(actual_level)
     logger.info('Logging configured for haas at level %r',
