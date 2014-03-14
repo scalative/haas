@@ -12,9 +12,9 @@ import os
 from .discoverer import Discoverer
 from .environment import Environment
 from .loader import Loader
-from .logging import configure_logging
 from .plugin_manager import PluginError, PluginManager
 from .testing import unittest
+from .utils import configure_logging
 
 
 def create_argument_parser():
