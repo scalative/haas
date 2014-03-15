@@ -50,6 +50,8 @@ class MockTestCase(object):
     teardown = False
     setup_raise = False
     teardown_raise = False
+    setup_count = 0
+    teardown_count = 0
 
     def __init__(self):
         self.was_run = False
@@ -60,10 +62,12 @@ class MockTestCase(object):
         cls.teardown = False
         cls.setup_raise = False
         cls.teardown_raise = False
+        cls.setup_count = 0
+        cls.teardown_count = 0
         if hasattr(cls, '__unittest_skip__'):
             del cls.__unittest_skip__
 
-    def run(self, result):
+    def run(self, result, _state=None):
         self.was_run = True
         return result
 
@@ -76,6 +80,7 @@ class MockTestCaseSetup(MockTestCase):
     @classmethod
     def setUpClass(cls):
         cls.setup = True
+        cls.setup_count += 1
         if cls.setup_raise:
             raise Exception('Error in setUpClass')
 
@@ -85,6 +90,7 @@ class MockTestCaseTeardown(MockTestCase):
     @classmethod
     def tearDownClass(cls):
         cls.teardown = True
+        cls.teardown_count += 1
         if cls.setup_raise:
             raise Exception('Error in tearDownClass')
 
@@ -560,3 +566,25 @@ class TestRunningTestSuite(ResetClassStateMixin, unittest.TestCase):
         self.assertIs(result, returned_result)
         self.assertFalse(self.case_1.was_run)
         self.assertTrue(self.case_2.was_run)
+
+    def test_same_class_multiple_suites(self):
+        case_1 = MockTestCaseSetupTeardown()
+        case_2 = MockTestCaseSetupTeardown()
+        suite = TestSuite(
+            tests=[
+                TestSuite(
+                    tests=[
+                        case_1,
+                    ],
+                ),
+                TestSuite(
+                    tests=[
+                        case_2,
+                    ],
+                ),
+            ],
+        )
+        result = unittest.TestResult()
+        suite.run(result)
+        self.assertEqual(MockTestCaseSetupTeardown.setup_count, 1)
+        self.assertEqual(MockTestCaseSetupTeardown.teardown_count, 1)
