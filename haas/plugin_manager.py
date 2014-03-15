@@ -40,6 +40,10 @@ class PluginManager(object):
                 module.__name__, factory_name)
             logger.error(msg)
             raise PluginError(msg)
+        if not callable(klass):
+            msg = 'Plugin factory {0!r} is not callable'.format(klass)
+            logger.error(msg)
+            raise PluginError(msg)
         return klass
 
     def load_plugin(self, class_spec):
