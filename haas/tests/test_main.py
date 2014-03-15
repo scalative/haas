@@ -8,6 +8,7 @@ from __future__ import unicode_literals
 
 from mock import Mock, patch
 
+import haas
 from ..discoverer import Discoverer
 from ..loader import Loader
 from ..main import main
@@ -89,3 +90,25 @@ class TestMain(unittest.TestCase):
         run.assert_called_once_with(suite)
 
         result.wasSuccessful.assert_called_once_with()
+
+    @patch('logging.getLogger')
+    @patch('haas.testing.unittest.TextTestRunner')
+    def test_with_logging(self, runner_class, get_logger):
+        run, result = self._run_with_arguments(
+            runner_class, '--log-level', 'debug')
+        get_logger.assert_called_once_with(haas.__name__)
+
+        runner_class.assert_called_once_with(
+            verbosity=1, failfast=False, buffer=False)
+        suite = Discoverer(Loader()).discover('haas')
+        run.assert_called_once_with(suite)
+
+        result.wasSuccessful.assert_called_once_with()
+
+    @patch('sys.stdout')
+    @patch('sys.stderr')
+    @patch('haas.testing.unittest.TextTestRunner')
+    def test_invalid_environment_plugin(self, runner_class, stdout, stderr):
+        with self.assertRaises(SystemExit):
+            run, result = self._run_with_arguments(
+                runner_class, '--environment-manager', 'haas.invalid')
