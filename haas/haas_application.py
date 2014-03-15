@@ -10,7 +10,7 @@ import argparse
 import os
 
 from .discoverer import Discoverer
-from .environment import Environment
+from .plugin_context import PluginContext
 from .loader import Loader
 from .plugin_manager import PluginError, PluginManager
 from .testing import unittest
@@ -71,9 +71,7 @@ class HaasApplication(object):
                 args.environment_manager)
         except PluginError as e:
             self.parser.exit(2, 'haas: error: {0}\n'.format(e))
-        if environment_plugin is not None:
-            environment_plugin = [environment_plugin]
-        with Environment(environment_plugin):
+        with PluginContext([environment_plugin]):
             loader = Loader()
             discoverer = Discoverer(loader)
             suite = discoverer.discover(

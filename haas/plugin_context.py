@@ -7,16 +7,16 @@
 from __future__ import absolute_import, unicode_literals
 
 
-class Environment(object):
-    """Handles correct setup and teardown of testing environment.
+class PluginContext(object):
+    """Handles correct setup and teardown of multiple plugins.
 
     """
 
     def __init__(self, hooks=None, **kwargs):
-        super(Environment, self).__init__(**kwargs)
+        super(PluginContext, self).__init__(**kwargs)
         if hooks is None:
             hooks = []
-        self.hooks = tuple(hooks)
+        self.hooks = tuple(filter(None, hooks))
 
     def __enter__(self):
         self.setup()
