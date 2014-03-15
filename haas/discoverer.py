@@ -4,11 +4,13 @@
 #
 # This software may be modified and distributed under the terms
 # of the 3-clause BSD license.  See the LICENSE.txt file for details.
-from __future__ import unicode_literals
+from __future__ import absolute_import, unicode_literals
 
 from fnmatch import fnmatch
 import os
 import sys
+
+from .utils import get_module_by_name
 
 
 def get_relpath(top_level_directory, fullpath):
@@ -39,14 +41,6 @@ def assert_start_importable(top_level_directory, start_directory):
         if path != top_level_directory and \
                 not os.path.isfile(os.path.join(path, '__init__.py')):
             raise ImportError('Start directory is not importable')
-
-
-def get_module_by_name(name):
-    """Import a module and return the imported module object.
-
-    """
-    __import__(name)
-    return sys.modules[name]
 
 
 def find_module_by_name(full_name):

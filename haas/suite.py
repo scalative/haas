@@ -4,7 +4,7 @@
 #
 # This software may be modified and distributed under the terms
 # of the 3-clause BSD license.  See the LICENSE.txt file for details.
-from __future__ import unicode_literals
+from __future__ import absolute_import, unicode_literals
 
 import logging
 import sys
