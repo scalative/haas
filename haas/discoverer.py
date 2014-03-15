@@ -43,6 +43,23 @@ def assert_start_importable(top_level_directory, start_directory):
             raise ImportError('Start directory is not importable')
 
 
+def find_module_by_name(full_name):
+    module_name = full_name
+    module_attributes = []
+    while True:
+        try:
+            module = get_module_by_name(module_name)
+        except ImportError:
+            if '.' in module_name:
+                module_name, attribute = module_name.rsplit('.', 1)
+                module_attributes.append(attribute)
+            else:
+                raise
+        else:
+            break
+    return module, list(reversed(module_attributes))
+
+
 def find_top_level_directory(start_directory):
     """Finds the top-level directory of a project given a start directory
     inside the project.
@@ -59,23 +76,6 @@ def find_top_level_directory(start_directory):
         if top_level == os.path.dirname(top_level):
             raise ValueError("Can't find top level directory")
     return os.path.abspath(top_level)
-
-
-def find_module_by_name(full_name):
-    module_name = full_name
-    module_attributes = []
-    while True:
-        try:
-            module = get_module_by_name(module_name)
-        except ImportError:
-            if '.' in module_name:
-                module_name, attribute = module_name.rsplit('.', 1)
-                module_attributes.append(attribute)
-            else:
-                raise
-        else:
-            break
-    return module, list(reversed(module_attributes))
 
 
 class Discoverer(object):
