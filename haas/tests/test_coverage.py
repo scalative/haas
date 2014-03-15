@@ -8,12 +8,13 @@ from __future__ import absolute_import, unicode_literals
 
 try:
     import coverage
+    from ..coverage import Coverage
 except ImportError:
     coverage = None
+    Coverage = None
 
 from mock import Mock, patch
 
-from ..coverage import Coverage
 from ..testing import unittest
 
 
