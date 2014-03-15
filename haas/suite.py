@@ -66,6 +66,8 @@ class _TestSuiteState(object):
             current_class, 'setUpClass', current_class.__name__)
 
     def setup(self, test):
+        if isinstance(test, TestSuite):
+            return True
         logger.debug('Setup module and class for %r', test)
         current_class = test.__class__
         module = current_class.__module__
@@ -156,7 +158,7 @@ class TestSuite(object):
         """
         return self.run(*args, **kwds)
 
-    def run(self, result):
+    def run(self, result, _state=None):
         """Run all tests in the suite.
 
         Parameters
@@ -164,11 +166,18 @@ class TestSuite(object):
         result : unittest.result.TestResult
 
         """
-        state = _TestSuiteState(result)
+        if _state is None:
+            state = _TestSuiteState(result)
+        else:
+            state = _state
+        kwargs = {}
         for test in self:
             if state.setup(test):
-                test(result)
-        state.teardown()
+                if isinstance(test, TestSuite):
+                    kwargs = {'_state': state}
+                test(result, **kwargs)
+        if _state is None:
+            state.teardown()
         return result
 
     def countTestCases(self):
