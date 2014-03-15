@@ -10,7 +10,7 @@ from fnmatch import fnmatch
 import os
 import sys
 
-from .utils import find_module_by_name, get_module_by_name
+from .utils import get_module_by_name
 
 
 def get_relpath(top_level_directory, fullpath):
@@ -59,6 +59,23 @@ def find_top_level_directory(start_directory):
         if top_level == os.path.dirname(top_level):
             raise ValueError("Can't find top level directory")
     return os.path.abspath(top_level)
+
+
+def find_module_by_name(full_name):
+    module_name = full_name
+    module_attributes = []
+    while True:
+        try:
+            module = get_module_by_name(module_name)
+        except ImportError:
+            if '.' in module_name:
+                module_name, attribute = module_name.rsplit('.', 1)
+                module_attributes.append(attribute)
+            else:
+                raise
+        else:
+            break
+    return module, list(reversed(module_attributes))
 
 
 class Discoverer(object):

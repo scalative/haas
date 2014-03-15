@@ -41,20 +41,3 @@ def get_module_by_name(name):
     """
     __import__(name)
     return sys.modules[name]
-
-
-def find_module_by_name(full_name):
-    module_name = full_name
-    module_attributes = []
-    while True:
-        try:
-            module = get_module_by_name(module_name)
-        except ImportError:
-            if '.' in module_name:
-                module_name, attribute = module_name.rsplit('.', 1)
-                module_attributes.append(attribute)
-            else:
-                raise
-        else:
-            break
-    return module, list(reversed(module_attributes))
