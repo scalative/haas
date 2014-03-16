@@ -4,12 +4,14 @@
 #
 # This software may be modified and distributed under the terms
 # of the 3-clause BSD license.  See the LICENSE.txt file for details.
-from __future__ import unicode_literals
+from __future__ import absolute_import, unicode_literals  # pragma: no cover
 
-from .haas_application import HaasApplication
+import sys  # pragma: no cover
+
+from .haas_application import HaasApplication  # pragma: no cover
 
 
-def main(argv):
+def main():  # pragma: no cover
     """Execute haas.
 
     Parameters
@@ -18,5 +20,5 @@ def main(argv):
         The script's full argument list including the script itself.
 
     """
-    application = HaasApplication(argv)
+    application = HaasApplication(sys.argv)
     return application.run()

@@ -58,4 +58,9 @@ setup(
     long_description=long_description,
     license='BSD',
     packages=['haas'],
+    entry_points={
+        'console_scripts': [
+            'haas=haas.main:main',
+        ],
+    },
 )
