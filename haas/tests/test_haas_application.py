@@ -11,11 +11,11 @@ from mock import Mock, patch
 import haas
 from ..discoverer import Discoverer
 from ..loader import Loader
-from ..main import main
+from ..haas_application import HaasApplication
 from ..testing import unittest
 
 
-class TestMain(unittest.TestCase):
+class TestHaasApplication(unittest.TestCase):
 
     def _run_with_arguments(self, runner_class, *args):
         runner = Mock()
@@ -26,7 +26,8 @@ class TestMain(unittest.TestCase):
         run_method = Mock(return_value=result)
         runner.run = run_method
 
-        main(['argv0'] + list(args) + ['haas'])
+        app = HaasApplication(['argv0'] + list(args) + ['haas'])
+        app.run()
         return run_method, result
 
     @patch('haas.testing.unittest.TextTestRunner')
