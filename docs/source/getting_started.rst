@@ -5,8 +5,13 @@ Getting Started
 Installing ``haas``
 -------------------
 
-``haas`` is currently only available from `the GitHub repository`_.  To
-install haas, clone the repository and install using ``pip``::
+``haas`` can be easily installed using ``pip``::
+
+    $ pip install haas
+
+For development versions, the source is available from `the GitHub
+repository`_.  To install haas from GitHub, clone the repository and
+install using ``pip``::
 
     $ git clone https://github.com/sjagoe/haas.git
     $ cd haas
