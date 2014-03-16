@@ -50,6 +50,7 @@ name) for test discovery is simply specified on the command line::
 
 
 For the currently available options, use the ``--help`` option::
+
     $ haas --help
     usage: haas [-h] [-v | -q] [-f] [-b] [-p PATTERN]
                 [-t TOP_LEVEL_DIRECTORY]
