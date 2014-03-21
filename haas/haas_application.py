@@ -64,13 +64,20 @@ class HaasApplication(object):
             configure_logging(self.args.log_level)
         self.plugin_manager = PluginManager()
 
-    def run(self):
-        args = self.args
+    def load_environment_plugin(self, args):
+        if args.environment_manager is None:
+            return None
         try:
-            environment_plugin = self.plugin_manager.load_plugin(
+            environment_plugin_factory = self.plugin_manager.load_plugin_class(
                 args.environment_manager)
         except PluginError as e:
             self.parser.exit(2, 'haas: error: {0}\n'.format(e))
+        return self.plugin_manager.load_plugin(
+            environment_plugin_factory)
+
+    def run(self):
+        args = self.args
+        environment_plugin = self.load_environment_plugin(args)
         with PluginContext([environment_plugin]):
             loader = Loader()
             discoverer = Discoverer(loader)

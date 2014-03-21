@@ -47,11 +47,9 @@ class PluginManager(object):
             raise PluginError(msg)
         return klass
 
-    def load_plugin(self, class_spec):
-        if class_spec is None:
-            return None
-        klass = self.load_plugin_class(class_spec)
-        plugin = klass()
-        if not isinstance(plugin, IPlugin):
+    def load_plugin(self, plugin_factory):
+        if not isinstance(plugin_factory, type) or \
+                not issubclass(plugin_factory, IPlugin):
             raise PluginError('Plugin does not support IPlugin interface')
+        plugin = plugin_factory()
         return plugin
