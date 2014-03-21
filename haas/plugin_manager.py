@@ -8,6 +8,7 @@ from __future__ import absolute_import, unicode_literals
 
 import logging
 
+from .plugins.i_plugin import IPlugin
 from .utils import get_module_by_name
 
 logger = logging.getLogger(__name__)
@@ -50,4 +51,7 @@ class PluginManager(object):
         if class_spec is None:
             return None
         klass = self.load_plugin_class(class_spec)
-        return klass()
+        plugin = klass()
+        if not isinstance(plugin, IPlugin):
+            raise PluginError('Plugin does not support IPlugin interface')
+        return plugin

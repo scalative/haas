@@ -15,7 +15,7 @@ except ImportError:
 
 from mock import Mock, patch
 
-from ..testing import unittest
+from haas.testing import unittest
 
 
 @unittest.skipIf(coverage is None, 'Coverage is not installed')

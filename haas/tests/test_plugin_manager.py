@@ -10,6 +10,10 @@ from ..plugin_manager import PluginError, PluginManager
 from ..testing import unittest
 
 
+class InvalidPlugin(object):
+    pass
+
+
 class PluginManagerFixture(object):
 
     def setUp(self):
@@ -40,11 +44,13 @@ class TestLoadPluginClass(PluginManagerFixture, unittest.TestCase):
 
     def test_missing_factory_raises(self):
         with self.assertRaises(PluginError):
-            self.plugin_manager.load_plugin_class('haas.coverage.non_existent')
+            self.plugin_manager.load_plugin_class(
+                'haas.plugins.coverage.non_existent')
 
     def test_valid_plugin(self):
-        klass = self.plugin_manager.load_plugin_class('haas.coverage.Coverage')
-        from ..coverage import Coverage
+        klass = self.plugin_manager.load_plugin_class(
+            'haas.plugins.coverage.Coverage')
+        from ..plugins.coverage import Coverage
         self.assertIs(klass, Coverage)
 
 
@@ -54,6 +60,12 @@ class TestLoadPlugin(PluginManagerFixture, unittest.TestCase):
         self.assertIsNone(self.plugin_manager.load_plugin(None))
 
     def test_valid_plugin(self):
-        plugin = self.plugin_manager.load_plugin('haas.coverage.Coverage')
-        from ..coverage import Coverage
+        plugin = self.plugin_manager.load_plugin(
+            'haas.plugins.coverage.Coverage')
+        from ..plugins.coverage import Coverage
         self.assertIsInstance(plugin, Coverage)
+
+    def test_invalid_plugin(self):
+        with self.assertRaises(PluginError):
+            self.plugin_manager.load_plugin(
+                'haas.tests.test_plugin_manager.InvalidPlugin')
