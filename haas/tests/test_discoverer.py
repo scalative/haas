@@ -455,3 +455,36 @@ class TestDiscoverFilteredTests(TestDiscoveryMixin, unittest.TestCase):
             test, = tests
             self.assertIsInstance(test, python_unittest.TestCase)
             self.assertEqual(test._testMethodName, 'test_method')
+
+    def test_discover_class_and_method(self):
+        suite = self.discoverer.discover(
+            'TestCase.test_method',
+            top_level_directory=self.tmpdir,
+        )
+        tests = list(self.get_test_cases(suite))
+        self.assertEqual(len(tests), 1)
+        test, = tests
+        self.assertIsInstance(test, python_unittest.TestCase)
+        self.assertEqual(test._testMethodName, 'test_method')
+
+    def test_discover_module_and_class_and_method(self):
+        suite = self.discoverer.discover(
+            'test_cases.TestCase.test_method',
+            top_level_directory=self.tmpdir,
+        )
+        tests = list(self.get_test_cases(suite))
+        self.assertEqual(len(tests), 1)
+        test, = tests
+        self.assertIsInstance(test, python_unittest.TestCase)
+        self.assertEqual(test._testMethodName, 'test_method')
+
+    def test_discover_module_and_class(self):
+        suite = self.discoverer.discover(
+            'test_cases.TestCase',
+            top_level_directory=self.tmpdir,
+        )
+        tests = list(self.get_test_cases(suite))
+        self.assertEqual(len(tests), 1)
+        test, = tests
+        self.assertIsInstance(test, python_unittest.TestCase)
+        self.assertEqual(test._testMethodName, 'test_method')
