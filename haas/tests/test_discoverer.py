@@ -170,8 +170,7 @@ class TestFilterTestSuite(unittest.TestCase):
     def setUp(self):
         self.case_1 = _test_cases.TestCase(methodName='test_method')
         self.case_2 = _test_cases.TestCase(methodName='_private_method')
-        self.case_3 = python_unittest.TestCase()
-        self.case_4 = FilterTestCase(methodName='_private_method')
+        self.case_3 = FilterTestCase(methodName='_private_method')
         self.suite = TestSuite(
             [
                 TestSuite(
@@ -185,17 +184,11 @@ class TestFilterTestSuite(unittest.TestCase):
                         self.case_3,
                     ],
                 ),
-                TestSuite(
-                    [
-                        self.case_4,
-                    ],
-                ),
             ],
         )
 
     def tearDown(self):
         del self.suite
-        del self.case_4
         del self.case_3
         del self.case_2
         del self.case_1
@@ -210,12 +203,6 @@ class TestFilterTestSuite(unittest.TestCase):
         filtered_suite = filter_test_suite(self.suite, 'FilterTestCase')
         self.assertEqual(len(filtered_suite), 1)
         test, = filtered_suite
-        self.assertIs(test, self.case_4)
-
-    def test_filter_by_method_name_2(self):
-        filtered_suite = filter_test_suite(self.suite, 'runTest')
-        self.assertEqual(len(filtered_suite), 1)
-        test, = filtered_suite
         self.assertIs(test, self.case_3)
 
     def test_filter_by_module_name(self):
@@ -226,7 +213,7 @@ class TestFilterTestSuite(unittest.TestCase):
         self.assertIs(test2, self.case_2)
 
     def test_filter_by_package_name(self):
-        filtered_suite = filter_test_suite(self.suite, 'case')
+        filtered_suite = filter_test_suite(self.suite, 'test_discoverer')
         self.assertEqual(len(filtered_suite), 1)
         test, = filtered_suite
         self.assertIs(test, self.case_3)
