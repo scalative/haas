@@ -9,6 +9,7 @@ from __future__ import absolute_import, unicode_literals
 import haas
 import logging
 import sys
+import re
 
 
 LEVELS = {
@@ -41,3 +42,15 @@ def get_module_by_name(name):
     """
     __import__(name)
     return sys.modules[name]
+
+
+UNCAMELCASE_FIRST_PASS = re.compile(
+    r'(?P<before>.)(?P<caps>[A-Z]+)')
+UNCAMELCASE_SECOND_PASS = re.compile(
+    r'(?P<before>.)(?<=[A-Z])(?P<caps>[A-Z][a-z]+)')
+
+
+def uncamelcase(string, sep='_'):
+    replace = '\g<before>{}\g<caps>'.format(sep)
+    temp = UNCAMELCASE_FIRST_PASS.sub(replace, string)
+    return UNCAMELCASE_SECOND_PASS.sub(replace, temp).lower()

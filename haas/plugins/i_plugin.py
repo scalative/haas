@@ -22,5 +22,6 @@ class IPlugin(object):
     def teardown(self):  # pragma: no cover
         pass
 
-    def add_parser_arguments(self, parser):  # pragma: no cover
+    @staticmethod
+    def add_parser_arguments(parser):  # pragma: no cover
         pass

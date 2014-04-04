@@ -9,7 +9,7 @@ from __future__ import absolute_import, unicode_literals
 import logging
 
 from .plugins.i_plugin import IPlugin
-from .utils import get_module_by_name
+from .utils import get_module_by_name, uncamelcase
 
 logger = logging.getLogger(__name__)
 
@@ -53,3 +53,23 @@ class PluginManager(object):
             raise PluginError('Plugin does not support IPlugin interface')
         plugin = plugin_factory()
         return plugin
+
+    def add_parser_arguments_for_plugin(self, parser, klass):
+        dest_part = uncamelcase(klass.__name__)
+        name = dest_part.replace('_', '-')
+        dest = 'with_{}'.format(dest_part)
+        parser.add_argument(
+            '--with-{}'.format(name),
+            action='store_true',
+            default=False,
+            dest=dest,
+            help='Enable {} plugin (default: disabled)'.format(klass.__name__),
+        )
+        parser.add_argument(
+            '--no-{}'.format(name),
+            action='store_false',
+            dest=dest,
+            help='Disable {} plugin (default: disabled)'.format(
+                klass.__name__),
+        )
+        klass.add_parser_arguments(parser)

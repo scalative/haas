@@ -14,11 +14,16 @@ from .i_plugin import IPlugin
 class Coverage(IPlugin):
 
     def __init__(self):
-        self._coverage = coverage.coverage()
+        self._coverage = None
 
     def setup(self):
+        self._coverage = coverage.coverage()
         self._coverage.start()
 
     def teardown(self):
         self._coverage.stop()
         self._coverage.save()
+
+    @staticmethod
+    def add_parser_arguments(parser):
+        pass

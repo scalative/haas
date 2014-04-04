@@ -57,15 +57,18 @@ class TestLoadPluginClass(PluginManagerFixture, unittest.TestCase):
 class TestLoadPlugin(PluginManagerFixture, unittest.TestCase):
 
     def test_none_returns_none(self):
-        self.assertIsNone(self.plugin_manager.load_plugin(None))
+        with self.assertRaises(PluginError):
+            self.assertIsNone(self.plugin_manager.load_plugin(None))
 
     def test_valid_plugin(self):
-        plugin = self.plugin_manager.load_plugin(
+        klass = self.plugin_manager.load_plugin_class(
             'haas.plugins.coverage.Coverage')
+        plugin = self.plugin_manager.load_plugin(klass)
         from ..plugins.coverage import Coverage
         self.assertIsInstance(plugin, Coverage)
 
     def test_invalid_plugin(self):
+        klass = self.plugin_manager.load_plugin_class(
+            'haas.tests.test_plugin_manager.InvalidPlugin')
         with self.assertRaises(PluginError):
-            self.plugin_manager.load_plugin(
-                'haas.tests.test_plugin_manager.InvalidPlugin')
+            self.plugin_manager.load_plugin(klass)

@@ -59,12 +59,13 @@ class HaasApplication(object):
         super(HaasApplication, self).__init__(**kwargs)
         self.argv = argv
         self.parser = create_argument_parser()
-        self.args, self.unparsed_args = self.parser.parse_known_args(argv[1:])
-        if self.args.log_level is not None:
-            configure_logging(self.args.log_level)
+        self.initial_args, self.unparsed_args = self.parser.parse_known_args(
+            argv[1:])
+        if self.initial_args.log_level is not None:
+            configure_logging(self.initial_args.log_level)
         self.plugin_manager = PluginManager()
 
-    def load_environment_plugin(self, args):
+    def load_environment_plugin(self, parser, args):
         if args.environment_manager is None:
             return None
         try:
@@ -72,12 +73,14 @@ class HaasApplication(object):
                 args.environment_manager)
         except PluginError as e:
             self.parser.exit(2, 'haas: error: {0}\n'.format(e))
+        self.plugin_manager.add_parser_arguments_for_plugin(
+            parser, environment_plugin_factory)
         return self.plugin_manager.load_plugin(
             environment_plugin_factory)
 
     def run(self):
-        args = self.args
-        environment_plugin = self.load_environment_plugin(args)
+        args = self.initial_args
+        environment_plugin = self.load_environment_plugin(self.parser, args)
         with PluginContext([environment_plugin]):
             loader = Loader()
             discoverer = Discoverer(loader)
