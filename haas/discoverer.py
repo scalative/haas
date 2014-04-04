@@ -89,7 +89,7 @@ def find_test_cases(suite):
                 yield test_
 
 
-def filter_test_suite(suite, filter_name):
+def _filter_test_suite_by_single_item(suite, filter_name):
     filtered_cases = []
     for test in find_test_cases(suite):
         if test._testMethodName == filter_name:
@@ -103,6 +103,24 @@ def filter_test_suite(suite, filter_name):
             if filter_name in parts:
                 filtered_cases.append(test)
     return filtered_cases
+
+
+def _filter_test_suite_by_dotted_name(suite, filter_name):
+    filtered_cases = []
+    for test in find_test_cases(suite):
+        type_ = type(test)
+        name = '{}.{}.{}'.format(
+            type_.__module__, type_.__name__, test._testMethodName)
+        filter_internal = '.{}.'.format(filter_name)
+        if filter_internal in name or name.endswith(filter_internal[:-1]):
+            filtered_cases.append(test)
+    return filtered_cases
+
+
+def filter_test_suite(suite, filter_name):
+    if '.' in filter_name:
+        return _filter_test_suite_by_dotted_name(suite, filter_name)
+    return _filter_test_suite_by_single_item(suite, filter_name)
 
 
 class Discoverer(object):
@@ -277,10 +295,12 @@ class Discoverer(object):
         Parameters
         ----------
         filter_name : str
-            A subsection of the full dotted test name.  This is a test
-            method name (e.g. ``test_some_method``), the TestCase class
-            name (e.g. ``TestMyClass``), a module name
-            (e.g. ``test_module``), a subpackage (e.g. ``tests``).
+            A subsection of the full dotted test name.  This can be
+            simply a test method name (e.g. ``test_some_method``), the
+            TestCase class name (e.g. ``TestMyClass``), a module name
+            (e.g. ``test_module``), a subpackage (e.g. ``tests``).  It
+            may also be a dotted combination of the above
+            (e.g. ``TestMyClass.test_some_method``).
         top_level_directory : str
             The path to the top-level directoy of the project.  This is
             the parent directory of the project'stop-level Python

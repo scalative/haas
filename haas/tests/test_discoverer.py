@@ -235,6 +235,28 @@ class TestFilterTestSuite(unittest.TestCase):
         filtered_suite = filter_test_suite(self.suite, 'nothing_called_this')
         self.assertEqual(len(filtered_suite), 0)
 
+    def test_filter_by_class_and_test_name(self):
+        filtered_suite = filter_test_suite(
+            self.suite, 'TestCase.test_method')
+        self.assertEqual(len(filtered_suite), 1)
+        test, = filtered_suite
+        self.assertIs(test, self.case_1)
+
+    def test_filter_by_module_and_class(self):
+        filtered_suite = filter_test_suite(
+            self.suite, '_test_cases.TestCase')
+        self.assertEqual(len(filtered_suite), 2)
+        test1, test2 = filtered_suite
+        self.assertIs(test1, self.case_1)
+        self.assertIs(test2, self.case_2)
+
+    def test_filter_by_module_and_class_and_test(self):
+        filtered_suite = filter_test_suite(
+            self.suite, '_test_cases.TestCase.test_method')
+        self.assertEqual(len(filtered_suite), 1)
+        test1, = filtered_suite
+        self.assertIs(test1, self.case_1)
+
 
 class TestDiscoveryByPath(TestDiscoveryMixin, unittest.TestCase):
 
