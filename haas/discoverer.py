@@ -78,6 +78,33 @@ def find_top_level_directory(start_directory):
     return os.path.abspath(top_level)
 
 
+def find_test_cases(suite):
+    try:
+        iter(suite)
+    except TypeError:
+        yield suite
+    else:
+        for test in suite:
+            for test_ in find_test_cases(test):
+                yield test_
+
+
+def filter_test_suite(suite, filter_name):
+    filtered_cases = []
+    for test in find_test_cases(suite):
+        if test._testMethodName == filter_name:
+            filtered_cases.append(test)
+            continue
+        type_ = type(test)
+        if type_.__name__ == filter_name:
+            filtered_cases.append(test)
+        else:
+            parts = type_.__module__.split('.')
+            if filter_name in parts:
+                filtered_cases.append(test)
+    return filtered_cases
+
+
 class Discoverer(object):
     """The ``Discoverer`` is responsible for finding tests that can be
     loaded by a :class:`~haas.loader.Loader`.

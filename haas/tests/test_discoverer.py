@@ -19,12 +19,19 @@ from haas.testing import unittest
 from . import _test_cases
 from ..discoverer import (
     Discoverer,
-    find_top_level_directory,
+    filter_test_suite,
     find_module_by_name,
+    find_test_cases,
+    find_top_level_directory,
     get_module_name,
 )
 from ..loader import Loader
 from ..suite import TestSuite
+
+
+class FilterTestCase(_test_cases.TestCase):
+
+    pass
 
 
 class TestDiscoveryMixin(object):
@@ -53,12 +60,8 @@ class TestDiscoveryMixin(object):
         shutil.rmtree(self.tmpdir)
 
     def get_test_cases(self, suite):
-        for test in suite:
-            if isinstance(test, python_unittest.TestCase):
-                yield test
-            else:
-                for test_ in self.get_test_cases(test):
-                    yield test_
+        for test in find_test_cases(suite):
+            yield test
 
 
 class TestFindTopLevelDirectory(TestDiscoveryMixin, unittest.TestCase):
@@ -160,6 +163,77 @@ class TestFindModuleByName(TestDiscoveryMixin, unittest.TestCase):
     def test_missing_top_level_package_in_project(self):
         with self.assertRaises(ImportError):
             find_module_by_name('no_module')
+
+
+class TestFilterTestSuite(unittest.TestCase):
+
+    def setUp(self):
+        self.case_1 = _test_cases.TestCase(methodName='test_method')
+        self.case_2 = _test_cases.TestCase(methodName='_private_method')
+        self.case_3 = python_unittest.TestCase()
+        self.case_4 = FilterTestCase(methodName='_private_method')
+        self.suite = TestSuite(
+            [
+                TestSuite(
+                    [
+                        self.case_1,
+                        self.case_2,
+                    ],
+                ),
+                TestSuite(
+                    [
+                        self.case_3,
+                    ],
+                ),
+                TestSuite(
+                    [
+                        self.case_4,
+                    ],
+                ),
+            ],
+        )
+
+    def tearDown(self):
+        del self.suite
+        del self.case_4
+        del self.case_3
+        del self.case_2
+        del self.case_1
+
+    def test_filter_by_method_name(self):
+        filtered_suite = filter_test_suite(self.suite, 'test_method')
+        self.assertEqual(len(filtered_suite), 1)
+        test, = filtered_suite
+        self.assertIs(test, self.case_1)
+
+    def test_filter_by_class_name(self):
+        filtered_suite = filter_test_suite(self.suite, 'FilterTestCase')
+        self.assertEqual(len(filtered_suite), 1)
+        test, = filtered_suite
+        self.assertIs(test, self.case_4)
+
+    def test_filter_by_method_name_2(self):
+        filtered_suite = filter_test_suite(self.suite, 'runTest')
+        self.assertEqual(len(filtered_suite), 1)
+        test, = filtered_suite
+        self.assertIs(test, self.case_3)
+
+    def test_filter_by_module_name(self):
+        filtered_suite = filter_test_suite(self.suite, '_test_cases')
+        self.assertEqual(len(filtered_suite), 2)
+        test1, test2 = filtered_suite
+        self.assertIs(test1, self.case_1)
+        self.assertIs(test2, self.case_2)
+
+    def test_filter_by_package_name(self):
+        filtered_suite = filter_test_suite(self.suite, 'case')
+        self.assertEqual(len(filtered_suite), 1)
+        test, = filtered_suite
+        self.assertIs(test, self.case_3)
+
+    def test_filter_by_nonexistant_name(self):
+        filtered_suite = filter_test_suite(self.suite, 'nothing_called_this')
+        self.assertEqual(len(filtered_suite), 0)
 
 
 class TestDiscoveryByPath(TestDiscoveryMixin, unittest.TestCase):
