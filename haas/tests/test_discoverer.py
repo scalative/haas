@@ -12,7 +12,7 @@ import sys
 import tempfile
 import unittest as python_unittest
 
-from mock import patch
+from mock import Mock, patch
 
 from haas.testing import unittest
 
@@ -375,3 +375,61 @@ class TestDiscoveryByModule(TestDiscoveryMixin, unittest.TestCase):
             '.'.join(self.dirs))
         with self.assertRaises(ValueError):
             self.discoverer.discover(module, top_level_directory=self.tmpdir)
+
+
+class TestDiscoverFilteredTests(TestDiscoveryMixin, unittest.TestCase):
+
+    def setUp(self):
+        TestDiscoveryMixin.setUp(self)
+        self.discoverer = Discoverer(Loader())
+
+    def tearDown(self):
+        del self.discoverer
+        TestDiscoveryMixin.tearDown(self)
+
+    def test_discover_subpackage(self):
+        suite = self.discoverer.discover(
+            'tests',
+            top_level_directory=self.tmpdir,
+        )
+        tests = list(self.get_test_cases(suite))
+        self.assertEqual(len(tests), 1)
+        test, = tests
+        self.assertIsInstance(test, python_unittest.TestCase)
+        self.assertEqual(test._testMethodName, 'test_method')
+
+    def test_discover_test_method(self):
+        suite = self.discoverer.discover(
+            'test_method',
+            top_level_directory=self.tmpdir,
+        )
+        tests = list(self.get_test_cases(suite))
+        self.assertEqual(len(tests), 1)
+        test, = tests
+        self.assertIsInstance(test, python_unittest.TestCase)
+        self.assertEqual(test._testMethodName, 'test_method')
+
+    def test_discover_class(self):
+        suite = self.discoverer.discover(
+            'TestCase',
+            top_level_directory=self.tmpdir,
+        )
+        tests = list(self.get_test_cases(suite))
+        self.assertEqual(len(tests), 1)
+        test, = tests
+        self.assertIsInstance(test, python_unittest.TestCase)
+        self.assertEqual(test._testMethodName, 'test_method')
+
+    def test_discover_no_top_level(self):
+        getcwd = Mock()
+        getcwd.return_value = self.tmpdir
+        with patch.object(os, 'getcwd', getcwd):
+            suite = self.discoverer.discover(
+                'TestCase',
+            )
+            getcwd.assert_called_once_with()
+            tests = list(self.get_test_cases(suite))
+            self.assertEqual(len(tests), 1)
+            test, = tests
+            self.assertIsInstance(test, python_unittest.TestCase)
+            self.assertEqual(test._testMethodName, 'test_method')

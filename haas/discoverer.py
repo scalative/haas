@@ -178,7 +178,12 @@ class Discoverer(object):
                 top_level_directory not in sys.path:
             sys.path.insert(0, top_level_directory)
 
-        module, case_attributes = find_module_by_name(module_name)
+        try:
+            module, case_attributes = find_module_by_name(module_name)
+        except ImportError:
+            return self.discover_filtered_tests(
+                module_name, top_level_directory=top_level_directory,
+                pattern=pattern)
         dirname, basename = os.path.split(module.__file__)
         basename = os.path.splitext(basename)[0]
         if len(case_attributes) == 0 and basename == '__init__':
@@ -263,3 +268,33 @@ class Discoverer(object):
                     continue
                 module_name = get_module_name(top_level_directory, filepath)
                 yield load_module(get_module_by_name(module_name))
+
+    def discover_filtered_tests(self, filter_name, top_level_directory=None,
+                                pattern='test*.py'):
+        """Find all tests whose package, module, class or method names match
+        the ``filter_name`` string.
+
+        Parameters
+        ----------
+        filter_name : str
+            A subsection of the full dotted test name.  This is a test
+            method name (e.g. ``test_some_method``), the TestCase class
+            name (e.g. ``TestMyClass``), a module name
+            (e.g. ``test_module``), a subpackage (e.g. ``tests``).
+        top_level_directory : str
+            The path to the top-level directoy of the project.  This is
+            the parent directory of the project'stop-level Python
+            package.
+        pattern : str
+            The glob pattern to match the filenames of modules to search
+            for tests.
+
+        """
+        if top_level_directory is None:
+            top_level_directory = find_top_level_directory(
+                os.getcwd())
+        suite = self.discover_by_directory(
+            top_level_directory, top_level_directory=top_level_directory,
+            pattern=pattern)
+        return self._loader.create_suite(
+            filter_test_suite(suite, filter_name=filter_name))
