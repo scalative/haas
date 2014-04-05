@@ -109,9 +109,9 @@ def _filter_test_suite_by_dotted_name(suite, filter_name):
     filtered_cases = []
     for test in find_test_cases(suite):
         type_ = type(test)
-        name = '{}.{}.{}'.format(
+        name = '{0}.{1}.{2}'.format(
             type_.__module__, type_.__name__, test._testMethodName)
-        filter_internal = '.{}.'.format(filter_name)
+        filter_internal = '.{0}.'.format(filter_name)
         if filter_internal in name or name.endswith(filter_internal[:-1]):
             filtered_cases.append(test)
     return filtered_cases
