@@ -2,6 +2,18 @@
 ==================
 
 
+Changes since 0.1.0
+-------------------
+
+
+Enhancements
+~~~~~~~~~~~~
+
+* ``haas`` now supports discovering tests by a substring of the test
+  name, such as ``haas module_name.ClassName`` or ``haas
+  ClassName.test_method`` or simply ``haas test_method``.
+
+
 Release 0.1.0
 -------------
 
