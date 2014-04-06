@@ -11,7 +11,7 @@ import os
 from setuptools import setup
 
 
-VERSION = '0.1.0'
+VERSION = '0.2.0.dev'
 
 
 def write_version_py(filename=None):
