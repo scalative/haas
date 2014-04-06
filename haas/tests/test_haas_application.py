@@ -6,6 +6,8 @@
 # of the 3-clause BSD license.  See the LICENSE.txt file for details.
 from __future__ import absolute_import, unicode_literals
 
+import types
+
 from mock import Mock, patch
 
 import haas
@@ -13,6 +15,19 @@ from ..discoverer import Discoverer
 from ..loader import Loader
 from ..haas_application import HaasApplication
 from ..testing import unittest
+
+
+class MockLambda(object):
+
+    def __eq__(self, other):
+        if isinstance(other, types.FunctionType):
+            result_class = other(None, None, 1)
+            if isinstance(result_class, unittest.TestResult):
+                return True
+        return False
+
+    def __ne__(self, other):
+        return not (other == self)
 
 
 class TestHaasApplication(unittest.TestCase):
@@ -34,7 +49,8 @@ class TestHaasApplication(unittest.TestCase):
     def test_main_default_arguments(self, runner_class):
         run, result = self._run_with_arguments(runner_class)
         runner_class.assert_called_once_with(
-            verbosity=1, failfast=False, buffer=False)
+            verbosity=1, failfast=False, buffer=False,
+            resultclass=MockLambda())
         suite = Discoverer(Loader()).discover('haas')
         run.assert_called_once_with(suite)
 
@@ -45,7 +61,8 @@ class TestHaasApplication(unittest.TestCase):
         run, result = self._run_with_arguments(runner_class, '-q')
 
         runner_class.assert_called_once_with(
-            verbosity=0, failfast=False, buffer=False)
+            verbosity=0, failfast=False, buffer=False,
+            resultclass=MockLambda())
         suite = Discoverer(Loader()).discover('haas')
         run.assert_called_once_with(suite)
 
@@ -64,7 +81,8 @@ class TestHaasApplication(unittest.TestCase):
         run, result = self._run_with_arguments(runner_class, '-v')
 
         runner_class.assert_called_once_with(
-            verbosity=2, failfast=False, buffer=False)
+            verbosity=2, failfast=False, buffer=False,
+            resultclass=MockLambda())
         suite = Discoverer(Loader()).discover('haas')
         run.assert_called_once_with(suite)
 
@@ -75,7 +93,8 @@ class TestHaasApplication(unittest.TestCase):
         run, result = self._run_with_arguments(runner_class, '-f')
 
         runner_class.assert_called_once_with(
-            verbosity=1, failfast=True, buffer=False)
+            verbosity=1, failfast=True, buffer=False,
+            resultclass=MockLambda())
         suite = Discoverer(Loader()).discover('haas')
         run.assert_called_once_with(suite)
 
@@ -86,7 +105,8 @@ class TestHaasApplication(unittest.TestCase):
         run, result = self._run_with_arguments(runner_class, '-b')
 
         runner_class.assert_called_once_with(
-            verbosity=1, failfast=False, buffer=True)
+            verbosity=1, failfast=False, buffer=True,
+            resultclass=MockLambda())
         suite = Discoverer(Loader()).discover('haas')
         run.assert_called_once_with(suite)
 
@@ -100,7 +120,8 @@ class TestHaasApplication(unittest.TestCase):
         get_logger.assert_called_once_with(haas.__name__)
 
         runner_class.assert_called_once_with(
-            verbosity=1, failfast=False, buffer=False)
+            verbosity=1, failfast=False, buffer=False,
+            resultclass=MockLambda())
         suite = Discoverer(Loader()).discover('haas')
         run.assert_called_once_with(suite)
 
