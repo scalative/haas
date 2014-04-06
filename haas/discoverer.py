@@ -79,6 +79,14 @@ def find_top_level_directory(start_directory):
 
 
 def find_test_cases(suite):
+    """Generate a list of all test cases contained in a test suite.
+
+    Parameters
+    ----------
+    suite : haas.suite.TestSuite
+        The test suite from which to generate the test case list.
+
+    """
     try:
         iter(suite)
     except TypeError:
@@ -89,23 +97,19 @@ def find_test_cases(suite):
                 yield test_
 
 
-def _filter_test_suite_by_single_item(suite, filter_name):
-    filtered_cases = []
-    for test in find_test_cases(suite):
-        if test._testMethodName == filter_name:
-            filtered_cases.append(test)
-            continue
-        type_ = type(test)
-        if type_.__name__ == filter_name:
-            filtered_cases.append(test)
-        else:
-            parts = type_.__module__.split('.')
-            if filter_name in parts:
-                filtered_cases.append(test)
-    return filtered_cases
+def filter_test_suite(suite, filter_name):
+    """Filter test cases in a test suite by a substring in the full dotted
+    test name.
 
+    Parameters
+    ----------
+    suite : haas.suite.TestSuite
+        The test suite containing tests to be filtered.
+    filter_name : str
+        The substring of the full dotted name on which to filter.  This
+        should not contain a leading or trailing dot.
 
-def _filter_test_suite_by_dotted_name(suite, filter_name):
+    """
     filtered_cases = []
     for test in find_test_cases(suite):
         type_ = type(test)
@@ -115,12 +119,6 @@ def _filter_test_suite_by_dotted_name(suite, filter_name):
         if filter_internal in name or name.endswith(filter_internal[:-1]):
             filtered_cases.append(test)
     return filtered_cases
-
-
-def filter_test_suite(suite, filter_name):
-    if '.' in filter_name:
-        return _filter_test_suite_by_dotted_name(suite, filter_name)
-    return _filter_test_suite_by_single_item(suite, filter_name)
 
 
 class Discoverer(object):
