@@ -12,8 +12,22 @@ from .testing import unittest
 
 
 class TextTestResult(unittest.TextTestResult):
+    """A simple extension to ``unittest.TextTestResult`` that displays
+    progression of testing when run in verbose mode.
+
+    """
 
     def __init__(self, total_tests, stream, descriptions, verbosity):
+        """Create a TextTestResult. The parameters ``stream``, ``descriptions``
+        and ``verbosity`` are as in ``unittest.TextTestResult``.
+
+        Parameters
+        ----------
+        total_tests : int
+            The total number of tests in the suite to be run, as
+            returned by ``Suite.countTestCases()``
+
+        """
         self._total_tests = total_tests
         super(TextTestResult, self).__init__(stream, descriptions, verbosity)
 
@@ -28,3 +42,5 @@ class TextTestResult(unittest.TextTestResult):
             )
             self.stream.write(prefix)
         super(TextTestResult, self).startTest(test)
+
+    startTest.__doc__ = unittest.TextTestResult.startTest.__doc__
