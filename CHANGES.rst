@@ -12,6 +12,10 @@ Enhancements
 * ``haas`` now supports discovering tests by a substring of the test
   name, such as ``haas module_name.ClassName`` or ``haas
   ClassName.test_method`` or simply ``haas test_method``.
+* ``haas`` uses a simple extension to the ``unittest.TextTestRunner``
+  that shows the progress of the test run and a timestamp of when each
+  test was started.  This is useful for projects with a very large
+  number of tests that take more than a few minutes to run.
 
 
 Release 0.1.0
