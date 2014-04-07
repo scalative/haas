@@ -78,6 +78,49 @@ def find_top_level_directory(start_directory):
     return os.path.abspath(top_level)
 
 
+def find_test_cases(suite):
+    """Generate a list of all test cases contained in a test suite.
+
+    Parameters
+    ----------
+    suite : haas.suite.TestSuite
+        The test suite from which to generate the test case list.
+
+    """
+    try:
+        iter(suite)
+    except TypeError:
+        yield suite
+    else:
+        for test in suite:
+            for test_ in find_test_cases(test):
+                yield test_
+
+
+def filter_test_suite(suite, filter_name):
+    """Filter test cases in a test suite by a substring in the full dotted
+    test name.
+
+    Parameters
+    ----------
+    suite : haas.suite.TestSuite
+        The test suite containing tests to be filtered.
+    filter_name : str
+        The substring of the full dotted name on which to filter.  This
+        should not contain a leading or trailing dot.
+
+    """
+    filtered_cases = []
+    for test in find_test_cases(suite):
+        type_ = type(test)
+        name = '{0}.{1}.{2}'.format(
+            type_.__module__, type_.__name__, test._testMethodName)
+        filter_internal = '.{0}.'.format(filter_name)
+        if filter_internal in name or name.endswith(filter_internal[:-1]):
+            filtered_cases.append(test)
+    return filtered_cases
+
+
 class Discoverer(object):
     """The ``Discoverer`` is responsible for finding tests that can be
     loaded by a :class:`~haas.loader.Loader`.
@@ -151,7 +194,12 @@ class Discoverer(object):
                 top_level_directory not in sys.path:
             sys.path.insert(0, top_level_directory)
 
-        module, case_attributes = find_module_by_name(module_name)
+        try:
+            module, case_attributes = find_module_by_name(module_name)
+        except ImportError:
+            return self.discover_filtered_tests(
+                module_name, top_level_directory=top_level_directory,
+                pattern=pattern)
         dirname, basename = os.path.split(module.__file__)
         basename = os.path.splitext(basename)[0]
         if len(case_attributes) == 0 and basename == '__init__':
@@ -236,3 +284,35 @@ class Discoverer(object):
                     continue
                 module_name = get_module_name(top_level_directory, filepath)
                 yield load_module(get_module_by_name(module_name))
+
+    def discover_filtered_tests(self, filter_name, top_level_directory=None,
+                                pattern='test*.py'):
+        """Find all tests whose package, module, class or method names match
+        the ``filter_name`` string.
+
+        Parameters
+        ----------
+        filter_name : str
+            A subsection of the full dotted test name.  This can be
+            simply a test method name (e.g. ``test_some_method``), the
+            TestCase class name (e.g. ``TestMyClass``), a module name
+            (e.g. ``test_module``), a subpackage (e.g. ``tests``).  It
+            may also be a dotted combination of the above
+            (e.g. ``TestMyClass.test_some_method``).
+        top_level_directory : str
+            The path to the top-level directoy of the project.  This is
+            the parent directory of the project'stop-level Python
+            package.
+        pattern : str
+            The glob pattern to match the filenames of modules to search
+            for tests.
+
+        """
+        if top_level_directory is None:
+            top_level_directory = find_top_level_directory(
+                os.getcwd())
+        suite = self.discover_by_directory(
+            top_level_directory, top_level_directory=top_level_directory,
+            pattern=pattern)
+        return self._loader.create_suite(
+            filter_test_suite(suite, filter_name=filter_name))
