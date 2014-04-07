@@ -10,9 +10,10 @@ import argparse
 import os
 
 from .discoverer import Discoverer
-from .plugin_context import PluginContext
 from .loader import Loader
+from .plugin_context import PluginContext
 from .plugin_manager import PluginError, PluginManager
+from .result import TextTestResult
 from .testing import unittest
 from .utils import configure_logging
 
@@ -79,10 +80,13 @@ class HaasApplication(object):
                 top_level_directory=args.top_level_directory,
                 pattern=args.pattern,
             )
+            test_count = suite.countTestCases()
+            result_factory = lambda *args: TextTestResult(test_count, *args)
             runner = unittest.TextTestRunner(
                 verbosity=args.verbosity,
                 failfast=args.failfast,
                 buffer=args.buffer,
+                resultclass=result_factory,
             )
             result = runner.run(suite)
             return not result.wasSuccessful()
