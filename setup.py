@@ -4,21 +4,19 @@
 #
 # This software may be modified and distributed under the terms
 # of the 3-clause BSD license.  See the LICENSE.txt file for details.
-from __future__ import unicode_literals
-
 import os
 
 from setuptools import setup
 
 
-VERSION = '0.2.0.dev'
+VERSION = u'0.2.0.dev'
 
 
 def write_version_py(filename=None):
     if filename is None:
         filename = os.path.join(os.path.dirname(__file__),
                                 'haas', 'version.py')
-    ver = """\
+    ver = u"""\
 version = '{version}'
 """
     fh = open(filename, 'wb')
