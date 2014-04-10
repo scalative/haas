@@ -1,10 +1,8 @@
 ``haas`` CHANGELOG
 ==================
 
-
-Changes since 0.1.0
--------------------
-
+Release 0.2.0
+-------------
 
 Enhancements
 ~~~~~~~~~~~~
