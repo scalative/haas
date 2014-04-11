@@ -9,7 +9,7 @@ import os
 from setuptools import setup
 
 
-VERSION = u'0.2.1.dev'
+VERSION = u'0.2.1'
 
 
 def write_version_py(filename=None):
