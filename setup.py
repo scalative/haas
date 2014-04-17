@@ -9,19 +9,19 @@ import os
 from setuptools import setup
 
 
-VERSION = u'0.2.1'
+VERSION = '0.2.2'
 
 
 def write_version_py(filename=None):
     if filename is None:
         filename = os.path.join(os.path.dirname(__file__),
                                 'haas', 'version.py')
-    ver = u"""\
-version = '{version}'
+    ver = """\
+version = {version!r}
 """
-    fh = open(filename, 'wb')
+    fh = open(filename, 'w')
     try:
-        fh.write(ver.format(version=VERSION).encode('utf-8'))
+        fh.write(ver.format(version=VERSION))
     finally:
         fh.close()
 
