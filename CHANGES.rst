@@ -5,7 +5,7 @@ Release 0.2.2
 -------------
 
 Enhancements
-------------
+~~~~~~~~~~~~
 
 * ``haas`` now supports Python 3.2
 
@@ -14,7 +14,7 @@ Release 0.2.1
 -------------
 
 Enhancements
-------------
+~~~~~~~~~~~~
 
 * ``haas`` now supports Python 3.4
 
