@@ -17,7 +17,7 @@ class TestBuilder(unittest.TestCase):
         class TestSomething(unittest.case.TestCase):
             def test_method(self):
                 self.fail()
-    """)
+        """)
         fixture = builder.Directory(
             'top',
             (

@@ -90,5 +90,8 @@ class Method(Importable):
 
     def create(self, module_fh):
         module_fh.write('    def {0}(self):\n'.format(self.name))
-        module_fh.writelines('        {0}'.format(line)
-                             for line in self.contents)
+        if len(self.contents) == 0:
+            module_fh.write('        pass\n')
+        else:
+            module_fh.writelines('        {0}'.format(line)
+                                 for line in self.contents)
