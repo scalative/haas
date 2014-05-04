@@ -219,3 +219,40 @@ class TestHaasApplication(unittest.TestCase):
 
         finally:
             shutil.rmtree(tempdir)
+
+    @patch('haas.testing.unittest.TextTestRunner')
+    def test_multiple_start_directories_non_package(self, runner_class):
+        # Given
+        module = builder.Module(
+            'test_something.py',
+            (
+                builder.Class(
+                    'TestSomething',
+                    (
+                        builder.Method('test_method'),
+                    ),
+                ),
+            ),
+        )
+        fixture = builder.Directory(
+            'top',
+            (
+                builder.Package('first', (module,)),
+                builder.Directory('second', (module,)),
+            ),
+        )
+
+        tempdir = tempfile.mkdtemp(prefix='haas-tests-')
+        try:
+            fixture.create(tempdir)
+
+            top_level = os.path.join(tempdir, fixture.name)
+
+            # When/Then
+            with cd(top_level):
+                with self.assertRaises(ImportError):
+                    run, result = self._run_with_arguments(
+                        runner_class, '-t', top_level, 'first', 'second')
+
+        finally:
+            shutil.rmtree(tempdir)
