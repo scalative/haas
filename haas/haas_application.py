@@ -9,6 +9,7 @@ from __future__ import absolute_import, unicode_literals
 import argparse
 import os
 
+import haas
 from .discoverer import Discoverer
 from .loader import Loader
 from .plugin_context import PluginContext
@@ -23,6 +24,8 @@ def create_argument_parser():
 
     """
     parser = argparse.ArgumentParser(prog='haas')
+    parser.add_argument('--version', action='version',
+                        version='%(prog)s {0}'.format(haas.__version__))
     verbosity = parser.add_mutually_exclusive_group()
     verbosity.add_argument('-v', '--verbose', action='store_const', default=1,
                            dest='verbosity', const=2, help='Verbose output')
