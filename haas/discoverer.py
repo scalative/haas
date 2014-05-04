@@ -300,8 +300,9 @@ class Discoverer(object):
                 try:
                     yield load_module(get_module_by_name(module_name))
                 except ImportError as e:
-                    match = 'No module named {0}'.format(module_name)
-                    if match in str(e):
+                    match = 'No module named {0}'.format(
+                        module_name.split('.', 1)[0])
+                    if str(e).startswith(match):
                         logger.error('Unable to import %r', module_name)
                         continue
                     else:
