@@ -6,6 +6,9 @@
 # of the 3-clause BSD license.  See the LICENSE.txt file for details.
 from __future__ import absolute_import, unicode_literals
 
+import os
+import shutil
+import tempfile
 import types
 
 from mock import Mock, patch
@@ -16,6 +19,8 @@ from ..haas_application import HaasApplication
 from ..loader import Loader
 from ..suite import TestSuite
 from ..testing import unittest
+from ..utils import cd
+from . import builder
 
 
 class MockLambda(object):
@@ -42,7 +47,7 @@ class TestHaasApplication(unittest.TestCase):
         run_method = Mock(return_value=result)
         runner.run = run_method
 
-        app = HaasApplication(['argv0'] + list(args) + ['haas'])
+        app = HaasApplication(['argv0'] + list(args))
         app.run()
         return run_method, result
 
@@ -170,3 +175,47 @@ class TestHaasApplication(unittest.TestCase):
         result.failfast = True
         suite.run(result)
         self.assertEqual(result.testsRun, 1)
+
+    @patch('haas.testing.unittest.TextTestRunner')
+    def test_multiple_start_directories(self, runner_class):
+        # Given
+        module = builder.Module(
+            'test_something.py',
+            (
+                builder.Class(
+                    'TestSomething',
+                    (
+                        builder.Method('test_method'),
+                    ),
+                ),
+            ),
+        )
+        fixture = builder.Directory(
+            'top',
+            (
+                builder.Package('first', (module,)),
+                builder.Package('second', (module,)),
+            ),
+        )
+
+        tempdir = tempfile.mkdtemp(prefix='haas-tests-')
+        try:
+            fixture.create(tempdir)
+
+            top_level = os.path.join(tempdir, fixture.name)
+
+            # When
+            with cd(top_level):
+                run, result = self._run_with_arguments(
+                    runner_class, '-t', top_level, 'first', 'second')
+
+            loader = Loader()
+            suite1 = Discoverer(loader).discover('first', top_level)
+            suite2 = Discoverer(loader).discover('second', top_level)
+            suite = loader.create_suite((suite1, suite2))
+
+            # Then
+            run.assert_called_once_with(suite)
+
+        finally:
+            shutil.rmtree(tempdir)

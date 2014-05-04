@@ -6,9 +6,11 @@
 # of the 3-clause BSD license.  See the LICENSE.txt file for details.
 from __future__ import absolute_import, unicode_literals
 
-import haas
 import logging
+import os
 import sys
+
+import haas
 
 
 LEVELS = {
@@ -41,3 +43,18 @@ def get_module_by_name(name):
     """
     __import__(name)
     return sys.modules[name]
+
+
+class cd(object):
+
+    def __init__(self, destdir):
+        self.destdir = destdir
+        self.startdir = None
+
+    def __enter__(self):
+        self.startdir = os.getcwd()
+        os.chdir(self.destdir)
+
+    def __exit__(self, exc_type, exc_value, traceback):
+        os.chdir(self.startdir)
+        self.startdir = None
