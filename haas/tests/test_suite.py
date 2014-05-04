@@ -546,14 +546,14 @@ class TestRunningTestSuite(ResetClassStateMixin, unittest.TestCase):
         ResetClassStateMixin.tearDown(self)
 
     def test_run_suite_run(self):
-        result = object()
+        result = unittest.TestResult()
         returned_result = self.suite.run(result)
         self.assertIs(result, returned_result)
         self.assertTrue(self.case_1.was_run)
         self.assertTrue(self.case_2.was_run)
 
     def test_run_suite_call(self):
-        result = object()
+        result = unittest.TestResult()
         returned_result = self.suite(result)
         self.assertIs(result, returned_result)
         self.assertTrue(self.case_1.was_run)

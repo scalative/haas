@@ -12,8 +12,9 @@ from mock import Mock, patch
 
 import haas
 from ..discoverer import Discoverer
-from ..loader import Loader
 from ..haas_application import HaasApplication
+from ..loader import Loader
+from ..suite import TestSuite
 from ..testing import unittest
 
 
@@ -134,3 +135,38 @@ class TestHaasApplication(unittest.TestCase):
         with self.assertRaises(SystemExit):
             run, result = self._run_with_arguments(
                 runner_class, '--environment-manager', 'haas.invalid')
+
+    def test_failfast(self):
+        def test_should_cause_early_stop(self1):
+            self1.fail()
+
+        def test_cause_failure(self1):
+            print('Did I fail?')
+            self.fail('Failfast test did not abort test run')
+
+        cls_dict = {
+            'test_should_cause_early_stop': test_should_cause_early_stop,
+            'test_cause_failure': test_cause_failure,
+        }
+        test_cls = type(str('TestFailfast'), (unittest.TestCase,), cls_dict)
+        suite = TestSuite(
+            [
+                TestSuite(
+                    [
+                        test_cls('test_should_cause_early_stop'),
+                        test_cls('test_cause_failure'),
+                    ],
+                ),
+                TestSuite(
+                    [
+                        test_cls('test_cause_failure'),
+                    ],
+                ),
+            ],
+        )
+        self.assertEqual(suite.countTestCases(), 3)
+
+        result = unittest.TestResult()
+        result.failfast = True
+        suite.run(result)
+        self.assertEqual(result.testsRun, 1)
