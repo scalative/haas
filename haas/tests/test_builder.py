@@ -11,13 +11,13 @@ class TestBuilder(unittest.TestCase):
 
     def test_buildilng_fixture(self):
         expected_module = textwrap.dedent("""\
-        import unittest.case
+        import {0.__name__}.case
 
 
-        class TestSomething(unittest.case.TestCase):
+        class TestSomething({0.__name__}.case.TestCase):
             def test_method(self):
                 self.fail()
-        """)
+        """.format(unittest))
         fixture = builder.Directory(
             'top',
             (
