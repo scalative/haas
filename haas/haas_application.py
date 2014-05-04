@@ -40,9 +40,9 @@ def create_argument_parser():
     parser.add_argument('-b', '--buffer', action='store_true', default=False,
                         help='Buffer stdout and stderr during tests')
     parser.add_argument(
-        'start', nargs='?', default=os.getcwd(),
-        help=('Directory or dotted package/module name to start searching for '
-              'tests'))
+        'start', nargs='*', default=[os.getcwd()],
+        help=('One or more directories or dotted package/module names from '
+              'which to start searching for tests'))
     parser.add_argument('-p', '--pattern', default='test*.py',
                         help="Pattern to match tests ('test*.py' default)")
     parser.add_argument('-t', '--top-level-directory', default=None,
@@ -78,11 +78,18 @@ class HaasApplication(object):
         with PluginContext([environment_plugin]):
             loader = Loader()
             discoverer = Discoverer(loader)
-            suite = discoverer.discover(
-                start=args.start,
-                top_level_directory=args.top_level_directory,
-                pattern=args.pattern,
-            )
+            suites = [
+                discoverer.discover(
+                    start=start,
+                    top_level_directory=args.top_level_directory,
+                    pattern=args.pattern,
+                )
+                for start in args.start
+            ]
+            if len(suites) == 1:
+                suite = suites[0]
+            else:
+                suite = loader.create_suite(suites)
             test_count = suite.countTestCases()
             result_factory = lambda *args: TextTestResult(test_count, *args)
             runner = unittest.TextTestRunner(
