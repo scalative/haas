@@ -5,12 +5,19 @@
 Change Summary since 0.2.2
 --------------------------
 
+Enhancements
+~~~~~~~~~~~~
+
+* It is now possible to discover the version of ``haas`` from the
+  command line (#53)!
+* ``haas`` now supports the ``--failfast`` option (#47).
+* ``haas`` now supports multiple ``start`` directories (#49)
+
 Bugs Fixed
 ~~~~~~~~~~
 
 * ``haas`` no longer crashes in Python 2.x when there are non-package
-  directories under discovery.
-* ``haas`` is now tested under Python 3.4 on Travis CI
+  directories under discovery (#38).
 
 
 Release 0.2.2
