@@ -6,10 +6,9 @@
 # of the 3-clause BSD license.  See the LICENSE.txt file for details.
 from __future__ import absolute_import, unicode_literals
 
-import importlib
-import logging
-
 import haas
+import logging
+import sys
 
 
 LEVELS = {
@@ -40,4 +39,5 @@ def get_module_by_name(name):
     """Import a module and return the imported module object.
 
     """
-    return importlib.import_module(name)
+    __import__(name)
+    return sys.modules[name]
