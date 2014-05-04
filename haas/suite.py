@@ -172,9 +172,12 @@ class TestSuite(object):
             state = _state
         kwargs = {}
         for test in self:
+            if result.shouldStop:
+                break
             if state.setup(test):
                 if isinstance(test, TestSuite):
                     kwargs = {'_state': state}
+                logger.debug('Running test %r', test)
                 test(result, **kwargs)
         if _state is None:
             state.teardown()
@@ -185,3 +188,7 @@ class TestSuite(object):
 
         """
         return sum(test.countTestCases() for test in self)
+
+    def __repr__(self):
+        return '<{0} number_of_tests={1!r}>'.format(
+            type(self).__name__, self.countTestCases())
