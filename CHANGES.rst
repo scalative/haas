@@ -1,6 +1,13 @@
 ``haas`` CHANGELOG
 ==================
 
+
+Change Summary since 0.2.2
+--------------------------
+
+* ``haas`` is now tested under Python 3.4 on Travis CI
+
+
 Release 0.2.2
 -------------
 
