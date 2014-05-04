@@ -7,10 +7,13 @@
 from __future__ import absolute_import, unicode_literals
 
 from fnmatch import fnmatch
+import logging
 import os
 import sys
 
 from .utils import get_module_by_name
+
+logger = logging.getLogger(__name__)
 
 
 def get_relpath(top_level_directory, fullpath):
@@ -158,6 +161,7 @@ class Discoverer(object):
             for tests.
 
         """
+        logger.debug('Starting test discovery')
         if os.path.isdir(start):
             start_directory = start
             return self.discover_by_directory(
@@ -193,6 +197,10 @@ class Discoverer(object):
         if top_level_directory is not None and \
                 top_level_directory not in sys.path:
             sys.path.insert(0, top_level_directory)
+
+        logger.debug('Discovering tests by module: module_name=%r, '
+                     'top_level_directory=%r, pattern=%r', module_name,
+                     top_level_directory, pattern)
 
         try:
             module, case_attributes = find_module_by_name(module_name)
@@ -266,6 +274,9 @@ class Discoverer(object):
         if top_level_directory is None:
             top_level_directory = find_top_level_directory(
                 start_directory)
+        logger.debug('Discovering tests in directory: start_directory=%r, '
+                     'top_level_directory=%r, pattern=%r', start_directory,
+                     top_level_directory, pattern)
 
         assert_start_importable(top_level_directory, start_directory)
 
@@ -278,11 +289,14 @@ class Discoverer(object):
     def _discover_tests(self, start_directory, top_level_directory, pattern):
         load_module = self._loader.load_module
         for curdir, dirnames, filenames in os.walk(start_directory):
+            logger.debug('Discovering tests in %r', curdir)
             for filename in filenames:
                 filepath = os.path.join(curdir, filename)
                 if not match_path(filename, filepath, pattern):
+                    logger.debug('Skipping %r', filepath)
                     continue
                 module_name = get_module_name(top_level_directory, filepath)
+                logger.debug('Loading tests from %r', module_name)
                 yield load_module(get_module_by_name(module_name))
 
     def discover_filtered_tests(self, filter_name, top_level_directory=None,
@@ -311,8 +325,14 @@ class Discoverer(object):
         if top_level_directory is None:
             top_level_directory = find_top_level_directory(
                 os.getcwd())
+
+        logger.debug('Discovering filtered tests: filter_name=%r, '
+                     'top_level_directory=%r, pattern=%r', top_level_directory,
+                     top_level_directory, pattern)
+
         suite = self.discover_by_directory(
             top_level_directory, top_level_directory=top_level_directory,
             pattern=pattern)
+
         return self._loader.create_suite(
             filter_test_suite(suite, filter_name=filter_name))
