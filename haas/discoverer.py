@@ -289,11 +289,14 @@ class Discoverer(object):
     def _discover_tests(self, start_directory, top_level_directory, pattern):
         load_module = self._loader.load_module
         for curdir, dirnames, filenames in os.walk(start_directory):
+            logger.debug('Discovering tests in %r', curdir)
             for filename in filenames:
                 filepath = os.path.join(curdir, filename)
                 if not match_path(filename, filepath, pattern):
+                    logger.debug('Skipping %r', filepath)
                     continue
                 module_name = get_module_name(top_level_directory, filepath)
+                logger.debug('Loading tests from %r', module_name)
                 yield load_module(get_module_by_name(module_name))
 
     def discover_filtered_tests(self, filter_name, top_level_directory=None,
