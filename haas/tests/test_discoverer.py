@@ -276,11 +276,30 @@ class TestDiscoveryByPath(TestDiscoveryMixin, unittest.TestCase):
             os.path.join(self.tmpdir, self.dirs[0]))
         self.assertSuite(suite)
 
-    def test_from_nonpackage_directory(self):
+    def test_start_from_nonpackage_directory(self):
         nonpackage = os.path.join(self.tmpdir, self.dirs[0], 'nonpackage')
         os.makedirs(nonpackage)
         suite = self.discoverer.discover(nonpackage)
         self.assertEqual(len(list(suite)), 0)
+
+    def test_from_nested_nonpackage_directory(self):
+        """Regression test for #38
+
+        """
+        # Given
+        nonpackage = os.path.join(self.tmpdir, 'nonpackage')
+        package = os.path.join(nonpackage, 'nonpackage', 'tests')
+        os.makedirs(package)
+        with open(os.path.join(package, '__init__.py'), 'w'):
+            pass
+        with open(os.path.join(package, 'test.py'), 'w'):
+            pass
+
+        # When
+        suite = self.discoverer.discover(nonpackage, nonpackage)
+
+        # Then
+        self.assertEqual(suite.countTestCases(), 0)
 
     def test_relative_directory(self):
         relative = os.path.join(self.tmpdir, self.dirs[0], '..', *self.dirs)
