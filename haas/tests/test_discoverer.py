@@ -299,7 +299,7 @@ class TestDiscoveryByPath(TestDiscoveryMixin, unittest.TestCase):
         suite = self.discoverer.discover(nonpackage, nonpackage)
 
         # Then
-        self.assertEqual(len(list(suite)), 0)
+        self.assertEqual(suite.countTestCases(), 0)
 
     def test_relative_directory(self):
         relative = os.path.join(self.tmpdir, self.dirs[0], '..', *self.dirs)
