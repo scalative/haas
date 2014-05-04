@@ -299,9 +299,13 @@ class Discoverer(object):
                 logger.debug('Loading tests from %r', module_name)
                 try:
                     yield load_module(get_module_by_name(module_name))
-                except ImportError:
-                    logger.error('Unable to import %r', module_name)
-                    continue
+                except ImportError as e:
+                    match = 'No module named {0}'.format(module_name)
+                    if match in str(e):
+                        logger.error('Unable to import %r', module_name)
+                        continue
+                    else:
+                        raise
 
     def discover_filtered_tests(self, filter_name, top_level_directory=None,
                                 pattern='test*.py'):

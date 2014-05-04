@@ -16,7 +16,7 @@ from mock import Mock, patch
 
 from haas.testing import unittest
 
-from . import _test_cases
+from . import _test_cases, builder
 from ..discoverer import (
     Discoverer,
     filter_test_suite,
@@ -27,6 +27,7 @@ from ..discoverer import (
 )
 from ..loader import Loader
 from ..suite import TestSuite
+from ..utils import cd
 
 
 class FilterTestCase(_test_cases.TestCase):
@@ -494,3 +495,45 @@ class TestDiscoverFilteredTests(TestDiscoveryMixin, unittest.TestCase):
         test, = tests
         self.assertIsInstance(test, python_unittest.TestCase)
         self.assertEqual(test._testMethodName, 'test_method')
+
+
+class TestDiscovererImportError(unittest.TestCase):
+
+    def setUp(self):
+        self.tempdir = tempfile.mkdtemp(prefix='haas-tests-')
+        klass = builder.Class(
+            'TestSomething',
+            (
+                builder.Method('test_method'),
+            ),
+        )
+
+        module1 = builder.Module('test_something.py', (klass,))
+        module2 = builder.Module('test_something_else.py', (klass,))
+        subpackage = builder.Package(
+            'subpackage',
+            (
+                builder.Package('package1', (module1,)),
+                builder.Package('package2', (module2,)),
+            ),
+        )
+        package = builder.Package('package', (subpackage,))
+        fixture = builder.Package('fixture', (package,))
+        fixture.create(self.tempdir)
+
+        module_path = os.path.join(
+            self.tempdir, fixture.name, package.name, subpackage.name,
+            module1.name)
+        with open(module_path, 'w') as fh:
+            fh.write('import haas.i_dont_exist\n')
+
+        self.test_case_count = 2
+        self.test_case_count = 0
+
+    def tearDown(self):
+        shutil.rmtree(self.tempdir)
+
+    def test_discover_raises_importerror(self):
+        with cd(self.tempdir):
+            with self.assertRaises(ImportError):
+                Discoverer(Loader()).discover(self.tempdir, self.tempdir)
