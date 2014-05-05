@@ -500,6 +500,7 @@ class TestDiscoverFilteredTests(TestDiscoveryMixin, unittest.TestCase):
 class TestDiscovererImportError(unittest.TestCase):
 
     def setUp(self):
+        self.modules = sys.modules.copy()
         self.tempdir = tempfile.mkdtemp(prefix='haas-tests-')
         klass = builder.Class(
             'TestSomething',
@@ -530,12 +531,11 @@ class TestDiscovererImportError(unittest.TestCase):
     def tearDown(self):
         if self.tempdir in sys.path:
             sys.path.remove(self.tempdir)
-        for module_name, module in sys.modules.items()[:]:
-            if module is None:
-                continue
-            if hasattr(module, '__file__') and \
-                    module.__file__.startswith(self.tempdir):
-                del sys.modules[module_name]
+        modules_to_remove = [key for key in sys.modules
+                             if key not in self.modules]
+        for key in modules_to_remove:
+            del sys.modules[key]
+        del self.modules
         shutil.rmtree(self.tempdir)
 
     def test_discover_creates_importerror_testcase(self):
@@ -562,6 +562,7 @@ class TestDiscovererImportError(unittest.TestCase):
 class TestDiscovererNonPackageImport(unittest.TestCase):
 
     def setUp(self):
+        self.modules = sys.modules.copy()
         self.tempdir = tempfile.mkdtemp(prefix='haas-tests-')
         klass = builder.Class(
             'TestSomething',
@@ -586,12 +587,11 @@ class TestDiscovererNonPackageImport(unittest.TestCase):
     def tearDown(self):
         if self.tempdir in sys.path:
             sys.path.remove(self.tempdir)
-        for module_name, module in sys.modules.items()[:]:
-            if module is None:
-                continue
-            if hasattr(module, '__file__') and \
-                    module.__file__.startswith(self.tempdir):
-                del sys.modules[module_name]
+        modules_to_remove = [key for key in sys.modules
+                             if key not in self.modules]
+        for key in modules_to_remove:
+            del sys.modules[key]
+        del self.modules
         shutil.rmtree(self.tempdir)
 
     def test_discover_skips_non_packages(self):
