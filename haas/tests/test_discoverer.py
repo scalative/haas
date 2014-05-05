@@ -16,7 +16,7 @@ from mock import Mock, patch
 
 from haas.testing import unittest
 
-from . import _test_cases
+from . import _test_cases, builder
 from ..discoverer import (
     Discoverer,
     filter_test_suite,
@@ -27,6 +27,7 @@ from ..discoverer import (
 )
 from ..loader import Loader
 from ..suite import TestSuite
+from ..utils import cd
 
 
 class FilterTestCase(_test_cases.TestCase):
@@ -494,3 +495,115 @@ class TestDiscoverFilteredTests(TestDiscoveryMixin, unittest.TestCase):
         test, = tests
         self.assertIsInstance(test, python_unittest.TestCase)
         self.assertEqual(test._testMethodName, 'test_method')
+
+
+class TestDiscovererImportError(unittest.TestCase):
+
+    def setUp(self):
+        self.modules = sys.modules.copy()
+        self.tempdir = tempfile.mkdtemp(prefix='haas-tests-')
+        klass = builder.Class(
+            'TestSomething',
+            (
+                builder.Method('test_method'),
+            ),
+        )
+
+        module1 = builder.Module('test_something.py', (klass,))
+        module2 = builder.Module('test_something_else.py', (klass,))
+        subpackage = builder.Package(
+            'subpackage',
+            (
+                builder.Package('package1', (module1,)),
+                builder.Package('package2', (module2,)),
+            ),
+        )
+        package = builder.Package('package', (subpackage,))
+        fixture = builder.Package('fixture', (package,))
+        fixture.create(self.tempdir)
+
+        module_path = os.path.join(
+            self.tempdir, fixture.name, package.name, subpackage.name,
+            module1.name)
+        with open(module_path, 'w') as fh:
+            fh.write('import haas.i_dont_exist\n')
+
+    def tearDown(self):
+        if self.tempdir in sys.path:
+            sys.path.remove(self.tempdir)
+        modules_to_remove = [key for key in sys.modules
+                             if key not in self.modules]
+        for key in modules_to_remove:
+            del sys.modules[key]
+        del self.modules
+        shutil.rmtree(self.tempdir)
+
+    def test_discover_creates_importerror_testcase(self):
+        with cd(self.tempdir):
+            suite = Discoverer(Loader()).discover(
+                self.tempdir, self.tempdir)
+        self.assertEqual(suite.countTestCases(), 3)
+        case_names = [
+            type(case).__name__ for case in find_test_cases(suite)]
+        self.assertEqual(
+            case_names, ['ModuleImportError', 'TestSomething',
+                         'TestSomething'])
+
+    def test_importerror_testcase(self):
+        with cd(self.tempdir):
+            suite = Discoverer(Loader()).discover(
+                self.tempdir, self.tempdir)
+        self.assertEqual(suite.countTestCases(), 3)
+        result = unittest.TestResult()
+        suite.run(result)
+        self.assertEqual(len(result.errors), 1)
+
+
+class TestDiscovererNonPackageImport(unittest.TestCase):
+
+    def setUp(self):
+        self.modules = sys.modules.copy()
+        self.tempdir = tempfile.mkdtemp(prefix='haas-tests-')
+        klass = builder.Class(
+            'TestSomething',
+            (
+                builder.Method('test_method'),
+            ),
+        )
+
+        module1 = builder.Module('test_something.py', (klass,))
+        module2 = builder.Module('test_something_else.py', (klass,))
+        subpackage = builder.Directory(
+            'subpackage',
+            (
+                builder.Package('package1', (module1,)),
+                builder.Package('package2', (module2,)),
+            ),
+        )
+        package = builder.Directory('package', (subpackage,))
+        fixture = builder.Directory('fixture', (package,))
+        fixture.create(self.tempdir)
+
+    def tearDown(self):
+        if self.tempdir in sys.path:
+            sys.path.remove(self.tempdir)
+        modules_to_remove = [key for key in sys.modules
+                             if key not in self.modules]
+        for key in modules_to_remove:
+            del sys.modules[key]
+        del self.modules
+        shutil.rmtree(self.tempdir)
+
+    @unittest.skipIf(sys.version_info >= (3, 3),
+                     'Python 3.3+ does not require __init__.py')
+    def test_discover_skips_non_packages(self):
+        with cd(self.tempdir):
+            suite = Discoverer(Loader()).discover(self.tempdir, self.tempdir)
+        self.assertEqual(suite.countTestCases(), 0)
+
+    @unittest.skipIf(sys.version_info < (3, 3),
+                     'Python < 3.3 requires __init__.py')
+    def test_discover_includes_non_packages(self):
+        with cd(self.tempdir):
+            suite = Discoverer(Loader()).discover(self.tempdir, self.tempdir)
+        self.assertEqual(suite.countTestCases(), 2)
