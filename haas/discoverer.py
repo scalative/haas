@@ -10,10 +10,34 @@ from fnmatch import fnmatch
 import logging
 import os
 import sys
+import traceback
 
+from .testing import unittest
 from .utils import get_module_by_name
 
 logger = logging.getLogger(__name__)
+
+
+def _is_in_package(module_name):
+    package = module_name.split('.', 1)[0]
+    try:
+        __import__(package)
+    except ImportError:
+        return False
+    return True
+
+
+def _create_import_error_test(module_name):
+    message = 'Unable to import module {0!r}\n{1}'.format(
+        module_name, traceback.format_exc())
+
+    def test_error(self):
+        raise ImportError(message)
+
+    method_name = 'test_error'
+    cls = type(str('ModuleImportError'), (unittest.TestCase,),
+               {method_name: test_error})
+    return cls(method_name)
 
 
 def get_relpath(top_level_directory, fullpath):
@@ -288,6 +312,7 @@ class Discoverer(object):
 
     def _discover_tests(self, start_directory, top_level_directory, pattern):
         load_module = self._loader.load_module
+        create_suite = self._loader.create_suite
         for curdir, dirnames, filenames in os.walk(start_directory):
             logger.debug('Discovering tests in %r', curdir)
             for filename in filenames:
@@ -298,15 +323,14 @@ class Discoverer(object):
                 module_name = get_module_name(top_level_directory, filepath)
                 logger.debug('Loading tests from %r', module_name)
                 try:
-                    yield load_module(get_module_by_name(module_name))
-                except ImportError as e:
-                    match = 'No module named {0}'.format(
-                        module_name.split('.', 1)[0])
-                    if str(e).startswith(match):
-                        logger.error('Unable to import %r', module_name)
-                        continue
-                    else:
-                        raise
+                    module = get_module_by_name(module_name)
+                except ImportError:
+                    if _is_in_package(module_name):
+                        test = _create_import_error_test(module_name)
+                        yield create_suite((test,))
+                    # Non-package import in Python 2.7; we ignore and continue
+                else:
+                    yield load_module(module)
 
     def discover_filtered_tests(self, filter_name, top_level_directory=None,
                                 pattern='test*.py'):
