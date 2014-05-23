@@ -13,12 +13,6 @@ Enhancements
 * ``haas`` now supports the ``--failfast`` option (#47).
 * ``haas`` now supports multiple ``start`` directories (#49)
 
-Bugs Fixed
-~~~~~~~~~~
-
-* ``haas`` no longer crashes in Python 2.x when there are non-package
-  directories under discovery (#38).
-
 
 Release 0.2.2
 -------------
