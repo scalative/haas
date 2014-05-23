@@ -5,6 +5,7 @@
 # This software may be modified and distributed under the terms
 # of the 3-clause BSD license.  See the LICENSE.txt file for details.
 import os
+import sys
 
 from setuptools import setup
 
@@ -31,6 +32,14 @@ write_version_py()
 
 with open('README.rst') as fh:
     long_description = fh.read()
+
+
+if sys.version_info < (2, 7):
+    setup_kwargs = {
+        'install_requires': ['unittest2', 'argparse'],
+    }
+else:
+    setup_kwargs = {}
 
 
 setup(
@@ -61,4 +70,5 @@ setup(
             'haas=haas.main:main',
         ],
     },
+    **setup_kwargs
 )
