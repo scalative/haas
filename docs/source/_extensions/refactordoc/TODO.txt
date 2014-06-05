@@ -1,7 +1,0 @@
-Enhancements:
-    * Add error or warning messages when formating is wrong.
-    * Add conf.py configuration variable to define objects and the corresponding
-      refactoring class
-    * Move DefinitionItem and subclasses to use templates similar to
-      AttributeItem
-    * Allow DefinitionItem templates to be described in jinja2
