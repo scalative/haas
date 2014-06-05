@@ -1,9 +1,10 @@
-Getting Started
-===============
+=================
+ Getting Started
+=================
 
 
 Installing ``haas``
--------------------
+===================
 
 ``haas`` can be easily installed using ``pip``::
 
@@ -23,7 +24,7 @@ install using ``pip``::
 
 
 Using ``haas``
---------------
+==============
 
 To use the basic test discovery feature of ``haas``, simply invoke it at
 the top-level of a project; this should be enough to detect and run all
@@ -82,7 +83,7 @@ For the currently available options, use the ``--help`` option::
 
 
 Discovering tests by a test name only
-~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+-------------------------------------
 
 ``haas`` is able to discover a subset of the tests when just a test name
 (or any sub-section of a dotted module name) is given on the command

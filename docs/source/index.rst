@@ -3,8 +3,9 @@
    You can adapt this file completely to your liking, but it should at least
    contain the root `toctree` directive.
 
-Welcome to the haas documentation!
-==================================
+====================================
+ Welcome to the haas documentation!
+====================================
 
 ``haas`` is a Python test runner that is backward-compatible with
 Python's built-in unittest Test Cases, but is designed to support more
@@ -12,7 +13,7 @@ advanced features, such as project-specific plugins.
 
 
 Introduction
-------------
+============
 
 ``haas`` is intended to iron out some of the wrinkles in Python's
 ``unittest` test runner.  ``haas`` features and improved test discover
@@ -36,8 +37,9 @@ Contents:
    getting_started
    reference/modules
 
-Indices and tables
-==================
+====================
+ Indices and tables
+====================
 
 * :ref:`genindex`
 * :ref:`modindex`
