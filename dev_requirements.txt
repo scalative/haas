@@ -1,4 +1,6 @@
 coverage
+mock
 refactordoc
 six
 sphinx-rtd-theme
+wheel
