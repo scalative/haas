@@ -49,7 +49,7 @@ setup(
     author='Simon Jagoe',
     author_email='simon@simonjagoe.com',
     classifiers=[
-        'Development Status :: 1 - Planning',
+        'Development Status :: 3 - Alpha',
         'Intended Audience :: Developers',
         'License :: OSI Approved :: BSD License',
         'Operating System :: MacOS',
