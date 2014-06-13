@@ -1,22 +1,25 @@
-``haas`` CHANGELOG
-==================
+====================
+ ``haas`` CHANGELOG
+====================
 
+Change Summary since 0.3.0
+==========================
 
-Change Summary since 0.2.3
---------------------------
+Version 0.3.0
+=============
 
 Bugs Fixed
-~~~~~~~~~~
+----------
 
 * ``haas`` no longer crashes in Python 2.x when there are non-package
   directories under discovery (#38).
 
 
 Release 0.2.3
--------------
+=============
 
 Enhancements
-~~~~~~~~~~~~
+------------
 
 * It is now possible to discover the version of ``haas`` from the
   command line (#53)!
@@ -25,28 +28,28 @@ Enhancements
 
 
 Release 0.2.2
--------------
+=============
 
 Enhancements
-~~~~~~~~~~~~
+------------
 
 * ``haas`` now supports Python 3.2
 
 
 Release 0.2.1
--------------
+=============
 
 Enhancements
-~~~~~~~~~~~~
+------------
 
 * ``haas`` now supports Python 3.4
 
 
 Release 0.2.0
--------------
+=============
 
 Enhancements
-~~~~~~~~~~~~
+------------
 
 * ``haas`` now supports discovering tests by a substring of the test
   name, such as ``haas module_name.ClassName`` or ``haas
@@ -58,12 +61,12 @@ Enhancements
 
 
 Release 0.1.0
--------------
+=============
 
 The initial release of ``haas``.
 
 Features
-~~~~~~~~
+--------
 
 * ``haas`` is fully compatible with tests written using
   ``unittest.TestCase``.
