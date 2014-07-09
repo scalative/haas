@@ -607,3 +607,58 @@ class TestDiscovererNonPackageImport(unittest.TestCase):
         with cd(self.tempdir):
             suite = Discoverer(Loader()).discover(self.tempdir, self.tempdir)
         self.assertEqual(suite.countTestCases(), 2)
+
+
+class TestDiscovererDotInModuleName(unittest.TestCase):
+
+    def setUp(self):
+        self.modules = sys.modules.copy()
+        self.tempdir = tempfile.mkdtemp(prefix='haas-tests-')
+        klass = builder.Class(
+            'TestSomething',
+            (
+                builder.Method('test_method'),
+            ),
+        )
+        expected_klass = builder.Class(
+            'TestExpected',
+            (
+                builder.Method('test_expected'),
+            ),
+        )
+
+        module1 = builder.Module('test_some.thing.py', (klass,))
+        module2 = builder.Module('test_something_else.py', (klass,))
+        module3 = builder.Module('test_another_one.py', (expected_klass,))
+        subpackage = builder.Package(
+            'subpackage',
+            (
+                builder.Package('package1', (module1,)),
+                builder.Package('packa.ge2', (module2,)),
+                builder.Package('package3', (module3,)),
+            ),
+        )
+        package = builder.Package('package', (subpackage,))
+        fixture = builder.Package('fixture', (package,))
+        fixture.create(self.tempdir)
+
+    def tearDown(self):
+        if self.tempdir in sys.path:
+            sys.path.remove(self.tempdir)
+        modules_to_remove = [key for key in sys.modules
+                             if key not in self.modules]
+        for key in modules_to_remove:
+            del sys.modules[key]
+        del self.modules
+        shutil.rmtree(self.tempdir)
+
+    def test_discover_tests(self):
+        # When
+        with cd(self.tempdir):
+            suite = Discoverer(Loader()).discover(self.tempdir, self.tempdir)
+
+        # Then
+        self.assertEqual(suite.countTestCases(), 1)
+        case, = find_test_cases(suite)
+        self.assertEqual(type(case).__name__, 'TestExpected')
+        self.assertEqual(case._testMethodName, 'test_expected')
