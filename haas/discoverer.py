@@ -12,6 +12,7 @@ import os
 import sys
 import traceback
 
+from .exceptions import DotInModuleNameError
 from .testing import unittest
 from .utils import get_module_by_name
 
@@ -55,6 +56,8 @@ def match_path(filename, filepath, pattern):
 def get_module_name(top_level_directory, filepath):
     modulepath = os.path.splitext(os.path.normpath(filepath))[0]
     relpath = get_relpath(top_level_directory, modulepath)
+    if '.' in relpath:
+        raise DotInModuleNameError(relpath)
     return relpath.replace(os.path.sep, '.')
 
 
@@ -320,7 +323,14 @@ class Discoverer(object):
                 if not match_path(filename, filepath, pattern):
                     logger.debug('Skipping %r', filepath)
                     continue
-                module_name = get_module_name(top_level_directory, filepath)
+                try:
+                    module_name = get_module_name(
+                        top_level_directory, filepath)
+                except DotInModuleNameError:
+                    logger.info(
+                        'Unexpected dot in module or package name: %r',
+                        filepath)
+                    continue
                 logger.debug('Loading tests from %r', module_name)
                 try:
                     module = get_module_by_name(module_name)
