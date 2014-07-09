@@ -3,6 +3,16 @@
 ====================
 
 
+Change Summary since 0.3.0
+==========================
+
+Bugs Fixed
+----------
+
+* ``haas`` no longer crashes if there is a directory with a dot in the
+  name containing python modules (#64)
+
+
 Version 0.3.0
 =============
 
