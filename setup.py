@@ -10,7 +10,7 @@ import sys
 from setuptools import setup
 
 
-VERSION = '0.3.0'
+VERSION = '0.3.1'
 
 
 def write_version_py(filename=None):
