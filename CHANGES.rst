@@ -2,8 +2,12 @@
  ``haas`` CHANGELOG
 ====================
 
-Change Summary since 0.3.1
+Change Summary since 0.4.0
 ==========================
+
+
+Version 0.4.0
+=============
 
 Bugs Fixed
 ----------
