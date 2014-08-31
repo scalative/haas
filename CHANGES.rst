@@ -10,6 +10,8 @@ Bugs Fixed
 
 * Never filter out ``ModuleImportErrors``, even if using substring
   filtering on test name (#70).
+* Fix running tests when given a full file path on the command line
+  (#72).
 
 
 Version 0.3.1
