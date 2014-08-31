@@ -703,3 +703,59 @@ class TestDiscovererNeverFilterModuleImportError(unittest.TestCase):
         case, = find_test_cases(suite)
         self.assertIsInstance(case, ModuleImportError)
         self.assertEqual(case._testMethodName, 'test_error')
+
+
+class TestDiscovererFindTestsByFilePath(unittest.TestCase):
+
+    def setUp(self):
+        self.modules = sys.modules.copy()
+        self.tempdir = tempfile.mkdtemp(prefix='haas-tests-')
+        klass = builder.Class(
+            'TestSomething',
+            (
+                builder.Method('test_method'),
+            ),
+        )
+
+        module = builder.Module('test_something.py', (klass,))
+        package = builder.Package('package', (module,))
+        fixture = builder.Package('fixture', (package,))
+        fixture.create(self.tempdir)
+
+    def tearDown(self):
+        if self.tempdir in sys.path:
+            sys.path.remove(self.tempdir)
+        modules_to_remove = [key for key in sys.modules
+                             if key not in self.modules]
+        for key in modules_to_remove:
+            del sys.modules[key]
+        del self.modules
+        shutil.rmtree(self.tempdir)
+
+    def test_discover_tests_no_prefix_dot_slash(self):
+        # Given
+        start = 'fixture/package/test_something.py'
+
+        # When
+        with cd(self.tempdir):
+            suite = Discoverer(Loader()).discover(start, None)
+
+        # Then
+        self.assertEqual(suite.countTestCases(), 1)
+        case, = find_test_cases(suite)
+        self.assertEqual(type(case).__name__, 'TestSomething')
+        self.assertEqual(case._testMethodName, 'test_method')
+
+    def test_discover_tests_with_dot_slash(self):
+        # Given
+        start = './fixture/package/test_something.py'
+
+        # When
+        with cd(self.tempdir):
+            suite = Discoverer(Loader()).discover(start, None)
+
+        # Then
+        self.assertEqual(suite.countTestCases(), 1)
+        case, = find_test_cases(suite)
+        self.assertEqual(type(case).__name__, 'TestSomething')
+        self.assertEqual(case._testMethodName, 'test_method')
