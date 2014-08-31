@@ -682,7 +682,6 @@ class TestDiscovererNeverFilterModuleImportError(unittest.TestCase):
         package = builder.Package('package', (module,))
         fixture = builder.Package('fixture', (package,))
         fixture.create(self.tempdir)
-        print(self.tempdir)
 
     def tearDown(self):
         if self.tempdir in sys.path:
