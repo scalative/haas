@@ -2,10 +2,13 @@
 haas: Extensible Python Test Runner
 ===================================
 
+.. image:: https://pypip.in/wheel/haas/badge.png
+   :target: https://pypi.python.org/pypi/haas/
+   :alt: Wheel Status
+
 .. image:: https://api.travis-ci.org/sjagoe/haas.png?branch=master
    :target: https://travis-ci.org/sjagoe/haas
    :alt: Build status
-
 
 .. image:: https://coveralls.io/repos/sjagoe/haas/badge.png?branch=master
    :target: https://coveralls.io/r/sjagoe/haas?branch=master

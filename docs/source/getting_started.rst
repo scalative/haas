@@ -1,9 +1,10 @@
-Getting Started
-===============
+=================
+ Getting Started
+=================
 
 
 Installing ``haas``
--------------------
+===================
 
 ``haas`` can be easily installed using ``pip``::
 
@@ -23,7 +24,7 @@ install using ``pip``::
 
 
 Using ``haas``
---------------
+==============
 
 To use the basic test discovery feature of ``haas``, simply invoke it at
 the top-level of a project; this should be enough to detect and run all
@@ -79,3 +80,38 @@ For the currently available options, use the ``--help`` option::
                             directory)
       --log-level {critical,fatal,error,warning,info,debug}
                             Log level for haas logging
+
+
+Discovering tests by a test name only
+-------------------------------------
+
+``haas`` is able to discover a subset of the tests when just a test name
+(or any sub-section of a dotted module name) is given on the command
+line.
+
+For example, to run all test methods called ``test_method``, the
+following would work::
+
+    $ haas -v test_method
+    test_method (haas.tests._test_cases.TestCase) ... ok
+    test_method (haas.tests.test_loader.TestCaseSubclass) ... ok
+    test_method (haas.tests.test_discoverer.FilterTestCase) ... ok
+
+    ----------------------------------------------------------------------
+    Ran 3 tests in 0.000s
+
+    OK
+
+Note that three tests in three different modules have been run. The
+string ``test_method`` is matched at any point in the name
+``<package>.<module>.<class>.<method>`` and across all loadable tests in
+the project.  To restrict this to a single test, we can use the class
+name as an additional matching parameter::
+
+    $ haas -v FilterTestCase.test_method
+    test_method (haas.tests.test_discoverer.FilterTestCase) ... ok
+
+    ----------------------------------------------------------------------
+    Ran 1 test in 0.000s
+
+    OK

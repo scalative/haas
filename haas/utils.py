@@ -6,10 +6,12 @@
 # of the 3-clause BSD license.  See the LICENSE.txt file for details.
 from __future__ import absolute_import, unicode_literals
 
-import haas
 import logging
+import os
 import sys
 import re
+
+import haas
 
 
 LEVELS = {
@@ -54,3 +56,18 @@ def uncamelcase(string, sep='_'):
     replace = '\g<before>{}\g<caps>'.format(sep)
     temp = UNCAMELCASE_FIRST_PASS.sub(replace, string)
     return UNCAMELCASE_SECOND_PASS.sub(replace, temp).lower()
+
+
+class cd(object):
+
+    def __init__(self, destdir):
+        self.destdir = destdir
+        self.startdir = None
+
+    def __enter__(self):
+        self.startdir = os.getcwd()
+        os.chdir(self.destdir)
+
+    def __exit__(self, exc_type, exc_value, traceback):
+        os.chdir(self.startdir)
+        self.startdir = None

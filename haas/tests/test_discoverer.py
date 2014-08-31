@@ -12,19 +12,28 @@ import sys
 import tempfile
 import unittest as python_unittest
 
-from mock import patch
+from mock import Mock, patch
 
 from haas.testing import unittest
 
-from . import _test_cases
+from . import _test_cases, builder
 from ..discoverer import (
     Discoverer,
-    find_top_level_directory,
+    filter_test_suite,
     find_module_by_name,
+    find_test_cases,
+    find_top_level_directory,
     get_module_name,
 )
 from ..loader import Loader
+from ..module_import_error import ModuleImportError
 from ..suite import TestSuite
+from ..utils import cd
+
+
+class FilterTestCase(_test_cases.TestCase):
+
+    pass
 
 
 class TestDiscoveryMixin(object):
@@ -53,12 +62,8 @@ class TestDiscoveryMixin(object):
         shutil.rmtree(self.tmpdir)
 
     def get_test_cases(self, suite):
-        for test in suite:
-            if isinstance(test, python_unittest.TestCase):
-                yield test
-            else:
-                for test_ in self.get_test_cases(test):
-                    yield test_
+        for test in find_test_cases(suite):
+            yield test
 
 
 class TestFindTopLevelDirectory(TestDiscoveryMixin, unittest.TestCase):
@@ -162,6 +167,86 @@ class TestFindModuleByName(TestDiscoveryMixin, unittest.TestCase):
             find_module_by_name('no_module')
 
 
+class TestFilterTestSuite(unittest.TestCase):
+
+    def setUp(self):
+        self.case_1 = _test_cases.TestCase(methodName='test_method')
+        self.case_2 = _test_cases.TestCase(methodName='_private_method')
+        self.case_3 = FilterTestCase(methodName='_private_method')
+        self.suite = TestSuite(
+            [
+                TestSuite(
+                    [
+                        self.case_1,
+                        self.case_2,
+                    ],
+                ),
+                TestSuite(
+                    [
+                        self.case_3,
+                    ],
+                ),
+            ],
+        )
+
+    def tearDown(self):
+        del self.suite
+        del self.case_3
+        del self.case_2
+        del self.case_1
+
+    def test_filter_by_method_name(self):
+        filtered_suite = filter_test_suite(self.suite, 'test_method')
+        self.assertEqual(len(filtered_suite), 1)
+        test, = filtered_suite
+        self.assertIs(test, self.case_1)
+
+    def test_filter_by_class_name(self):
+        filtered_suite = filter_test_suite(self.suite, 'FilterTestCase')
+        self.assertEqual(len(filtered_suite), 1)
+        test, = filtered_suite
+        self.assertIs(test, self.case_3)
+
+    def test_filter_by_module_name(self):
+        filtered_suite = filter_test_suite(self.suite, '_test_cases')
+        self.assertEqual(len(filtered_suite), 2)
+        test1, test2 = filtered_suite
+        self.assertIs(test1, self.case_1)
+        self.assertIs(test2, self.case_2)
+
+    def test_filter_by_package_name(self):
+        filtered_suite = filter_test_suite(self.suite, 'test_discoverer')
+        self.assertEqual(len(filtered_suite), 1)
+        test, = filtered_suite
+        self.assertIs(test, self.case_3)
+
+    def test_filter_by_nonexistant_name(self):
+        filtered_suite = filter_test_suite(self.suite, 'nothing_called_this')
+        self.assertEqual(len(filtered_suite), 0)
+
+    def test_filter_by_class_and_test_name(self):
+        filtered_suite = filter_test_suite(
+            self.suite, 'TestCase.test_method')
+        self.assertEqual(len(filtered_suite), 1)
+        test, = filtered_suite
+        self.assertIs(test, self.case_1)
+
+    def test_filter_by_module_and_class(self):
+        filtered_suite = filter_test_suite(
+            self.suite, '_test_cases.TestCase')
+        self.assertEqual(len(filtered_suite), 2)
+        test1, test2 = filtered_suite
+        self.assertIs(test1, self.case_1)
+        self.assertIs(test2, self.case_2)
+
+    def test_filter_by_module_and_class_and_test(self):
+        filtered_suite = filter_test_suite(
+            self.suite, '_test_cases.TestCase.test_method')
+        self.assertEqual(len(filtered_suite), 1)
+        test1, = filtered_suite
+        self.assertIs(test1, self.case_1)
+
+
 class TestDiscoveryByPath(TestDiscoveryMixin, unittest.TestCase):
 
     def setUp(self):
@@ -193,11 +278,30 @@ class TestDiscoveryByPath(TestDiscoveryMixin, unittest.TestCase):
             os.path.join(self.tmpdir, self.dirs[0]))
         self.assertSuite(suite)
 
-    def test_from_nonpackage_directory(self):
+    def test_start_from_nonpackage_directory(self):
         nonpackage = os.path.join(self.tmpdir, self.dirs[0], 'nonpackage')
         os.makedirs(nonpackage)
         suite = self.discoverer.discover(nonpackage)
         self.assertEqual(len(list(suite)), 0)
+
+    def test_from_nested_nonpackage_directory(self):
+        """Regression test for #38
+
+        """
+        # Given
+        nonpackage = os.path.join(self.tmpdir, 'nonpackage')
+        package = os.path.join(nonpackage, 'nonpackage', 'tests')
+        os.makedirs(package)
+        with open(os.path.join(package, '__init__.py'), 'w'):
+            pass
+        with open(os.path.join(package, 'test.py'), 'w'):
+            pass
+
+        # When
+        suite = self.discoverer.discover(nonpackage, nonpackage)
+
+        # Then
+        self.assertEqual(suite.countTestCases(), 0)
 
     def test_relative_directory(self):
         relative = os.path.join(self.tmpdir, self.dirs[0], '..', *self.dirs)
@@ -301,3 +405,357 @@ class TestDiscoveryByModule(TestDiscoveryMixin, unittest.TestCase):
             '.'.join(self.dirs))
         with self.assertRaises(ValueError):
             self.discoverer.discover(module, top_level_directory=self.tmpdir)
+
+
+class TestDiscoverFilteredTests(TestDiscoveryMixin, unittest.TestCase):
+
+    def setUp(self):
+        TestDiscoveryMixin.setUp(self)
+        self.discoverer = Discoverer(Loader())
+
+    def tearDown(self):
+        del self.discoverer
+        TestDiscoveryMixin.tearDown(self)
+
+    def test_discover_subpackage(self):
+        suite = self.discoverer.discover(
+            'tests',
+            top_level_directory=self.tmpdir,
+        )
+        tests = list(self.get_test_cases(suite))
+        self.assertEqual(len(tests), 1)
+        test, = tests
+        self.assertIsInstance(test, python_unittest.TestCase)
+        self.assertEqual(test._testMethodName, 'test_method')
+
+    def test_discover_test_method(self):
+        suite = self.discoverer.discover(
+            'test_method',
+            top_level_directory=self.tmpdir,
+        )
+        tests = list(self.get_test_cases(suite))
+        self.assertEqual(len(tests), 1)
+        test, = tests
+        self.assertIsInstance(test, python_unittest.TestCase)
+        self.assertEqual(test._testMethodName, 'test_method')
+
+    def test_discover_class(self):
+        suite = self.discoverer.discover(
+            'TestCase',
+            top_level_directory=self.tmpdir,
+        )
+        tests = list(self.get_test_cases(suite))
+        self.assertEqual(len(tests), 1)
+        test, = tests
+        self.assertIsInstance(test, python_unittest.TestCase)
+        self.assertEqual(test._testMethodName, 'test_method')
+
+    def test_discover_no_top_level(self):
+        getcwd = Mock()
+        getcwd.return_value = self.tmpdir
+        with patch.object(os, 'getcwd', getcwd):
+            suite = self.discoverer.discover(
+                'TestCase',
+            )
+            getcwd.assert_called_once_with()
+            tests = list(self.get_test_cases(suite))
+            self.assertEqual(len(tests), 1)
+            test, = tests
+            self.assertIsInstance(test, python_unittest.TestCase)
+            self.assertEqual(test._testMethodName, 'test_method')
+
+    def test_discover_class_and_method(self):
+        suite = self.discoverer.discover(
+            'TestCase.test_method',
+            top_level_directory=self.tmpdir,
+        )
+        tests = list(self.get_test_cases(suite))
+        self.assertEqual(len(tests), 1)
+        test, = tests
+        self.assertIsInstance(test, python_unittest.TestCase)
+        self.assertEqual(test._testMethodName, 'test_method')
+
+    def test_discover_module_and_class_and_method(self):
+        suite = self.discoverer.discover(
+            'test_cases.TestCase.test_method',
+            top_level_directory=self.tmpdir,
+        )
+        tests = list(self.get_test_cases(suite))
+        self.assertEqual(len(tests), 1)
+        test, = tests
+        self.assertIsInstance(test, python_unittest.TestCase)
+        self.assertEqual(test._testMethodName, 'test_method')
+
+    def test_discover_module_and_class(self):
+        suite = self.discoverer.discover(
+            'test_cases.TestCase',
+            top_level_directory=self.tmpdir,
+        )
+        tests = list(self.get_test_cases(suite))
+        self.assertEqual(len(tests), 1)
+        test, = tests
+        self.assertIsInstance(test, python_unittest.TestCase)
+        self.assertEqual(test._testMethodName, 'test_method')
+
+
+class TestDiscovererImportError(unittest.TestCase):
+
+    def setUp(self):
+        self.modules = sys.modules.copy()
+        self.tempdir = tempfile.mkdtemp(prefix='haas-tests-')
+        klass = builder.Class(
+            'TestSomething',
+            (
+                builder.Method('test_method'),
+            ),
+        )
+
+        module1 = builder.Module('test_something.py', (klass,))
+        module2 = builder.Module('test_something_else.py', (klass,))
+        subpackage = builder.Package(
+            'subpackage',
+            (
+                builder.Package('package1', (module1,)),
+                builder.Package('package2', (module2,)),
+            ),
+        )
+        package = builder.Package('package', (subpackage,))
+        fixture = builder.Package('fixture', (package,))
+        fixture.create(self.tempdir)
+
+        module_path = os.path.join(
+            self.tempdir, fixture.name, package.name, subpackage.name,
+            module1.name)
+        with open(module_path, 'w') as fh:
+            fh.write('import haas.i_dont_exist\n')
+
+    def tearDown(self):
+        if self.tempdir in sys.path:
+            sys.path.remove(self.tempdir)
+        modules_to_remove = [key for key in sys.modules
+                             if key not in self.modules]
+        for key in modules_to_remove:
+            del sys.modules[key]
+        del self.modules
+        shutil.rmtree(self.tempdir)
+
+    def test_discover_creates_importerror_testcase(self):
+        with cd(self.tempdir):
+            suite = Discoverer(Loader()).discover(
+                self.tempdir, self.tempdir)
+        self.assertEqual(suite.countTestCases(), 3)
+        case_names = [
+            type(case).__name__ for case in find_test_cases(suite)]
+        self.assertEqual(
+            case_names, ['ModuleImportError', 'TestSomething',
+                         'TestSomething'])
+
+    def test_importerror_testcase(self):
+        with cd(self.tempdir):
+            suite = Discoverer(Loader()).discover(
+                self.tempdir, self.tempdir)
+        self.assertEqual(suite.countTestCases(), 3)
+        result = unittest.TestResult()
+        suite.run(result)
+        self.assertEqual(len(result.errors), 1)
+
+
+class TestDiscovererNonPackageImport(unittest.TestCase):
+
+    def setUp(self):
+        self.modules = sys.modules.copy()
+        self.tempdir = tempfile.mkdtemp(prefix='haas-tests-')
+        klass = builder.Class(
+            'TestSomething',
+            (
+                builder.Method('test_method'),
+            ),
+        )
+
+        module1 = builder.Module('test_something.py', (klass,))
+        module2 = builder.Module('test_something_else.py', (klass,))
+        subpackage = builder.Directory(
+            'subpackage',
+            (
+                builder.Package('package1', (module1,)),
+                builder.Package('package2', (module2,)),
+            ),
+        )
+        package = builder.Directory('package', (subpackage,))
+        fixture = builder.Directory('fixture', (package,))
+        fixture.create(self.tempdir)
+
+    def tearDown(self):
+        if self.tempdir in sys.path:
+            sys.path.remove(self.tempdir)
+        modules_to_remove = [key for key in sys.modules
+                             if key not in self.modules]
+        for key in modules_to_remove:
+            del sys.modules[key]
+        del self.modules
+        shutil.rmtree(self.tempdir)
+
+    @unittest.skipIf(sys.version_info >= (3, 3),
+                     'Python 3.3+ does not require __init__.py')
+    def test_discover_skips_non_packages(self):
+        with cd(self.tempdir):
+            suite = Discoverer(Loader()).discover(self.tempdir, self.tempdir)
+        self.assertEqual(suite.countTestCases(), 0)
+
+    @unittest.skipIf(sys.version_info < (3, 3),
+                     'Python < 3.3 requires __init__.py')
+    def test_discover_includes_non_packages(self):
+        with cd(self.tempdir):
+            suite = Discoverer(Loader()).discover(self.tempdir, self.tempdir)
+        self.assertEqual(suite.countTestCases(), 2)
+
+
+class TestDiscovererDotInModuleName(unittest.TestCase):
+
+    def setUp(self):
+        self.modules = sys.modules.copy()
+        self.tempdir = tempfile.mkdtemp(prefix='haas-tests-')
+        klass = builder.Class(
+            'TestSomething',
+            (
+                builder.Method('test_method'),
+            ),
+        )
+        expected_klass = builder.Class(
+            'TestExpected',
+            (
+                builder.Method('test_expected'),
+            ),
+        )
+
+        module1 = builder.Module('test_some.thing.py', (klass,))
+        module2 = builder.Module('test_something_else.py', (klass,))
+        module3 = builder.Module('test_another_one.py', (expected_klass,))
+        subpackage = builder.Package(
+            'subpackage',
+            (
+                builder.Package('package1', (module1,)),
+                builder.Package('packa.ge2', (module2,)),
+                builder.Package('package3', (module3,)),
+            ),
+        )
+        package = builder.Package('package', (subpackage,))
+        fixture = builder.Package('fixture', (package,))
+        fixture.create(self.tempdir)
+
+    def tearDown(self):
+        if self.tempdir in sys.path:
+            sys.path.remove(self.tempdir)
+        modules_to_remove = [key for key in sys.modules
+                             if key not in self.modules]
+        for key in modules_to_remove:
+            del sys.modules[key]
+        del self.modules
+        shutil.rmtree(self.tempdir)
+
+    def test_discover_tests(self):
+        # When
+        with cd(self.tempdir):
+            suite = Discoverer(Loader()).discover(self.tempdir, self.tempdir)
+
+        # Then
+        self.assertEqual(suite.countTestCases(), 1)
+        case, = find_test_cases(suite)
+        self.assertEqual(type(case).__name__, 'TestExpected')
+        self.assertEqual(case._testMethodName, 'test_expected')
+
+
+class TestDiscovererNeverFilterModuleImportError(unittest.TestCase):
+
+    def setUp(self):
+        self.modules = sys.modules.copy()
+        self.tempdir = tempfile.mkdtemp(prefix='haas-tests-')
+        text = builder.RawText('ImportError', 'import haas.i_dont_exist')
+        klass = builder.Class(
+            'TestSomething',
+            (
+                builder.Method('test_method'),
+            ),
+        )
+
+        module = builder.Module('test_importerror.py', (text, klass,))
+        package = builder.Package('package', (module,))
+        fixture = builder.Package('fixture', (package,))
+        fixture.create(self.tempdir)
+
+    def tearDown(self):
+        if self.tempdir in sys.path:
+            sys.path.remove(self.tempdir)
+        modules_to_remove = [key for key in sys.modules
+                             if key not in self.modules]
+        for key in modules_to_remove:
+            del sys.modules[key]
+        del self.modules
+        shutil.rmtree(self.tempdir)
+
+    def test_discover_tests(self):
+        # When
+        with cd(self.tempdir):
+            suite = Discoverer(Loader()).discover('TestSomething', None)
+
+        # Then
+        self.assertEqual(suite.countTestCases(), 1)
+        case, = find_test_cases(suite)
+        self.assertIsInstance(case, ModuleImportError)
+        self.assertEqual(case._testMethodName, 'test_error')
+
+
+class TestDiscovererFindTestsByFilePath(unittest.TestCase):
+
+    def setUp(self):
+        self.modules = sys.modules.copy()
+        self.tempdir = tempfile.mkdtemp(prefix='haas-tests-')
+        klass = builder.Class(
+            'TestSomething',
+            (
+                builder.Method('test_method'),
+            ),
+        )
+
+        module = builder.Module('test_something.py', (klass,))
+        package = builder.Package('package', (module,))
+        fixture = builder.Package('fixture', (package,))
+        fixture.create(self.tempdir)
+
+    def tearDown(self):
+        if self.tempdir in sys.path:
+            sys.path.remove(self.tempdir)
+        modules_to_remove = [key for key in sys.modules
+                             if key not in self.modules]
+        for key in modules_to_remove:
+            del sys.modules[key]
+        del self.modules
+        shutil.rmtree(self.tempdir)
+
+    def test_discover_tests_no_prefix_dot_slash(self):
+        # Given
+        start = 'fixture/package/test_something.py'
+
+        # When
+        with cd(self.tempdir):
+            suite = Discoverer(Loader()).discover(start, None)
+
+        # Then
+        self.assertEqual(suite.countTestCases(), 1)
+        case, = find_test_cases(suite)
+        self.assertEqual(type(case).__name__, 'TestSomething')
+        self.assertEqual(case._testMethodName, 'test_method')
+
+    def test_discover_tests_with_dot_slash(self):
+        # Given
+        start = './fixture/package/test_something.py'
+
+        # When
+        with cd(self.tempdir):
+            suite = Discoverer(Loader()).discover(start, None)
+
+        # Then
+        self.assertEqual(suite.countTestCases(), 1)
+        case, = find_test_cases(suite)
+        self.assertEqual(type(case).__name__, 'TestSomething')
+        self.assertEqual(case._testMethodName, 'test_method')

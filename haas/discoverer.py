@@ -7,10 +7,44 @@
 from __future__ import absolute_import, unicode_literals
 
 from fnmatch import fnmatch
+import logging
 import os
 import sys
+import traceback
 
+from .exceptions import DotInModuleNameError
+from .module_import_error import ModuleImportError
+from .testing import unittest
 from .utils import get_module_by_name
+
+logger = logging.getLogger(__name__)
+
+
+def _is_in_package(module_name):
+    package = module_name.split('.', 1)[0]
+    try:
+        __import__(package)
+    except ImportError:
+        return False
+    return True
+
+
+def _is_import_error_test(test):
+    return isinstance(test, ModuleImportError)
+
+
+def _create_import_error_test(module_name):
+    message = 'Unable to import module {0!r}\n{1}'.format(
+        module_name, traceback.format_exc())
+
+    def test_error(self):
+        raise ImportError(message)
+
+    method_name = 'test_error'
+    cls = type(ModuleImportError.__name__,
+               (ModuleImportError, unittest.TestCase,),
+               {method_name: test_error})
+    return cls(method_name)
 
 
 def get_relpath(top_level_directory, fullpath):
@@ -28,6 +62,8 @@ def match_path(filename, filepath, pattern):
 def get_module_name(top_level_directory, filepath):
     modulepath = os.path.splitext(os.path.normpath(filepath))[0]
     relpath = get_relpath(top_level_directory, modulepath)
+    if '.' in relpath:
+        raise DotInModuleNameError(relpath)
     return relpath.replace(os.path.sep, '.')
 
 
@@ -78,6 +114,51 @@ def find_top_level_directory(start_directory):
     return os.path.abspath(top_level)
 
 
+def find_test_cases(suite):
+    """Generate a list of all test cases contained in a test suite.
+
+    Parameters
+    ----------
+    suite : haas.suite.TestSuite
+        The test suite from which to generate the test case list.
+
+    """
+    try:
+        iter(suite)
+    except TypeError:
+        yield suite
+    else:
+        for test in suite:
+            for test_ in find_test_cases(test):
+                yield test_
+
+
+def filter_test_suite(suite, filter_name):
+    """Filter test cases in a test suite by a substring in the full dotted
+    test name.
+
+    Parameters
+    ----------
+    suite : haas.suite.TestSuite
+        The test suite containing tests to be filtered.
+    filter_name : str
+        The substring of the full dotted name on which to filter.  This
+        should not contain a leading or trailing dot.
+
+    """
+    filtered_cases = []
+    for test in find_test_cases(suite):
+        type_ = type(test)
+        name = '{0}.{1}.{2}'.format(
+            type_.__module__, type_.__name__, test._testMethodName)
+        filter_internal = '.{0}.'.format(filter_name)
+        if _is_import_error_test(test) or \
+                filter_internal in name or \
+                name.endswith(filter_internal[:-1]):
+            filtered_cases.append(test)
+    return filtered_cases
+
+
 class Discoverer(object):
     """The ``Discoverer`` is responsible for finding tests that can be
     loaded by a :class:`~haas.loader.Loader`.
@@ -115,11 +196,16 @@ class Discoverer(object):
             for tests.
 
         """
+        logger.debug('Starting test discovery')
         if os.path.isdir(start):
             start_directory = start
             return self.discover_by_directory(
                 start_directory, top_level_directory=top_level_directory,
                 pattern=pattern)
+        elif os.path.isfile(start):
+            start_filepath = start
+            return self.discover_by_file(
+                start_filepath, top_level_directory=top_level_directory)
         else:
             package_or_module = start
             return self.discover_by_module(
@@ -151,7 +237,16 @@ class Discoverer(object):
                 top_level_directory not in sys.path:
             sys.path.insert(0, top_level_directory)
 
-        module, case_attributes = find_module_by_name(module_name)
+        logger.debug('Discovering tests by module: module_name=%r, '
+                     'top_level_directory=%r, pattern=%r', module_name,
+                     top_level_directory, pattern)
+
+        try:
+            module, case_attributes = find_module_by_name(module_name)
+        except ImportError:
+            return self.discover_filtered_tests(
+                module_name, top_level_directory=top_level_directory,
+                pattern=pattern)
         dirname, basename = os.path.split(module.__file__)
         basename = os.path.splitext(basename)[0]
         if len(case_attributes) == 0 and basename == '__init__':
@@ -218,6 +313,9 @@ class Discoverer(object):
         if top_level_directory is None:
             top_level_directory = find_top_level_directory(
                 start_directory)
+        logger.debug('Discovering tests in directory: start_directory=%r, '
+                     'top_level_directory=%r, pattern=%r', start_directory,
+                     top_level_directory, pattern)
 
         assert_start_importable(top_level_directory, start_directory)
 
@@ -227,12 +325,100 @@ class Discoverer(object):
             start_directory, top_level_directory, pattern)
         return self._loader.create_suite(list(tests))
 
+    def discover_by_file(self, start_filepath, top_level_directory=None):
+        """Run test discovery on a single file.
+
+        Parameters
+        ----------
+        start_filepath : str
+            The module file in which to start test discovery.
+        top_level_directory : str
+            The path to the top-level directoy of the project.  This is
+            the parent directory of the project'stop-level Python
+            package.
+
+        """
+        start_filepath = os.path.abspath(start_filepath)
+        start_directory = os.path.dirname(start_filepath)
+        if top_level_directory is None:
+            top_level_directory = find_top_level_directory(
+                start_directory)
+        logger.debug('Discovering tests in file: start_filepath=%r, '
+                     'top_level_directory=', start_filepath,
+                     top_level_directory)
+
+        assert_start_importable(top_level_directory, start_directory)
+
+        if top_level_directory not in sys.path:
+            sys.path.insert(0, top_level_directory)
+        tests = self._load_from_file(
+            start_filepath, top_level_directory)
+        return self._loader.create_suite(list(tests))
+
+    def _load_from_file(self, filepath, top_level_directory):
+        module_name = get_module_name(top_level_directory, filepath)
+        logger.debug('Loading tests from %r', module_name)
+        try:
+            module = get_module_by_name(module_name)
+        except ImportError:
+            if _is_in_package(module_name):
+                test = _create_import_error_test(module_name)
+                return self._loader.create_suite((test,))
+            # Non-package import in Python 2.7; we ignore and continue
+            return self._loader.create_suite()
+        else:
+            return self._loader.load_module(module)
+
     def _discover_tests(self, start_directory, top_level_directory, pattern):
-        load_module = self._loader.load_module
         for curdir, dirnames, filenames in os.walk(start_directory):
+            logger.debug('Discovering tests in %r', curdir)
             for filename in filenames:
                 filepath = os.path.join(curdir, filename)
                 if not match_path(filename, filepath, pattern):
+                    logger.debug('Skipping %r', filepath)
                     continue
-                module_name = get_module_name(top_level_directory, filepath)
-                yield load_module(get_module_by_name(module_name))
+                try:
+                    yield self._load_from_file(filepath, top_level_directory)
+                except DotInModuleNameError:
+                    logger.info(
+                        'Unexpected dot in module or package name: %r',
+                        filepath)
+                    continue
+
+    def discover_filtered_tests(self, filter_name, top_level_directory=None,
+                                pattern='test*.py'):
+        """Find all tests whose package, module, class or method names match
+        the ``filter_name`` string.
+
+        Parameters
+        ----------
+        filter_name : str
+            A subsection of the full dotted test name.  This can be
+            simply a test method name (e.g. ``test_some_method``), the
+            TestCase class name (e.g. ``TestMyClass``), a module name
+            (e.g. ``test_module``), a subpackage (e.g. ``tests``).  It
+            may also be a dotted combination of the above
+            (e.g. ``TestMyClass.test_some_method``).
+        top_level_directory : str
+            The path to the top-level directoy of the project.  This is
+            the parent directory of the project'stop-level Python
+            package.
+        pattern : str
+            The glob pattern to match the filenames of modules to search
+            for tests.
+
+        """
+        if top_level_directory is None:
+            top_level_directory = find_top_level_directory(
+                os.getcwd())
+
+        logger.debug('Discovering filtered tests: filter_name=%r, '
+                     'top_level_directory=%r, pattern=%r', top_level_directory,
+                     top_level_directory, pattern)
+
+        suite = self.discover_by_directory(
+            top_level_directory, top_level_directory=top_level_directory,
+            pattern=pattern)
+
+        return self._loader.create_suite(
+            filter_test_suite(suite, filter_name=filter_name))

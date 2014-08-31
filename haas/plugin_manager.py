@@ -9,14 +9,10 @@ from __future__ import absolute_import, unicode_literals
 import logging
 
 from .plugins.i_plugin import IPlugin
+from .exceptions import PluginError
 from .utils import get_module_by_name, uncamelcase
 
 logger = logging.getLogger(__name__)
-
-
-class PluginError(Exception):
-
-    pass
 
 
 class PluginManager(object):

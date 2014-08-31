@@ -1,5 +1,6 @@
 language: python
 python:
+  - 3.4
   - 3.3
   - 3.2
   - 2.7
@@ -10,6 +11,7 @@ install:
   - pip install coverage
   - pip install coveralls
   - python setup.py develop
+  - pip install -r dev_requirements.txt
 script:
   - if [[ $TRAVIS_PYTHON_VERSION == '2.6' ]]; then coverage run --branch -m unittest2.__main__ discover -v -t . haas; fi
   - if [[ $TRAVIS_PYTHON_VERSION != '2.6' ]]; then coverage run --branch -m unittest discover -v -t . haas; fi

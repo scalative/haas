@@ -1,8 +1,9 @@
-haas package
-============
+==============
+ haas package
+==============
 
 Submodules
-~~~~~~~~~~
+==========
 
 haas.coverage module
 --------------------
