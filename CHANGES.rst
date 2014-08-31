@@ -5,6 +5,13 @@
 Change Summary since 0.3.1
 ==========================
 
+Bugs Fixed
+----------
+
+* Never filter out ``ModuleImportErrors``, even if using substring
+  filtering on test name (#70).
+
+
 Version 0.3.1
 =============
 
@@ -12,7 +19,7 @@ Bugs Fixed
 ----------
 
 * ``haas`` no longer crashes if there is a directory with a dot in the
-  name containing python modules (#64)
+  name containing python modules (#64).
 
 
 Version 0.3.0

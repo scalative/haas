@@ -26,6 +26,7 @@ from ..discoverer import (
     get_module_name,
 )
 from ..loader import Loader
+from ..module_import_error import ModuleImportError
 from ..suite import TestSuite
 from ..utils import cd
 
@@ -662,3 +663,43 @@ class TestDiscovererDotInModuleName(unittest.TestCase):
         case, = find_test_cases(suite)
         self.assertEqual(type(case).__name__, 'TestExpected')
         self.assertEqual(case._testMethodName, 'test_expected')
+
+
+class TestDiscovererNeverFilterModuleImportError(unittest.TestCase):
+
+    def setUp(self):
+        self.modules = sys.modules.copy()
+        self.tempdir = tempfile.mkdtemp(prefix='haas-tests-')
+        text = builder.RawText('ImportError', 'import haas.i_dont_exist')
+        klass = builder.Class(
+            'TestSomething',
+            (
+                builder.Method('test_method'),
+            ),
+        )
+
+        module = builder.Module('test_importerror.py', (text, klass,))
+        package = builder.Package('package', (module,))
+        fixture = builder.Package('fixture', (package,))
+        fixture.create(self.tempdir)
+
+    def tearDown(self):
+        if self.tempdir in sys.path:
+            sys.path.remove(self.tempdir)
+        modules_to_remove = [key for key in sys.modules
+                             if key not in self.modules]
+        for key in modules_to_remove:
+            del sys.modules[key]
+        del self.modules
+        shutil.rmtree(self.tempdir)
+
+    def test_discover_tests(self):
+        # When
+        with cd(self.tempdir):
+            suite = Discoverer(Loader()).discover('TestSomething', None)
+
+        # Then
+        self.assertEqual(suite.countTestCases(), 1)
+        case, = find_test_cases(suite)
+        self.assertIsInstance(case, ModuleImportError)
+        self.assertEqual(case._testMethodName, 'test_error')
