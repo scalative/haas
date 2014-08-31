@@ -223,7 +223,6 @@ class Discoverer(object):
             The dotted package name, module name or TestCase class and
             test method.
         top_level_directory : str
-
             The path to the top-level directoy of the project.  This is
             the parent directory of the project'stop-level Python
             package.
