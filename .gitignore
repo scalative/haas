@@ -1,6 +1,6 @@
 *~
 *.pyc
-/haas/version.py
+/haas/_version.py
 /haas.egg-info
 /.coverage
 /htmlcov

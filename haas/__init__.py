@@ -7,7 +7,7 @@
 from __future__ import absolute_import, unicode_literals
 
 try:
-    from haas.version import version as __version__
+    from haas._version import version as __version__
 except ImportError:  # pragma: no cover
     __version__ = 'notset'
 
