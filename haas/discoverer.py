@@ -202,6 +202,10 @@ class Discoverer(object):
             return self.discover_by_directory(
                 start_directory, top_level_directory=top_level_directory,
                 pattern=pattern)
+        elif os.path.isfile(start):
+            start_filepath = start
+            return self.discover_by_file(
+                start_filepath, top_level_directory=top_level_directory)
         else:
             package_or_module = start
             return self.discover_by_module(
@@ -219,6 +223,7 @@ class Discoverer(object):
             The dotted package name, module name or TestCase class and
             test method.
         top_level_directory : str
+
             The path to the top-level directoy of the project.  This is
             the parent directory of the project'stop-level Python
             package.
@@ -321,9 +326,51 @@ class Discoverer(object):
             start_directory, top_level_directory, pattern)
         return self._loader.create_suite(list(tests))
 
+    def discover_by_file(self, start_filepath, top_level_directory=None):
+        """Run test discovery on a single file.
+
+        Parameters
+        ----------
+        start_filepath : str
+            The module file in which to start test discovery.
+        top_level_directory : str
+            The path to the top-level directoy of the project.  This is
+            the parent directory of the project'stop-level Python
+            package.
+
+        """
+        start_filepath = os.path.abspath(start_filepath)
+        start_directory = os.path.dirname(start_filepath)
+        if top_level_directory is None:
+            top_level_directory = find_top_level_directory(
+                start_directory)
+        logger.debug('Discovering tests in file: start_filepath=%r, '
+                     'top_level_directory=', start_filepath,
+                     top_level_directory)
+
+        assert_start_importable(top_level_directory, start_directory)
+
+        if top_level_directory not in sys.path:
+            sys.path.insert(0, top_level_directory)
+        tests = self._load_from_file(
+            start_filepath, top_level_directory)
+        return self._loader.create_suite(list(tests))
+
+    def _load_from_file(self, filepath, top_level_directory):
+        module_name = get_module_name(top_level_directory, filepath)
+        logger.debug('Loading tests from %r', module_name)
+        try:
+            module = get_module_by_name(module_name)
+        except ImportError:
+            if _is_in_package(module_name):
+                test = _create_import_error_test(module_name)
+                return self._loader.create_suite((test,))
+            # Non-package import in Python 2.7; we ignore and continue
+            return self._loader.create_suite()
+        else:
+            return self._loader.load_module(module)
+
     def _discover_tests(self, start_directory, top_level_directory, pattern):
-        load_module = self._loader.load_module
-        create_suite = self._loader.create_suite
         for curdir, dirnames, filenames in os.walk(start_directory):
             logger.debug('Discovering tests in %r', curdir)
             for filename in filenames:
@@ -332,23 +379,12 @@ class Discoverer(object):
                     logger.debug('Skipping %r', filepath)
                     continue
                 try:
-                    module_name = get_module_name(
-                        top_level_directory, filepath)
+                    yield self._load_from_file(filepath, top_level_directory)
                 except DotInModuleNameError:
                     logger.info(
                         'Unexpected dot in module or package name: %r',
                         filepath)
                     continue
-                logger.debug('Loading tests from %r', module_name)
-                try:
-                    module = get_module_by_name(module_name)
-                except ImportError:
-                    if _is_in_package(module_name):
-                        test = _create_import_error_test(module_name)
-                        yield create_suite((test,))
-                    # Non-package import in Python 2.7; we ignore and continue
-                else:
-                    yield load_module(module)
 
     def discover_filtered_tests(self, filter_name, top_level_directory=None,
                                 pattern='test*.py'):
