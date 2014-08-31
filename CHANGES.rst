@@ -2,8 +2,15 @@
  ``haas`` CHANGELOG
 ====================
 
-Change Summary since 0.4.0
+Change Summary since 0.4.1
 ==========================
+
+
+Version 0.4.1
+=============
+
+* Fixed packaging error causing v0.4.0 to contain an invalid (but
+  unused) file.
 
 
 Version 0.4.0
