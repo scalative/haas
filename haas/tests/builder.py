@@ -95,3 +95,14 @@ class Method(Importable):
         else:
             module_fh.writelines('        {0}'.format(line)
                                  for line in self.contents)
+
+
+class RawText(Importable):
+
+    def __init__(self, name, contents=''):
+        self.name = name
+        self.contents = contents
+
+    def create(self, module_fh):
+        module_fh.write(self.contents)
+        module_fh.write('\n')

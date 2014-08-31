@@ -13,6 +13,7 @@ import sys
 import traceback
 
 from .exceptions import DotInModuleNameError
+from .module_import_error import ModuleImportError
 from .testing import unittest
 from .utils import get_module_by_name
 
@@ -28,6 +29,10 @@ def _is_in_package(module_name):
     return True
 
 
+def _is_import_error_test(test):
+    return isinstance(test, ModuleImportError)
+
+
 def _create_import_error_test(module_name):
     message = 'Unable to import module {0!r}\n{1}'.format(
         module_name, traceback.format_exc())
@@ -36,7 +41,8 @@ def _create_import_error_test(module_name):
         raise ImportError(message)
 
     method_name = 'test_error'
-    cls = type(str('ModuleImportError'), (unittest.TestCase,),
+    cls = type(ModuleImportError.__name__,
+               (ModuleImportError, unittest.TestCase,),
                {method_name: test_error})
     return cls(method_name)
 
@@ -146,7 +152,9 @@ def filter_test_suite(suite, filter_name):
         name = '{0}.{1}.{2}'.format(
             type_.__module__, type_.__name__, test._testMethodName)
         filter_internal = '.{0}.'.format(filter_name)
-        if filter_internal in name or name.endswith(filter_internal[:-1]):
+        if _is_import_error_test(test) or \
+                filter_internal in name or \
+                name.endswith(filter_internal[:-1]):
             filtered_cases.append(test)
     return filtered_cases
 
