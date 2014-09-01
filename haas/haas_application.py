@@ -83,6 +83,9 @@ class HaasApplication(object):
 
     def run(self):
         args = self.parser.parse_args(self.argv[1:])
+
+        self.plugin_manager.configure_plugins(args)
+
         environment_plugins = self.plugin_manager.get_enabled_plugins(
             self.plugin_manager.ENVIRONMENT_HOOK)
         with PluginContext(environment_plugins):

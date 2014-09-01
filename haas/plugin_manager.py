@@ -26,18 +26,27 @@ class PluginManager(object):
         )
 
     def _filter_enabled_plugins(self, extension):
-        if extension.obj.is_enabled():
+        if extension.obj.enabled:
             return extension.obj
         return None
 
     def _add_extension_arguments(self, extension, parser):
         extension.obj.add_arguments(parser)
 
+    def _configure_extension(self, extension, args):
+        extension.obj.configure(args)
+
     def add_plugin_arguments(self, parser):
         for manager in self.plugin_managers.values():
             if len(list(manager)) == 0:
                 continue
             manager.map(self._add_extension_arguments, parser)
+
+    def configure_plugins(self, args):
+        for manager in self.plugin_managers.values():
+            if len(list(manager)) == 0:
+                continue
+            manager.map(self._configure_extension, args)
 
     def get_enabled_plugins(self, hook):
         manager = self.plugin_managers[hook]
