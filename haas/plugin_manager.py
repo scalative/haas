@@ -31,7 +31,7 @@ class PluginManager(object):
         return None
 
     def _add_extension_arguments(self, extension, parser):
-        extension.obj.add_arguments(parser)
+        extension.obj.add_parser_arguments(parser)
 
     def _configure_extension(self, extension, args):
         extension.obj.configure(args)
