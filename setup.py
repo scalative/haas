@@ -121,5 +121,8 @@ if __name__ == "__main__":
             'console_scripts': [
                 'haas=haas.main:main',
             ],
+            'haas.hooks.environment': [
+                'coverage = haas.plugins.coverage:Coverage',
+            ],
         },
     )

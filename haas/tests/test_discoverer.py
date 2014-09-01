@@ -285,8 +285,8 @@ class TestDiscoveryByPath(TestDiscoveryMixin, unittest.TestCase):
         self.assertEqual(len(list(suite)), 0)
 
     def test_from_nested_nonpackage_directory(self):
-        """Regression test for #38
-
+        """
+        Regression test for #38
         """
         # Given
         nonpackage = os.path.join(self.tmpdir, 'nonpackage')

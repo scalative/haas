@@ -13,7 +13,7 @@ import haas
 from .discoverer import Discoverer
 from .loader import Loader
 from .plugin_context import PluginContext
-from .plugin_manager import PluginError, PluginManager
+from .plugin_manager import PluginManager
 from .result import TextTestResult
 from .testing import unittest
 from .utils import configure_logging
@@ -48,13 +48,21 @@ def create_argument_parser():
     parser.add_argument('-t', '--top-level-directory', default=None,
                         help=('Top level directory of project (defaults to '
                               'start directory)'))
-    parser.add_argument('--environment-manager',
-                        help='Class to use as the environment manager')
+    _add_log_level_option(parser)
+    return parser
+
+
+def _create_log_level_parser():
+    parser = argparse.ArgumentParser(prog='haas', add_help=False)
+    _add_log_level_option(parser)
+    return parser
+
+
+def _add_log_level_option(parser):
     parser.add_argument('--log-level', default=None,
                         choices=['critical', 'fatal', 'error', 'warning',
                                  'info', 'debug'],
                         help='Log level for haas logging')
-    return parser
 
 
 class HaasApplication(object):
@@ -62,30 +70,22 @@ class HaasApplication(object):
     def __init__(self, argv, **kwargs):
         super(HaasApplication, self).__init__(**kwargs)
         self.argv = argv
-        self.parser = create_argument_parser()
-        self.initial_args, self.unparsed_args = self.parser.parse_known_args(
-            argv[1:])
-        if self.initial_args.log_level is not None:
-            configure_logging(self.initial_args.log_level)
-        self.plugin_manager = PluginManager()
 
-    def load_environment_plugin(self, parser, args):
-        if args.environment_manager is None:
-            return None
-        try:
-            environment_plugin_factory = self.plugin_manager.load_plugin_class(
-                args.environment_manager)
-        except PluginError as e:
-            self.parser.exit(2, 'haas: error: {0}\n'.format(e))
-        self.plugin_manager.add_parser_arguments_for_plugin(
-            parser, environment_plugin_factory)
-        return self.plugin_manager.load_plugin(
-            environment_plugin_factory)
+        initial_parser = _create_log_level_parser()
+        initial_args, _ = initial_parser.parse_known_args(argv[1:])
+        if initial_args.log_level is not None:
+            configure_logging(initial_args.log_level)
+
+        self.parser = create_argument_parser()
+
+        self.plugin_manager = PluginManager()
+        self.plugin_manager.add_plugin_arguments(self.parser)
 
     def run(self):
-        args = self.initial_args
-        environment_plugin = self.load_environment_plugin(self.parser, args)
-        with PluginContext([environment_plugin]):
+        args = self.parser.parse_args(self.argv[1:])
+        environment_plugins = self.plugin_manager.get_enabled_plugins(
+            self.plugin_manager.ENVIRONMENT_HOOK)
+        with PluginContext(environment_plugins):
             loader = Loader()
             discoverer = Discoverer(loader)
             suites = [

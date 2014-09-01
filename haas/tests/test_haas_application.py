@@ -133,14 +133,6 @@ class TestHaasApplication(unittest.TestCase):
 
         result.wasSuccessful.assert_called_once_with()
 
-    @patch('sys.stdout')
-    @patch('sys.stderr')
-    @patch('haas.testing.unittest.TextTestRunner')
-    def test_invalid_environment_plugin(self, runner_class, stdout, stderr):
-        with self.assertRaises(SystemExit):
-            run, result = self._run_with_arguments(
-                runner_class, '--environment-manager', 'haas.invalid')
-
     def test_failfast(self):
         def test_should_cause_early_stop(self1):
             self1.fail()
