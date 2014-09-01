@@ -50,7 +50,7 @@ class PluginManager(object):
 
     def get_enabled_plugins(self, hook):
         manager = self.plugin_managers[hook]
-        if len(manager.extensions) == 0:
+        if len(list(manager)) == 0:
             return []
         return [plugin for plugin in manager.map(self._filter_enabled_plugins)
                 if plugin is not None]
