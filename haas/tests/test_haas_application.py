@@ -133,6 +133,19 @@ class TestHaasApplication(unittest.TestCase):
 
         result.wasSuccessful.assert_called_once_with()
 
+    @patch('sys.stdout')
+    @patch('sys.stderr')
+    @patch('coverage.coverage')
+    @patch('haas.testing.unittest.TextTestRunner')
+    def test_with_coverage_plugin(self, runner_class, coverage, stdout,
+                                  stderr):
+        # When
+        run, result = self._run_with_arguments(
+            runner_class, '--with-coverage')
+
+        # Then
+        coverage.assert_called_once_with()
+
     def test_failfast(self):
         def test_should_cause_early_stop(self1):
             self1.fail()
