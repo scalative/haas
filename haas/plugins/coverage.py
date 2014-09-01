@@ -8,12 +8,13 @@ from __future__ import absolute_import, unicode_literals
 
 import coverage
 
-from .i_plugin import IPlugin
+from .base_plugin import BasePlugin
 
 
-class Coverage(IPlugin):
+class Coverage(BasePlugin):
 
-    def __init__(self):
+    def __init__(self, *args, **kwargs):
+        super(Coverage, self).__init__(*args, **kwargs)
         self._coverage = None
 
     def setup(self):
@@ -23,7 +24,3 @@ class Coverage(IPlugin):
     def teardown(self):
         self._coverage.stop()
         self._coverage.save()
-
-    @staticmethod
-    def add_parser_arguments(parser):
-        pass
