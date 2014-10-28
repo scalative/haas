@@ -19,11 +19,17 @@ class PluginManager(object):
     ENVIRONMENT_HOOK = 'haas.hooks.environment'
 
     def __init__(self):
-        self.plugin_managers = OrderedDict()
-        self.plugin_managers[self.ENVIRONMENT_HOOK] = ExtensionManager(
+        self.extension_managers = OrderedDict()
+        self.extension_managers[self.ENVIRONMENT_HOOK] = ExtensionManager(
             namespace=self.ENVIRONMENT_HOOK,
             invoke_on_load=True,
         )
+
+    @classmethod
+    def testing_plugin_manager(cls, extension_managers):
+        plugin_manager = cls.__new__(cls)
+        plugin_manager.extension_managers = extension_managers
+        return plugin_manager
 
     def _filter_enabled_plugins(self, extension):
         if extension.obj.enabled:
@@ -37,19 +43,19 @@ class PluginManager(object):
         extension.obj.configure(args)
 
     def add_plugin_arguments(self, parser):
-        for manager in self.plugin_managers.values():
+        for manager in self.extension_managers.values():
             if len(list(manager)) == 0:
                 continue
             manager.map(self._add_extension_arguments, parser)
 
     def configure_plugins(self, args):
-        for manager in self.plugin_managers.values():
+        for manager in self.extension_managers.values():
             if len(list(manager)) == 0:
                 continue
             manager.map(self._configure_extension, args)
 
     def get_enabled_plugins(self, hook):
-        manager = self.plugin_managers[hook]
+        manager = self.extension_managers[hook]
         if len(list(manager)) == 0:
             return []
         return [plugin for plugin in manager.map(self._filter_enabled_plugins)

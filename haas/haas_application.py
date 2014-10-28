@@ -78,16 +78,18 @@ class HaasApplication(object):
 
         self.parser = create_argument_parser()
 
-        self.plugin_manager = PluginManager()
-        self.plugin_manager.add_plugin_arguments(self.parser)
+    def run(self, plugin_manager=None):
+        if plugin_manager is None:
+            plugin_manager = PluginManager()
+        plugin_manager.add_plugin_arguments(self.parser)
 
-    def run(self):
         args = self.parser.parse_args(self.argv[1:])
 
-        self.plugin_manager.configure_plugins(args)
+        plugin_manager.configure_plugins(args)
 
-        environment_plugins = self.plugin_manager.get_enabled_plugins(
-            self.plugin_manager.ENVIRONMENT_HOOK)
+        environment_plugins = plugin_manager.get_enabled_plugins(
+            plugin_manager.ENVIRONMENT_HOOK)
+
         with PluginContext(environment_plugins):
             loader = Loader()
             discoverer = Discoverer(loader)
