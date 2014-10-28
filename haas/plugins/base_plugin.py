@@ -17,6 +17,7 @@ class BasePlugin(IPlugin):
     def add_parser_arguments(self, parser):
         parser.add_argument('--with-{0}'.format(self.name),
                             action='store_true',
+                            help='Enable the {0} plugin'.format(self.name),
                             dest=self.enabling_option)
 
     def configure(self, args):
