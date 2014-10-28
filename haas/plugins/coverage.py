@@ -8,10 +8,10 @@ from __future__ import absolute_import, unicode_literals
 
 import coverage
 
-from .base_plugin import BasePlugin
+from .base_hook_plugin import BaseHookPlugin
 
 
-class Coverage(BasePlugin):
+class Coverage(BaseHookPlugin):
 
     def __init__(self, *args, **kwargs):
         super(Coverage, self).__init__(*args, **kwargs)

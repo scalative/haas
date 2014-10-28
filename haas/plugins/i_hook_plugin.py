@@ -12,7 +12,7 @@ from six import add_metaclass
 
 
 @add_metaclass(abc.ABCMeta)
-class IPlugin(object):
+class IHookPlugin(object):
 
     @abc.abstractmethod
     def setup(self):  # pragma: no cover

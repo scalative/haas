@@ -1,8 +1,11 @@
 from haas.utils import uncamelcase
-from .i_plugin import IPlugin
+from .i_hook_plugin import IHookPlugin
 
 
-class BasePlugin(IPlugin):
+class BaseHookPlugin(IHookPlugin):
+    """The base implementation of hook plugins.
+
+    """
 
     name = None
     enabled = False
