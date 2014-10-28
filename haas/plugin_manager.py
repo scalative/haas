@@ -38,9 +38,10 @@ class PluginManager(object):
         )
 
     @classmethod
-    def testing_plugin_manager(cls, hook_managers):
+    def testing_plugin_manager(cls, hook_managers, driver_managers):
         plugin_manager = cls.__new__(cls)
-        plugin_manager.hook_managers = hook_managers
+        plugin_manager.hook_managers = OrderedDict(hook_managers)
+        plugin_manager.driver_managers = OrderedDict(driver_managers)
         return plugin_manager
 
     def _filter_enabled_plugins(self, extension):
