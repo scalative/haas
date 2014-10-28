@@ -87,7 +87,7 @@ class HaasApplication(object):
 
         plugin_manager.configure_plugins(args)
 
-        environment_plugins = plugin_manager.get_enabled_plugins(
+        environment_plugins = plugin_manager.get_enabled_hook_plugins(
             plugin_manager.ENVIRONMENT_HOOK)
 
         with PluginContext(environment_plugins):

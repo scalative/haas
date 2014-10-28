@@ -19,16 +19,16 @@ class PluginManager(object):
     ENVIRONMENT_HOOK = 'haas.hooks.environment'
 
     def __init__(self):
-        self.extension_managers = OrderedDict()
-        self.extension_managers[self.ENVIRONMENT_HOOK] = ExtensionManager(
+        self.hook_managers = OrderedDict()
+        self.hook_managers[self.ENVIRONMENT_HOOK] = ExtensionManager(
             namespace=self.ENVIRONMENT_HOOK,
             invoke_on_load=True,
         )
 
     @classmethod
-    def testing_plugin_manager(cls, extension_managers):
+    def testing_plugin_manager(cls, hook_managers):
         plugin_manager = cls.__new__(cls)
-        plugin_manager.extension_managers = extension_managers
+        plugin_manager.hook_managers = hook_managers
         return plugin_manager
 
     def _filter_enabled_plugins(self, extension):
@@ -36,26 +36,26 @@ class PluginManager(object):
             return extension.obj
         return None
 
-    def _add_extension_arguments(self, extension, parser):
+    def _add_hook_extension_arguments(self, extension, parser):
         extension.obj.add_parser_arguments(parser)
 
-    def _configure_extension(self, extension, args):
+    def _configure_hook_extension(self, extension, args):
         extension.obj.configure(args)
 
     def add_plugin_arguments(self, parser):
-        for manager in self.extension_managers.values():
+        for manager in self.hook_managers.values():
             if len(list(manager)) == 0:
                 continue
-            manager.map(self._add_extension_arguments, parser)
+            manager.map(self._add_hook_extension_arguments, parser)
 
     def configure_plugins(self, args):
-        for manager in self.extension_managers.values():
+        for manager in self.hook_managers.values():
             if len(list(manager)) == 0:
                 continue
-            manager.map(self._configure_extension, args)
+            manager.map(self._configure_hook_extension, args)
 
-    def get_enabled_plugins(self, hook):
-        manager = self.extension_managers[hook]
+    def get_enabled_hook_plugins(self, hook):
+        manager = self.hook_managers[hook]
         if len(list(manager)) == 0:
             return []
         return [plugin for plugin in manager.map(self._filter_enabled_plugins)
