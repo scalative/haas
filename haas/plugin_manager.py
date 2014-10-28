@@ -6,8 +6,13 @@
 # of the 3-clause BSD license.  See the LICENSE.txt file for details.
 from __future__ import absolute_import, unicode_literals
 
-from collections import OrderedDict
+import sys
 import logging
+
+if sys.version_info < (2, 7):
+    from ordereddict import OrderedDict
+else:
+    from collections import OrderedDict
 
 from stevedore.driver import DriverManager
 from stevedore.extension import ExtensionManager

@@ -85,7 +85,7 @@ if not is_released:
 if __name__ == "__main__":
     install_requires = ['stevedore', 'six']
     if sys.version_info < (2, 7):
-        install_requires += ['unittest2', 'argparse']
+        install_requires += ['unittest2', 'argparse', 'ordereddict']
 
     write_version_py()
     from haas import __version__
