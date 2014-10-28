@@ -7,7 +7,6 @@
 from __future__ import absolute_import, unicode_literals
 
 from argparse import ArgumentParser
-from collections import OrderedDict
 
 from stevedore.extension import ExtensionManager, Extension
 
@@ -60,32 +59,26 @@ class TestBaseHookPlugin(unittest.TestCase):
         self.assertEqual(plugin.name, 'testing-plugin')
 
 
-class TestPluginManagerWithPlugins(unittest.TestCase):
-
-    def setUp(self):
-        self.plugin_obj = TestingPlugin()
-        self.extension = Extension(
-            'extension', None, TestingPlugin, self.plugin_obj)
-        extensions = [
-            self.extension,
-        ]
-        environment_manager = ExtensionManager.make_test_instance(
-            extensions, namespace=PluginManager.ENVIRONMENT_HOOK,
-        )
-        hook_managers = [(PluginManager.ENVIRONMENT_HOOK, environment_manager)]
-        self.plugin_manager = PluginManager.testing_plugin_manager(
-            hook_managers=hook_managers, driver_managers=())
+class TestPluginManager(unittest.TestCase):
 
     def test_environment_hook_options(self):
         # Given
-        plugin_manager = self.plugin_manager
+        plugin_obj = TestingPlugin()
+        extension = Extension(
+            'extension', None, TestingPlugin, plugin_obj)
+        environment_manager = ExtensionManager.make_test_instance(
+            [extension], namespace=PluginManager.ENVIRONMENT_HOOK,
+        )
+        hook_managers = [(PluginManager.ENVIRONMENT_HOOK, environment_manager)]
+        plugin_manager = PluginManager.testing_plugin_manager(
+            hook_managers=hook_managers, driver_managers=())
         parser = ArgumentParser(add_help=False)
 
         # When
         plugin_manager.add_plugin_arguments(parser)
 
         # Then
-        self.assertEqual(self.plugin_obj.add_parser_arguments_called, 1)
+        self.assertEqual(plugin_obj.add_parser_arguments_called, 1)
         actions = parser._actions
         self.assertEqual(len(actions), 1)
         action, = actions
@@ -96,7 +89,7 @@ class TestPluginManagerWithPlugins(unittest.TestCase):
             plugin_manager.ENVIRONMENT_HOOK)
 
         # Then
-        self.assertFalse(self.plugin_obj.enabled)
+        self.assertFalse(plugin_obj.enabled)
         self.assertEqual(enabled_plugins, [])
 
         # When
@@ -104,30 +97,62 @@ class TestPluginManagerWithPlugins(unittest.TestCase):
         plugin_manager.configure_plugins(args)
 
         # Then
-        self.assertEqual(self.plugin_obj.configure_called, 1)
+        self.assertEqual(plugin_obj.configure_called, 1)
 
         # When
         enabled_plugins = plugin_manager.get_enabled_hook_plugins(
             plugin_manager.ENVIRONMENT_HOOK)
 
         # Then
-        self.assertTrue(self.plugin_obj.enabled)
-        self.assertEqual(enabled_plugins, [self.plugin_obj])
+        self.assertTrue(plugin_obj.enabled)
+        self.assertEqual(enabled_plugins, [plugin_obj])
 
+    def test_no_driver_hooks_found(self):
+        # Given
+        extension = Extension(
+            'haas.runner', None, unittest.TextTestRunner, None)
+        driver_managers = [
+            (PluginManager.TEST_RUNNER, ExtensionManager.make_test_instance(
+                [extension], namespace=PluginManager.TEST_RUNNER)),
+        ]
+        plugin_manager = PluginManager.testing_plugin_manager(
+            hook_managers=(), driver_managers=driver_managers)
+        parser = ArgumentParser(add_help=False)
 
-class TestPluginManagerWithoutPlugins(unittest.TestCase):
+        # When
+        plugin_manager.add_plugin_arguments(parser)
 
-    def setUp(self):
+        # Then
+        actions = parser._actions
+        self.assertEqual(len(actions), 1)
+        action, = actions
+        self.assertEqual(action.option_strings, ['--haas-runner'])
+
+    def test_driver_hook_found(self):
+        # Given
+        driver_managers = [
+            (PluginManager.TEST_RUNNER, ExtensionManager.make_test_instance(
+                [], namespace=PluginManager.TEST_RUNNER)),
+        ]
+        plugin_manager = PluginManager.testing_plugin_manager(
+            hook_managers=(), driver_managers=driver_managers)
+        parser = ArgumentParser(add_help=False)
+
+        # When
+        plugin_manager.add_plugin_arguments(parser)
+
+        # Then
+        actions = parser._actions
+        self.assertEqual(len(actions), 0)
+
+    def test_environment_hook_options_no_plugins(self):
+        # Given
         environment_manager = ExtensionManager.make_test_instance(
             [], namespace=PluginManager.ENVIRONMENT_HOOK,
         )
         hook_managers = [(PluginManager.ENVIRONMENT_HOOK, environment_manager)]
-        self.plugin_manager = PluginManager.testing_plugin_manager(
+        plugin_manager = PluginManager.testing_plugin_manager(
             hook_managers=hook_managers, driver_managers=())
-
-    def test_environment_hook_options_no_plugins(self):
-        # Given
-        plugin_manager = self.plugin_manager
         parser = ArgumentParser(add_help=False)
 
         # When
