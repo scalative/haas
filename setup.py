@@ -124,5 +124,8 @@ if __name__ == "__main__":
             'haas.hooks.environment': [
                 'coverage = haas.plugins.coverage:Coverage',
             ],
+            'haas.runner': [
+                'default = unittest:TextTestRunner',
+            ],
         },
     )

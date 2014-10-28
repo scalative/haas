@@ -9,6 +9,7 @@ from __future__ import absolute_import, unicode_literals
 from collections import OrderedDict
 import logging
 
+from stevedore.driver import DriverManager
 from stevedore.extension import ExtensionManager
 
 logger = logging.getLogger(__name__)
@@ -18,6 +19,12 @@ class PluginManager(object):
 
     ENVIRONMENT_HOOK = 'haas.hooks.environment'
 
+    TEST_RUNNER = 'haas.runner'
+
+    _help = {
+        TEST_RUNNER: 'Test runner implementation to use.'
+    }
+
     def __init__(self):
         self.hook_managers = OrderedDict()
         self.hook_managers[self.ENVIRONMENT_HOOK] = ExtensionManager(
@@ -26,6 +33,9 @@ class PluginManager(object):
         )
 
         self.driver_managers = OrderedDict()
+        self.driver_managers[self.TEST_RUNNER] = ExtensionManager(
+            namespace=self.TEST_RUNNER,
+        )
 
     @classmethod
     def testing_plugin_manager(cls, hook_managers):
