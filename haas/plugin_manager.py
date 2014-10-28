@@ -57,7 +57,7 @@ class PluginManager(object):
 
     def _namespace_to_option(self, namespace):
         parts = namespace.split('.')
-        option = '--{}'.format('-'.join(parts))
+        option = '--{0}'.format('-'.join(parts))
         dest = '_'.join(parts)
         return option, dest
 
