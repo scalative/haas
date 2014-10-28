@@ -53,7 +53,7 @@ UNCAMELCASE_SECOND_PASS = re.compile(
 
 
 def uncamelcase(string, sep='_'):
-    replace = '\g<before>{}\g<caps>'.format(sep)
+    replace = '\g<before>{0}\g<caps>'.format(sep)
     temp = UNCAMELCASE_FIRST_PASS.sub(replace, string)
     return UNCAMELCASE_SECOND_PASS.sub(replace, temp).lower()
 
