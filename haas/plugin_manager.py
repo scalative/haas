@@ -109,11 +109,8 @@ class PluginManager(object):
     def get_driver(self, namespace, args):
         option, dest = self._namespace_to_option(namespace)
         dest_prefix = '{0}_'.format(dest)
-        invoke_args = (args, dest_prefix)
         driver_name = getattr(args, dest, 'default')
         driver_manager = DriverManager(
             namespace, driver_name,
-            invoke_args=invoke_args,
-            invoke_on_load=True,
         )
-        return driver_manager.driver
+        return driver_manager.driver.from_args(args, dest_prefix)
