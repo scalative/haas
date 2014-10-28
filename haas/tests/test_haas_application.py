@@ -51,7 +51,7 @@ class TestHaasApplication(unittest.TestCase):
         app.run()
         return run_method, result
 
-    @patch('haas.testing.unittest.TextTestRunner')
+    @patch('haas.plugins.runner.TextTestRunner')
     def test_main_default_arguments(self, runner_class):
         run, result = self._run_with_arguments(runner_class)
         runner_class.assert_called_once_with(
@@ -62,7 +62,7 @@ class TestHaasApplication(unittest.TestCase):
 
         result.wasSuccessful.assert_called_once_with()
 
-    @patch('haas.testing.unittest.TextTestRunner')
+    @patch('haas.plugins.runner.TextTestRunner')
     def test_main_quiet(self, runner_class):
         run, result = self._run_with_arguments(runner_class, '-q')
 
@@ -76,13 +76,13 @@ class TestHaasApplication(unittest.TestCase):
 
     @patch('sys.stdout')
     @patch('sys.stderr')
-    @patch('haas.testing.unittest.TextTestRunner')
+    @patch('haas.plugins.runner.TextTestRunner')
     def test_main_quiet_and_verbose_not_allowed(self, runner_class, stdout,
                                                 stderr):
         with self.assertRaises(SystemExit):
             self._run_with_arguments(runner_class, '-q', '-v')
 
-    @patch('haas.testing.unittest.TextTestRunner')
+    @patch('haas.plugins.runner.TextTestRunner')
     def test_main_verbose(self, runner_class):
         run, result = self._run_with_arguments(runner_class, '-v')
 
@@ -94,7 +94,7 @@ class TestHaasApplication(unittest.TestCase):
 
         result.wasSuccessful.assert_called_once_with()
 
-    @patch('haas.testing.unittest.TextTestRunner')
+    @patch('haas.plugins.runner.TextTestRunner')
     def test_main_failfast(self, runner_class):
         run, result = self._run_with_arguments(runner_class, '-f')
 
@@ -106,7 +106,7 @@ class TestHaasApplication(unittest.TestCase):
 
         result.wasSuccessful.assert_called_once_with()
 
-    @patch('haas.testing.unittest.TextTestRunner')
+    @patch('haas.plugins.runner.TextTestRunner')
     def test_main_buffer(self, runner_class):
         run, result = self._run_with_arguments(runner_class, '-b')
 
@@ -119,7 +119,7 @@ class TestHaasApplication(unittest.TestCase):
         result.wasSuccessful.assert_called_once_with()
 
     @patch('logging.getLogger')
-    @patch('haas.testing.unittest.TextTestRunner')
+    @patch('haas.plugins.runner.TextTestRunner')
     def test_with_logging(self, runner_class, get_logger):
         run, result = self._run_with_arguments(
             runner_class, '--log-level', 'debug')
@@ -136,7 +136,7 @@ class TestHaasApplication(unittest.TestCase):
     @patch('sys.stdout')
     @patch('sys.stderr')
     @patch('coverage.coverage')
-    @patch('haas.testing.unittest.TextTestRunner')
+    @patch('haas.plugins.runner.TextTestRunner')
     def test_with_coverage_plugin(self, runner_class, coverage, stdout,
                                   stderr):
         # When
@@ -181,7 +181,7 @@ class TestHaasApplication(unittest.TestCase):
         suite.run(result)
         self.assertEqual(result.testsRun, 1)
 
-    @patch('haas.testing.unittest.TextTestRunner')
+    @patch('haas.plugins.runner.TextTestRunner')
     def test_multiple_start_directories(self, runner_class):
         # Given
         module = builder.Module(
@@ -225,7 +225,7 @@ class TestHaasApplication(unittest.TestCase):
         finally:
             shutil.rmtree(tempdir)
 
-    @patch('haas.testing.unittest.TextTestRunner')
+    @patch('haas.plugins.runner.TextTestRunner')
     def test_multiple_start_directories_non_package(self, runner_class):
         # Given
         module = builder.Module(
