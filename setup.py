@@ -150,6 +150,7 @@ if __name__ == "__main__":
             ],
             'haas.runner': [
                 'default = haas.plugins.runner:BaseTestRunner',
+                'parallel = haas.plugins.parallel_runner:ParallelTestRunner',  # noqa
             ],
             'haas.result.handler': [
                 'default = haas.plugins.result_handler:StandardTestResultHandler',  # noqa
