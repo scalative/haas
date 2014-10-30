@@ -88,7 +88,7 @@ class HaasApplication(object):
 
         environment_plugins = plugin_manager.get_enabled_hook_plugins(
             plugin_manager.ENVIRONMENT_HOOK)
-        test_runner_class = plugin_manager.get_driver(
+        runner = plugin_manager.get_driver(
             plugin_manager.TEST_RUNNER, args)
 
         with PluginContext(environment_plugins):
@@ -108,11 +108,7 @@ class HaasApplication(object):
                 suite = loader.create_suite(suites)
             test_count = suite.countTestCases()
             result_factory = lambda *args: TextTestResult(test_count, *args)
-            runner = test_runner_class(
-                verbosity=args.verbosity,
-                failfast=args.failfast,
-                buffer=args.buffer,
-                resultclass=result_factory,
-            )
+            # FIXME
+            runner.resultclass = result_factory
             result = runner.run(suite)
             return not result.wasSuccessful()
