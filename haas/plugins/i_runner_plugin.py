@@ -31,4 +31,16 @@ class IRunnerPlugin(object):
 
     @abstractclassmethod
     def add_parser_arguments(self, parser, option_prefix, dest_prefix):
-        pass
+        """Add options for the plugin to the main argument parser.
+
+        Parameters
+        ----------
+        parser : argparse.ArgumentParser
+            The parser to extend
+        option_prefix : str
+            The prefix that option strings added by this plugin should use.
+        dest_prefix : str
+            The prefix that ``dest`` strings for options added by this
+            plugin should use.
+
+        """
