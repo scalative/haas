@@ -7,6 +7,7 @@
 from __future__ import absolute_import, unicode_literals
 
 from argparse import Namespace
+from functools import wraps
 import os
 import shutil
 import tempfile
@@ -40,6 +41,32 @@ class MockLambda(object):
         return not (other == self)
 
 
+def with_patched_test_runner(fn):
+    @wraps(fn)
+    def wrapper(*args):
+        with patch('haas.plugins.runner.TextTestRunner') as runner_class:
+            environment_manager = ExtensionManager.make_test_instance(
+                [], namespace=PluginManager.ENVIRONMENT_HOOK,
+            )
+            env_managers = [
+                (PluginManager.ENVIRONMENT_HOOK, environment_manager),
+            ]
+            extension = Extension('default', None, runner_class, None)
+            driver_managers = [
+                (
+                    PluginManager.TEST_RUNNER,
+                    ExtensionManager.make_test_instance(
+                        [extension], namespace=PluginManager.TEST_RUNNER),
+                ),
+            ]
+            plugin_manager = PluginManager.testing_plugin_manager(
+                hook_managers=env_managers,
+                driver_managers=driver_managers)
+            args_ = args + (runner_class, plugin_manager,)
+            return fn(*args_)
+    return wrapper
+
+
 class TestHaasApplication(unittest.TestCase):
 
     def _run_with_arguments(self, runner_class, *args, **kwargs):
@@ -56,22 +83,8 @@ class TestHaasApplication(unittest.TestCase):
         app.run(plugin_manager=plugin_manager)
         return run_method, result
 
-    @patch('haas.plugins.runner.TextTestRunner')
-    def test_main_default_arguments(self, runner_class):
-        # Given
-        environment_manager = ExtensionManager.make_test_instance(
-            [], namespace=PluginManager.ENVIRONMENT_HOOK,
-        )
-        env_managers = [(PluginManager.ENVIRONMENT_HOOK, environment_manager)]
-        extension = Extension('default', None, runner_class, None)
-        driver_managers = [
-            (PluginManager.TEST_RUNNER, ExtensionManager.make_test_instance(
-                [extension], namespace=PluginManager.TEST_RUNNER)),
-        ]
-        plugin_manager = PluginManager.testing_plugin_manager(
-            hook_managers=env_managers,
-            driver_managers=driver_managers)
-
+    @with_patched_test_runner
+    def test_main_default_arguments(self, runner_class, plugin_manager):
         # When
         run, result = self._run_with_arguments(
             runner_class, plugin_manager=plugin_manager)
@@ -91,22 +104,8 @@ class TestHaasApplication(unittest.TestCase):
         run.assert_called_once_with(suite)
         result.wasSuccessful.assert_called_once_with()
 
-    @patch('haas.plugins.runner.TextTestRunner')
-    def test_main_quiet(self, runner_class):
-        # Given
-        environment_manager = ExtensionManager.make_test_instance(
-            [], namespace=PluginManager.ENVIRONMENT_HOOK,
-        )
-        env_managers = [(PluginManager.ENVIRONMENT_HOOK, environment_manager)]
-        extension = Extension('default', None, runner_class, None)
-        driver_managers = [
-            (PluginManager.TEST_RUNNER, ExtensionManager.make_test_instance(
-                [extension], namespace=PluginManager.TEST_RUNNER)),
-        ]
-        plugin_manager = PluginManager.testing_plugin_manager(
-            hook_managers=env_managers,
-            driver_managers=driver_managers)
-
+    @with_patched_test_runner
+    def test_main_quiet(self, runner_class, plugin_manager):
         # When
         run, result = self._run_with_arguments(
             runner_class, '-q', plugin_manager=plugin_manager)
@@ -132,22 +131,8 @@ class TestHaasApplication(unittest.TestCase):
         with self.assertRaises(SystemExit):
             self._run_with_arguments(runner_class, '-q', '-v')
 
-    @patch('haas.plugins.runner.TextTestRunner')
-    def test_main_verbose(self, runner_class):
-        # Given
-        environment_manager = ExtensionManager.make_test_instance(
-            [], namespace=PluginManager.ENVIRONMENT_HOOK,
-        )
-        env_managers = [(PluginManager.ENVIRONMENT_HOOK, environment_manager)]
-        extension = Extension('default', None, runner_class, None)
-        driver_managers = [
-            (PluginManager.TEST_RUNNER, ExtensionManager.make_test_instance(
-                [extension], namespace=PluginManager.TEST_RUNNER)),
-        ]
-        plugin_manager = PluginManager.testing_plugin_manager(
-            hook_managers=env_managers,
-            driver_managers=driver_managers)
-
+    @with_patched_test_runner
+    def test_main_verbose(self, runner_class, plugin_manager):
         # When
         run, result = self._run_with_arguments(
             runner_class, '-v', plugin_manager=plugin_manager)
@@ -165,22 +150,8 @@ class TestHaasApplication(unittest.TestCase):
         run.assert_called_once_with(suite)
         result.wasSuccessful.assert_called_once_with()
 
-    @patch('haas.plugins.runner.TextTestRunner')
-    def test_main_failfast(self, runner_class):
-        # Given
-        environment_manager = ExtensionManager.make_test_instance(
-            [], namespace=PluginManager.ENVIRONMENT_HOOK,
-        )
-        env_managers = [(PluginManager.ENVIRONMENT_HOOK, environment_manager)]
-        extension = Extension('default', None, runner_class, None)
-        driver_managers = [
-            (PluginManager.TEST_RUNNER, ExtensionManager.make_test_instance(
-                [extension], namespace=PluginManager.TEST_RUNNER)),
-        ]
-        plugin_manager = PluginManager.testing_plugin_manager(
-            hook_managers=env_managers,
-            driver_managers=driver_managers)
-
+    @with_patched_test_runner
+    def test_main_failfast(self, runner_class, plugin_manager):
         # When
         run, result = self._run_with_arguments(
             runner_class, '-f', plugin_manager=plugin_manager)
