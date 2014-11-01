@@ -79,24 +79,49 @@ class TestHaasApplication(unittest.TestCase):
         # Then
         self.assertEqual(runner_class.from_args.call_count, 1)
         args = runner_class.from_args.call_args
-        self.assertIsInstance(args[0][0], Namespace)
-        self.assertEqual(args[0][1], 'runner_')
+        args, kwargs = args
+        ns, dest = args
+        self.assertIsInstance(ns, Namespace)
+        self.assertEqual(dest, 'runner_')
+        self.assertEqual(ns.verbosity, 1)
+        self.assertFalse(ns.failfast)
+        self.assertFalse(ns.buffer)
 
         suite = Discoverer(Loader()).discover('haas')
         run.assert_called_once_with(suite)
-
         result.wasSuccessful.assert_called_once_with()
 
     @patch('haas.plugins.runner.TextTestRunner')
     def test_main_quiet(self, runner_class):
-        run, result = self._run_with_arguments(runner_class, '-q')
+        # Given
+        environment_manager = ExtensionManager.make_test_instance(
+            [], namespace=PluginManager.ENVIRONMENT_HOOK,
+        )
+        env_managers = [(PluginManager.ENVIRONMENT_HOOK, environment_manager)]
+        extension = Extension('default', None, runner_class, None)
+        driver_managers = [
+            (PluginManager.TEST_RUNNER, ExtensionManager.make_test_instance(
+                [extension], namespace=PluginManager.TEST_RUNNER)),
+        ]
+        plugin_manager = PluginManager.testing_plugin_manager(
+            hook_managers=env_managers,
+            driver_managers=driver_managers)
 
-        runner_class.assert_called_once_with(
-            verbosity=0, failfast=False, buffer=False,
-            resultclass=MockLambda())
+        # When
+        run, result = self._run_with_arguments(
+            runner_class, '-q', plugin_manager=plugin_manager)
+
+        # Then
+        args = runner_class.from_args.call_args
+        args, kwargs = args
+        ns, dest = args
+        self.assertIsInstance(ns, Namespace)
+        self.assertEqual(ns.verbosity, 0)
+        self.assertFalse(ns.failfast)
+        self.assertFalse(ns.buffer)
+
         suite = Discoverer(Loader()).discover('haas')
         run.assert_called_once_with(suite)
-
         result.wasSuccessful.assert_called_once_with()
 
     @patch('sys.stdout')
@@ -109,14 +134,35 @@ class TestHaasApplication(unittest.TestCase):
 
     @patch('haas.plugins.runner.TextTestRunner')
     def test_main_verbose(self, runner_class):
-        run, result = self._run_with_arguments(runner_class, '-v')
+        # Given
+        environment_manager = ExtensionManager.make_test_instance(
+            [], namespace=PluginManager.ENVIRONMENT_HOOK,
+        )
+        env_managers = [(PluginManager.ENVIRONMENT_HOOK, environment_manager)]
+        extension = Extension('default', None, runner_class, None)
+        driver_managers = [
+            (PluginManager.TEST_RUNNER, ExtensionManager.make_test_instance(
+                [extension], namespace=PluginManager.TEST_RUNNER)),
+        ]
+        plugin_manager = PluginManager.testing_plugin_manager(
+            hook_managers=env_managers,
+            driver_managers=driver_managers)
 
-        runner_class.assert_called_once_with(
-            verbosity=2, failfast=False, buffer=False,
-            resultclass=MockLambda())
+        # When
+        run, result = self._run_with_arguments(
+            runner_class, '-v', plugin_manager=plugin_manager)
+
+        # Then
+        args = runner_class.from_args.call_args
+        args, kwargs = args
+        ns, dest = args
+        self.assertIsInstance(ns, Namespace)
+        self.assertEqual(ns.verbosity, 2)
+        self.assertFalse(ns.failfast)
+        self.assertFalse(ns.buffer)
+
         suite = Discoverer(Loader()).discover('haas')
         run.assert_called_once_with(suite)
-
         result.wasSuccessful.assert_called_once_with()
 
     @patch('haas.plugins.runner.TextTestRunner')
