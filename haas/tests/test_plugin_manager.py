@@ -11,6 +11,8 @@ from argparse import ArgumentParser
 from stevedore.extension import ExtensionManager, Extension
 
 from haas.plugins.base_hook_plugin import BaseHookPlugin
+from haas.plugins.runner import TextTestRunner
+from ..haas_application import create_argument_parser
 from ..plugin_manager import PluginManager
 from ..testing import unittest
 
@@ -127,6 +129,57 @@ class TestPluginManager(unittest.TestCase):
         self.assertEqual(len(actions), 1)
         action, = actions
         self.assertEqual(action.option_strings, ['--runner'])
+
+    def test_get_default_driver(self):
+        # Given
+        class OtherRunner(TextTestRunner):
+            pass
+
+        default = Extension(
+            'default', None, TextTestRunner, None)
+        other = Extension(
+            'other', None, OtherRunner, None)
+        driver_managers = [
+            (PluginManager.TEST_RUNNER, ExtensionManager.make_test_instance(
+                [default, other], namespace=PluginManager.TEST_RUNNER)),
+        ]
+        plugin_manager = PluginManager.testing_plugin_manager(
+            hook_managers=(), driver_managers=driver_managers)
+        parser = create_argument_parser()
+        plugin_manager.add_plugin_arguments(parser)
+
+        # When
+        args = parser.parse_args([])
+        plugin_manager.get_driver(plugin_manager.TEST_RUNNER, args)
+        runner = plugin_manager.get_driver(plugin_manager.TEST_RUNNER, args)
+
+        # Then
+        self.assertNotIsInstance(runner, OtherRunner)
+
+    def test_get_other_driver(self):
+        # Given
+        class OtherRunner(TextTestRunner):
+            pass
+
+        default = Extension(
+            'default', None, TextTestRunner, None)
+        other = Extension(
+            'other', None, OtherRunner, None)
+        driver_managers = [
+            (PluginManager.TEST_RUNNER, ExtensionManager.make_test_instance(
+                [default, other], namespace=PluginManager.TEST_RUNNER)),
+        ]
+        plugin_manager = PluginManager.testing_plugin_manager(
+            hook_managers=(), driver_managers=driver_managers)
+        parser = create_argument_parser()
+        plugin_manager.add_plugin_arguments(parser)
+
+        # When
+        args = parser.parse_args(['--runner', 'other'])
+        runner = plugin_manager.get_driver(plugin_manager.TEST_RUNNER, args)
+
+        # Then
+        self.assertIsInstance(runner, OtherRunner)
 
     def test_no_driver_hook_found(self):
         # Given
