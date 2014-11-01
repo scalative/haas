@@ -73,7 +73,7 @@ class cd(object):
         self.startdir = None
 
 
-if sys.version_info < (3, 2):
+if sys.version_info < (3, 2):  # pragma: no cover
     # Copied from Python 3.2 abc.py
     class abstractclassmethod(classmethod):
         """A decorator indicating abstract classmethods.
@@ -93,5 +93,5 @@ if sys.version_info < (3, 2):
         def __init__(self, callable):
             callable.__isabstractmethod__ = True
             super(abstractclassmethod, self).__init__(callable)
-else:
+else:  # pragma: no cover
     from abc import abstractclassmethod  # noqa
