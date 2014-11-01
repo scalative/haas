@@ -167,41 +167,103 @@ class TestHaasApplication(unittest.TestCase):
 
     @patch('haas.plugins.runner.TextTestRunner')
     def test_main_failfast(self, runner_class):
-        run, result = self._run_with_arguments(runner_class, '-f')
+        # Given
+        environment_manager = ExtensionManager.make_test_instance(
+            [], namespace=PluginManager.ENVIRONMENT_HOOK,
+        )
+        env_managers = [(PluginManager.ENVIRONMENT_HOOK, environment_manager)]
+        extension = Extension('default', None, runner_class, None)
+        driver_managers = [
+            (PluginManager.TEST_RUNNER, ExtensionManager.make_test_instance(
+                [extension], namespace=PluginManager.TEST_RUNNER)),
+        ]
+        plugin_manager = PluginManager.testing_plugin_manager(
+            hook_managers=env_managers,
+            driver_managers=driver_managers)
 
-        runner_class.assert_called_once_with(
-            verbosity=1, failfast=True, buffer=False,
-            resultclass=MockLambda())
+        # When
+        run, result = self._run_with_arguments(
+            runner_class, '-f', plugin_manager=plugin_manager)
+
+        # Then
+        args = runner_class.from_args.call_args
+        args, kwargs = args
+        ns, dest = args
+        self.assertIsInstance(ns, Namespace)
+        self.assertEqual(ns.verbosity, 1)
+        self.assertTrue(ns.failfast)
+        self.assertFalse(ns.buffer)
+
         suite = Discoverer(Loader()).discover('haas')
         run.assert_called_once_with(suite)
-
         result.wasSuccessful.assert_called_once_with()
 
     @patch('haas.plugins.runner.TextTestRunner')
     def test_main_buffer(self, runner_class):
-        run, result = self._run_with_arguments(runner_class, '-b')
+        # Given
+        environment_manager = ExtensionManager.make_test_instance(
+            [], namespace=PluginManager.ENVIRONMENT_HOOK,
+        )
+        env_managers = [(PluginManager.ENVIRONMENT_HOOK, environment_manager)]
+        extension = Extension('default', None, runner_class, None)
+        driver_managers = [
+            (PluginManager.TEST_RUNNER, ExtensionManager.make_test_instance(
+                [extension], namespace=PluginManager.TEST_RUNNER)),
+        ]
+        plugin_manager = PluginManager.testing_plugin_manager(
+            hook_managers=env_managers,
+            driver_managers=driver_managers)
 
-        runner_class.assert_called_once_with(
-            verbosity=1, failfast=False, buffer=True,
-            resultclass=MockLambda())
+        # When
+        run, result = self._run_with_arguments(
+            runner_class, '-b', plugin_manager=plugin_manager)
+
+        # Then
+        args = runner_class.from_args.call_args
+        args, kwargs = args
+        ns, dest = args
+        self.assertIsInstance(ns, Namespace)
+        self.assertEqual(ns.verbosity, 1)
+        self.assertFalse(ns.failfast)
+        self.assertTrue(ns.buffer)
+
         suite = Discoverer(Loader()).discover('haas')
         run.assert_called_once_with(suite)
-
         result.wasSuccessful.assert_called_once_with()
 
     @patch('logging.getLogger')
     @patch('haas.plugins.runner.TextTestRunner')
     def test_with_logging(self, runner_class, get_logger):
+        # Given
+        environment_manager = ExtensionManager.make_test_instance(
+            [], namespace=PluginManager.ENVIRONMENT_HOOK,
+        )
+        env_managers = [(PluginManager.ENVIRONMENT_HOOK, environment_manager)]
+        extension = Extension('default', None, runner_class, None)
+        driver_managers = [
+            (PluginManager.TEST_RUNNER, ExtensionManager.make_test_instance(
+                [extension], namespace=PluginManager.TEST_RUNNER)),
+        ]
+        plugin_manager = PluginManager.testing_plugin_manager(
+            hook_managers=env_managers,
+            driver_managers=driver_managers)
+
         run, result = self._run_with_arguments(
-            runner_class, '--log-level', 'debug')
+            runner_class, '--log-level', 'debug',
+            plugin_manager=plugin_manager)
         get_logger.assert_called_once_with(haas.__name__)
 
-        runner_class.assert_called_once_with(
-            verbosity=1, failfast=False, buffer=False,
-            resultclass=MockLambda())
+        # Then
+        args = runner_class.from_args.call_args
+        args, kwargs = args
+        ns, dest = args
+        self.assertIsInstance(ns, Namespace)
+        self.assertEqual(ns.verbosity, 1)
+        self.assertFalse(ns.failfast)
+        self.assertFalse(ns.buffer)
+
         suite = Discoverer(Loader()).discover('haas')
         run.assert_called_once_with(suite)
-
         result.wasSuccessful.assert_called_once_with()
 
     @patch('sys.stdout')
