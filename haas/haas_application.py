@@ -15,7 +15,6 @@ from .loader import Loader
 from .plugin_context import PluginContext
 from .plugin_manager import PluginManager
 from .result import TextTestResult
-from .testing import unittest
 from .utils import configure_logging
 
 
