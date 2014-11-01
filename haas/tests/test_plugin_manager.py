@@ -126,7 +126,7 @@ class TestPluginManager(unittest.TestCase):
         actions = parser._actions
         self.assertEqual(len(actions), 1)
         action, = actions
-        self.assertEqual(action.option_strings, ['--haas-runner'])
+        self.assertEqual(action.option_strings, ['--runner'])
 
     def test_driver_hook_found(self):
         # Given

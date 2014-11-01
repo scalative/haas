@@ -30,6 +30,10 @@ class PluginManager(object):
         TEST_RUNNER: 'Test runner implementation to use.'
     }
 
+    _namespace_to_option_parts = {
+        TEST_RUNNER: ['runner'],
+    }
+
     def __init__(self):
         self.hook_managers = OrderedDict()
         self.hook_managers[self.ENVIRONMENT_HOOK] = ExtensionManager(
@@ -61,7 +65,7 @@ class PluginManager(object):
         extension.obj.configure(args)
 
     def _namespace_to_option(self, namespace):
-        parts = namespace.split('.')
+        parts = self._namespace_to_option_parts[namespace]
         option = '--{0}'.format('-'.join(parts))
         dest = '_'.join(parts)
         return option, dest
