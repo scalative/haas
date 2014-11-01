@@ -9,12 +9,11 @@ from __future__ import absolute_import, unicode_literals
 import sys
 import logging
 
-if sys.version_info < (2, 7):
+if sys.version_info < (2, 7):  # pragma: no cover
     from ordereddict import OrderedDict
-else:
+else:  # pragma: no cover
     from collections import OrderedDict
 
-from stevedore.driver import DriverManager
 from stevedore.extension import ExtensionManager
 
 logger = logging.getLogger(__name__)
@@ -64,6 +63,11 @@ class PluginManager(object):
     def _configure_hook_extension(self, extension, args):
         extension.obj.configure(args)
 
+    def _add_driver_extension_arguments(self, extension, parser, option_prefix,
+                                        dest_prefix):
+        extension.plugin.add_parser_arguments(
+            parser, option_prefix, dest_prefix)
+
     def _namespace_to_option(self, namespace):
         parts = self._namespace_to_option_parts[namespace]
         option = '--{0}'.format('-'.join(parts))
@@ -83,6 +87,10 @@ class PluginManager(object):
             parser.add_argument(
                 option, help=self._help[namespace], dest=dest,
                 choices=choices, default='default')
+            option_prefix = '{0}-'.format(option)
+            dest_prefix = '{0}_'.format(dest)
+            manager.map(self._add_driver_extension_arguments,
+                        parser, option_prefix, dest_prefix)
 
     def configure_plugins(self, args):
         for manager in self.hook_managers.values():
@@ -99,8 +107,7 @@ class PluginManager(object):
 
     def get_driver(self, namespace, args):
         option, dest = self._namespace_to_option(namespace)
+        dest_prefix = '{0}_'.format(dest)
         driver_name = getattr(args, dest, 'default')
-        driver_manager = DriverManager(
-            namespace, driver_name,
-        )
-        return driver_manager.driver
+        driver_extension = self.driver_managers[namespace][driver_name]
+        return driver_extension.plugin.from_args(args, dest_prefix)
