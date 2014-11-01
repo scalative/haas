@@ -44,7 +44,13 @@ def git_version():
     except OSError:
         git_revision = "Unknown"
 
-    return git_revision
+    try:
+        out = _minimal_ext_cmd(['git', 'rev-list', '--count', 'HEAD'])
+        git_count = out.strip().decode('ascii')
+    except OSError:
+        git_count = '0'
+
+    return git_revision, git_count
 
 
 def write_version_py(filename='haas/_version.py'):
@@ -68,7 +74,7 @@ if not is_released:
 """
     fullversion = VERSION
     if os.path.exists('.git'):
-        git_rev = git_version()
+        git_rev, dev_num = git_version()
     elif os.path.exists('haas/_version.py'):
         # must be a source distribution, use existing version file
         try:
@@ -81,7 +87,7 @@ if not is_released:
         git_rev = "Unknown"
 
     if not IS_RELEASED:
-        fullversion += '.dev1-' + git_rev[:7]
+        fullversion += '.dev{0}+'.format(dev_num) + git_rev[:7]
 
     with open(filename, "wt") as fp:
         fp.write(template.format(version=VERSION,
