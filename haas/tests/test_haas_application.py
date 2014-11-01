@@ -6,6 +6,7 @@
 # of the 3-clause BSD license.  See the LICENSE.txt file for details.
 from __future__ import absolute_import, unicode_literals
 
+from argparse import Namespace
 import os
 import shutil
 import tempfile
@@ -13,10 +14,13 @@ import types
 
 from mock import Mock, patch
 
+from stevedore.extension import ExtensionManager, Extension
+
 import haas
 from ..discoverer import Discoverer
 from ..haas_application import HaasApplication
 from ..loader import Loader
+from ..plugin_manager import PluginManager
 from ..suite import TestSuite
 from ..testing import unittest
 from ..utils import cd
@@ -38,9 +42,10 @@ class MockLambda(object):
 
 class TestHaasApplication(unittest.TestCase):
 
-    def _run_with_arguments(self, runner_class, *args):
+    def _run_with_arguments(self, runner_class, *args, **kwargs):
+        plugin_manager = kwargs.get('plugin_manager')
         runner = Mock()
-        runner_class.return_value = runner
+        runner_class.from_args.return_value = runner
 
         result = Mock()
         result.wasSuccessful = Mock()
@@ -48,15 +53,35 @@ class TestHaasApplication(unittest.TestCase):
         runner.run = run_method
 
         app = HaasApplication(['argv0'] + list(args))
-        app.run()
+        app.run(plugin_manager=plugin_manager)
         return run_method, result
 
     @patch('haas.plugins.runner.TextTestRunner')
     def test_main_default_arguments(self, runner_class):
-        run, result = self._run_with_arguments(runner_class)
-        runner_class.assert_called_once_with(
-            verbosity=1, failfast=False, buffer=False,
-            resultclass=MockLambda())
+        # Given
+        environment_manager = ExtensionManager.make_test_instance(
+            [], namespace=PluginManager.ENVIRONMENT_HOOK,
+        )
+        env_managers = [(PluginManager.ENVIRONMENT_HOOK, environment_manager)]
+        extension = Extension('default', None, runner_class, None)
+        driver_managers = [
+            (PluginManager.TEST_RUNNER, ExtensionManager.make_test_instance(
+                [extension], namespace=PluginManager.TEST_RUNNER)),
+        ]
+        plugin_manager = PluginManager.testing_plugin_manager(
+            hook_managers=env_managers,
+            driver_managers=driver_managers)
+
+        # When
+        run, result = self._run_with_arguments(
+            runner_class, plugin_manager=plugin_manager)
+
+        # Then
+        self.assertEqual(runner_class.from_args.call_count, 1)
+        args = runner_class.from_args.call_args
+        self.assertIsInstance(args[0][0], Namespace)
+        self.assertEqual(args[0][1], 'runner_')
+
         suite = Discoverer(Loader()).discover('haas')
         run.assert_called_once_with(suite)
 
