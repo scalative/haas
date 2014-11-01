@@ -1,6 +1,5 @@
-coverage
-mock
+-r test_requirements.txt
 refactordoc
-six
+sphinx
 sphinx-rtd-theme
 wheel
