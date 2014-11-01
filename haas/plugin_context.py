@@ -16,7 +16,7 @@ class PluginContext(object):
         super(PluginContext, self).__init__(**kwargs)
         if hooks is None:
             hooks = []
-        self.hooks = tuple(filter(None, hooks))
+        self.hooks = tuple(hook for hook in hooks if hook is not None)
 
     def __enter__(self):
         self.setup()

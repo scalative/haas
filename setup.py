@@ -49,6 +49,14 @@ def git_version():
 
 def write_version_py(filename='haas/_version.py'):
     template = """\
+# -*- coding: utf-8 -*-
+# Copyright (c) 2013-2014 Simon Jagoe
+# All rights reserved.
+#
+# This software may be modified and distributed under the terms
+# of the 3-clause BSD license.  See the LICENSE.txt file for details.
+from __future__ import absolute_import, unicode_literals
+
 # THIS FILE IS GENERATED FROM SETUP.PY
 version = '{version}'
 full_version = '{full_version}'
@@ -83,12 +91,9 @@ if not is_released:
 
 
 if __name__ == "__main__":
+    install_requires = ['stevedore', 'six']
     if sys.version_info < (2, 7):
-        setup_kwargs = {
-            'install_requires': ['unittest2', 'argparse'],
-        }
-    else:
-        setup_kwargs = {}
+        install_requires += ['unittest2', 'argparse', 'ordereddict']
 
     write_version_py()
     from haas import __version__
@@ -118,11 +123,17 @@ if __name__ == "__main__":
         description='Extensible Python Test Runner',
         long_description=long_description,
         license='BSD',
-        packages=['haas'],
+        packages=['haas', 'haas.plugins'],
+        install_requires=install_requires,
         entry_points={
             'console_scripts': [
                 'haas=haas.main:main',
             ],
+            'haas.hooks.environment': [
+                'coverage = haas.plugins.coverage:Coverage',
+            ],
+            'haas.runner': [
+                'default = haas.plugins.runner:TextTestRunner',
+            ],
         },
-        **setup_kwargs
     )

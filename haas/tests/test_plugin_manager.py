@@ -6,54 +6,176 @@
 # of the 3-clause BSD license.  See the LICENSE.txt file for details.
 from __future__ import absolute_import, unicode_literals
 
-from ..plugin_manager import PluginError, PluginManager
+from argparse import ArgumentParser
+
+from stevedore.extension import ExtensionManager, Extension
+
+from haas.plugins.base_hook_plugin import BaseHookPlugin
+from ..plugin_manager import PluginManager
 from ..testing import unittest
 
 
-class PluginManagerFixture(object):
-
-    def setUp(self):
-        self.plugin_manager = PluginManager()
-
-    def tearDown(self):
-        del self.plugin_manager
+class InvalidPlugin(object):
+    pass
 
 
-class TestLoadPluginClass(PluginManagerFixture, unittest.TestCase):
+class TestingPlugin(BaseHookPlugin):
 
-    def test_none_raises(self):
-        with self.assertRaises(PluginError):
-            self.plugin_manager.load_plugin_class(None)
+    def __init__(self, *args, **kwargs):
+        super(TestingPlugin, self).__init__(*args, **kwargs)
+        self.setup_called = 0
+        self.teardown_called = 0
+        self.add_parser_arguments_called = 0
+        self.configure_called = 0
 
-    def test_no_dot_raises(self):
-        with self.assertRaises(PluginError):
-            self.plugin_manager.load_plugin_class(
-                'module_with_no_class_attribute')
+    def setup(self):
+        self.setup_called += 1
 
-    def test_missing_module_raises(self):
-        with self.assertRaises(PluginError):
-            self.plugin_manager.load_plugin_class('haas.non_existent.factory')
+    def teardown(self):
+        self.teardown_called += 1
 
-    def test_no_in_module_attribute_raises(self):
-        with self.assertRaises(PluginError):
-            self.plugin_manager.load_plugin_class('haas.plugin_context')
+    def add_parser_arguments(self, parser):
+        self.add_parser_arguments_called += 1
+        return super(TestingPlugin, self).add_parser_arguments(parser)
 
-    def test_missing_factory_raises(self):
-        with self.assertRaises(PluginError):
-            self.plugin_manager.load_plugin_class('haas.coverage.non_existent')
-
-    def test_valid_plugin(self):
-        klass = self.plugin_manager.load_plugin_class('haas.coverage.Coverage')
-        from ..coverage import Coverage
-        self.assertIs(klass, Coverage)
+    def configure(self, args):
+        self.configure_called += 1
+        return super(TestingPlugin, self).configure(args)
 
 
-class TestLoadPlugin(PluginManagerFixture, unittest.TestCase):
+class TestBaseHookPlugin(unittest.TestCase):
 
-    def test_none_returns_none(self):
-        self.assertIsNone(self.plugin_manager.load_plugin(None))
+    def test_name_default(self):
+        # When
+        plugin = TestingPlugin(name='my-name')
 
-    def test_valid_plugin(self):
-        plugin = self.plugin_manager.load_plugin('haas.coverage.Coverage')
-        from ..coverage import Coverage
-        self.assertIsInstance(plugin, Coverage)
+        # Then
+        self.assertEqual(plugin.name, 'my-name')
+
+        # When
+        plugin = TestingPlugin()
+
+        # Then
+        self.assertEqual(plugin.name, 'testing-plugin')
+
+
+class TestPluginManager(unittest.TestCase):
+
+    def test_environment_hook_options(self):
+        # Given
+        plugin_obj = TestingPlugin()
+        extension = Extension(
+            'extension', None, TestingPlugin, plugin_obj)
+        environment_manager = ExtensionManager.make_test_instance(
+            [extension], namespace=PluginManager.ENVIRONMENT_HOOK,
+        )
+        hook_managers = [(PluginManager.ENVIRONMENT_HOOK, environment_manager)]
+        plugin_manager = PluginManager.testing_plugin_manager(
+            hook_managers=hook_managers, driver_managers=())
+        parser = ArgumentParser(add_help=False)
+
+        # When
+        plugin_manager.add_plugin_arguments(parser)
+
+        # Then
+        self.assertEqual(plugin_obj.add_parser_arguments_called, 1)
+        actions = parser._actions
+        self.assertEqual(len(actions), 1)
+        action, = actions
+        self.assertEqual(action.option_strings, ['--with-testing-plugin'])
+
+        # When
+        enabled_plugins = plugin_manager.get_enabled_hook_plugins(
+            plugin_manager.ENVIRONMENT_HOOK)
+
+        # Then
+        self.assertFalse(plugin_obj.enabled)
+        self.assertEqual(enabled_plugins, [])
+
+        # When
+        args = parser.parse_args(['--with-testing-plugin'])
+        plugin_manager.configure_plugins(args)
+
+        # Then
+        self.assertEqual(plugin_obj.configure_called, 1)
+
+        # When
+        enabled_plugins = plugin_manager.get_enabled_hook_plugins(
+            plugin_manager.ENVIRONMENT_HOOK)
+
+        # Then
+        self.assertTrue(plugin_obj.enabled)
+        self.assertEqual(enabled_plugins, [plugin_obj])
+
+    def test_no_driver_hooks_found(self):
+        # Given
+        extension = Extension(
+            'haas.runner', None, unittest.TextTestRunner, None)
+        driver_managers = [
+            (PluginManager.TEST_RUNNER, ExtensionManager.make_test_instance(
+                [extension], namespace=PluginManager.TEST_RUNNER)),
+        ]
+        plugin_manager = PluginManager.testing_plugin_manager(
+            hook_managers=(), driver_managers=driver_managers)
+        parser = ArgumentParser(add_help=False)
+
+        # When
+        plugin_manager.add_plugin_arguments(parser)
+
+        # Then
+        actions = parser._actions
+        self.assertEqual(len(actions), 1)
+        action, = actions
+        self.assertEqual(action.option_strings, ['--runner'])
+
+    def test_driver_hook_found(self):
+        # Given
+        driver_managers = [
+            (PluginManager.TEST_RUNNER, ExtensionManager.make_test_instance(
+                [], namespace=PluginManager.TEST_RUNNER)),
+        ]
+        plugin_manager = PluginManager.testing_plugin_manager(
+            hook_managers=(), driver_managers=driver_managers)
+        parser = ArgumentParser(add_help=False)
+
+        # When
+        plugin_manager.add_plugin_arguments(parser)
+
+        # Then
+        actions = parser._actions
+        self.assertEqual(len(actions), 0)
+
+    def test_environment_hook_options_no_plugins(self):
+        # Given
+        environment_manager = ExtensionManager.make_test_instance(
+            [], namespace=PluginManager.ENVIRONMENT_HOOK,
+        )
+        hook_managers = [(PluginManager.ENVIRONMENT_HOOK, environment_manager)]
+        plugin_manager = PluginManager.testing_plugin_manager(
+            hook_managers=hook_managers, driver_managers=())
+        parser = ArgumentParser(add_help=False)
+
+        # When
+        plugin_manager.add_plugin_arguments(parser)
+
+        # Then
+        actions = parser._actions
+        self.assertEqual(len(actions), 0)
+
+        # When
+        enabled_plugins = plugin_manager.get_enabled_hook_plugins(
+            plugin_manager.ENVIRONMENT_HOOK)
+
+        # Then
+        self.assertEqual(enabled_plugins, [])
+
+        # When
+        args = parser.parse_args([])
+        plugin_manager.configure_plugins(args)
+
+        # When
+        enabled_plugins = plugin_manager.get_enabled_hook_plugins(
+            plugin_manager.ENVIRONMENT_HOOK)
+
+        # Then
+        self.assertEqual(enabled_plugins, [])
