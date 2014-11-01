@@ -92,6 +92,6 @@ if sys.version_info < (3, 2):
 
         def __init__(self, callable):
             callable.__isabstractmethod__ = True
-            super().__init__(callable)
+            super(abstractclassmethod, self).__init__(callable)
 else:
     from abc import abstractclassmethod  # noqa
