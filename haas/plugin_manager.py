@@ -14,7 +14,6 @@ if sys.version_info < (2, 7):
 else:
     from collections import OrderedDict
 
-from stevedore.driver import DriverManager
 from stevedore.extension import ExtensionManager
 
 logger = logging.getLogger(__name__)
@@ -110,7 +109,5 @@ class PluginManager(object):
         option, dest = self._namespace_to_option(namespace)
         dest_prefix = '{0}_'.format(dest)
         driver_name = getattr(args, dest, 'default')
-        driver_manager = DriverManager(
-            namespace, driver_name,
-        )
-        return driver_manager.driver.from_args(args, dest_prefix)
+        driver_extension = self.driver_managers[namespace][driver_name]
+        return driver_extension.plugin.from_args(args, dest_prefix)
