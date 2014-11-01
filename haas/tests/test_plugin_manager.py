@@ -107,7 +107,7 @@ class TestPluginManager(unittest.TestCase):
         self.assertTrue(plugin_obj.enabled)
         self.assertEqual(enabled_plugins, [plugin_obj])
 
-    def test_no_driver_hooks_found(self):
+    def test_driver_hooks_found(self):
         # Given
         extension = Extension(
             'haas.runner', None, unittest.TextTestRunner, None)
@@ -128,7 +128,7 @@ class TestPluginManager(unittest.TestCase):
         action, = actions
         self.assertEqual(action.option_strings, ['--runner'])
 
-    def test_driver_hook_found(self):
+    def test_no_driver_hook_found(self):
         # Given
         driver_managers = [
             (PluginManager.TEST_RUNNER, ExtensionManager.make_test_instance(
