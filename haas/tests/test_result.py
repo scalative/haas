@@ -9,8 +9,8 @@ from __future__ import absolute_import, unicode_literals
 from contextlib import contextmanager
 import sys
 
-from mock import Mock
-from testfixtures import OutputCapture
+from mock import Mock, patch
+from six.moves import StringIO
 
 from ..plugins.i_result_handler_plugin import IResultHandlerPlugin
 from ..plugins.result_handler import QuietTestResultHandler
@@ -217,39 +217,56 @@ class TestTextTestResult(ExcInfoFixture, unittest.TestCase):
 
 class TestQuietResultHandler(ExcInfoFixture, unittest.TestCase):
 
-    def test_no_output(self):
+    @patch('sys.stderr', new_callable=StringIO)
+    def test_no_output_start_test_run(self, stderr):
         # Given
         handler = QuietTestResultHandler(test_count=1)
 
         # When
-        with OutputCapture() as output:
-            handler.start_test_run()
+        handler.start_test_run()
 
         # Then
-        output.compare('')
+        output = stderr.getvalue()
+        self.assertEqual(output, '')
+
+    @patch('sys.stderr', new_callable=StringIO)
+    def test_no_output_stop_test_run(self, stderr):
+        # Given
+        handler = QuietTestResultHandler(test_count=1)
 
         # When
-        with OutputCapture() as output:
-            handler.stop_test_run()
+        handler.stop_test_run()
 
         # Then
-        output.compare('')
+        output = stderr.getvalue()
+        self.assertEqual(output, '\n')
+
+    @patch('sys.stderr', new_callable=StringIO)
+    def test_no_output_start_test(self, stderr):
+        # Given
+        handler = QuietTestResultHandler(test_count=1)
 
         # When
-        with OutputCapture() as output:
-            handler.start_test(self)
+        handler.start_test(self)
 
         # Then
-        output.compare('')
+        output = stderr.getvalue()
+        self.assertEqual(output, '')
+
+    @patch('sys.stderr', new_callable=StringIO)
+    def test_no_output_stop_test(self, stderr):
+        # Given
+        handler = QuietTestResultHandler(test_count=1)
 
         # When
-        with OutputCapture() as output:
-            handler.stop_test(self)
+        handler.stop_test(self)
 
         # Then
-        output.compare('')
+        output = stderr.getvalue()
+        self.assertEqual(output, '')
 
-    def test_no_output_on_error(self):
+    @patch('sys.stderr', new_callable=StringIO)
+    def test_no_output_on_error(self, stderr):
         # Given
         handler = QuietTestResultHandler(test_count=1)
         with self.exc_info(RuntimeError) as exc_info:
@@ -257,13 +274,14 @@ class TestQuietResultHandler(ExcInfoFixture, unittest.TestCase):
                 self, TestCompletionStatus.error, exception=exc_info)
 
         # When
-        with OutputCapture() as output:
-            handler(result)
+        handler(result)
 
         # Then
-        output.compare('')
+        output = stderr.getvalue()
+        self.assertEqual(output, '')
 
-    def test_no_output_on_failure(self):
+    @patch('sys.stderr', new_callable=StringIO)
+    def test_no_output_on_failure(self, stderr):
         # Given
         handler = QuietTestResultHandler(test_count=1)
         with self.exc_info(AssertionError) as exc_info:
@@ -271,39 +289,42 @@ class TestQuietResultHandler(ExcInfoFixture, unittest.TestCase):
                 self, TestCompletionStatus.failure, exception=exc_info)
 
         # When
-        with OutputCapture() as output:
-            handler(result)
+        handler(result)
 
         # Then
-        output.compare('')
+        output = stderr.getvalue()
+        self.assertEqual(output, '')
 
-    def test_no_output_on_success(self):
+    @patch('sys.stderr', new_callable=StringIO)
+    def test_no_output_on_success(self, stderr):
         # Given
         handler = QuietTestResultHandler(test_count=1)
         result = TestResult.from_test_case(
             self, TestCompletionStatus.success)
 
         # When
-        with OutputCapture() as output:
-            handler(result)
+        handler(result)
 
         # Then
-        output.compare('')
+        output = stderr.getvalue()
+        self.assertEqual(output, '')
 
-    def test_no_output_on_skip(self):
+    @patch('sys.stderr', new_callable=StringIO)
+    def test_no_output_on_skip(self, stderr):
         # Given
         handler = QuietTestResultHandler(test_count=1)
         result = TestResult.from_test_case(
             self, TestCompletionStatus.skipped, message='reason')
 
         # When
-        with OutputCapture() as output:
-            handler(result)
+        handler(result)
 
         # Then
-        output.compare('')
+        output = stderr.getvalue()
+        self.assertEqual(output, '')
 
-    def test_no_output_on_expected_fail(self):
+    @patch('sys.stderr', new_callable=StringIO)
+    def test_no_output_on_expected_fail(self, stderr):
         # Given
         handler = QuietTestResultHandler(test_count=1)
         with self.exc_info(RuntimeError) as exc_info:
@@ -312,21 +333,22 @@ class TestQuietResultHandler(ExcInfoFixture, unittest.TestCase):
                 exception=exc_info)
 
         # When
-        with OutputCapture() as output:
-            handler(result)
+        handler(result)
 
         # Then
-        output.compare('')
+        output = stderr.getvalue()
+        self.assertEqual(output, '')
 
-    def test_no_output_on_unexpected_success(self):
+    @patch('sys.stderr', new_callable=StringIO)
+    def test_no_output_on_unexpected_success(self, stderr):
         # Given
         handler = QuietTestResultHandler(test_count=1)
         result = TestResult.from_test_case(
             self, TestCompletionStatus.unexpected_success)
 
         # When
-        with OutputCapture() as output:
-            handler(result)
+        handler(result)
 
         # Then
-        output.compare('')
+        output = stderr.getvalue()
+        self.assertEqual(output, '')
