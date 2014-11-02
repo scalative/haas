@@ -7,6 +7,7 @@
 from __future__ import absolute_import, unicode_literals
 
 from contextlib import contextmanager
+from time import ctime
 import sys
 
 from mock import Mock, patch
@@ -14,7 +15,8 @@ from six.moves import StringIO
 
 from ..plugins.i_result_handler_plugin import IResultHandlerPlugin
 from ..plugins.result_handler import (
-    QuietTestResultHandler, StandardTestResultHandler)
+    QuietTestResultHandler, StandardTestResultHandler,
+    VerboseTestResultHandler)
 from ..result import ResultCollecter, TestResult, TestCompletionStatus
 from ..testing import unittest
 
@@ -371,7 +373,7 @@ class TestQuietResultHandler(ExcInfoFixture, unittest.TestCase):
         description = handler.get_test_description(
             self,).replace('(', r'\(').replace(')', r'\)')
         self.assertRegexpMatches(
-            output, '{}.*?Traceback.*?RuntimeError'.format(
+            output, '{0}.*?Traceback.*?RuntimeError'.format(
                 description))
 
     @patch('sys.stderr', new_callable=StringIO)
@@ -393,7 +395,7 @@ class TestQuietResultHandler(ExcInfoFixture, unittest.TestCase):
         description = handler.get_test_description(
             self,).replace('(', r'\(').replace(')', r'\)').replace('\n', '')
         self.assertRegexpMatches(
-            output, '{}.*?Traceback.*?AssertionError'.format(
+            output, '{0}.*?Traceback.*?AssertionError'.format(
                 description))
 
 
@@ -552,7 +554,7 @@ class TestStandardResultHandler(ExcInfoFixture, unittest.TestCase):
         description = handler.get_test_description(
             self,).replace('(', r'\(').replace(')', r'\)')
         self.assertRegexpMatches(
-            output, '{}.*?Traceback.*?RuntimeError'.format(
+            output, '{0}.*?Traceback.*?RuntimeError'.format(
                 description))
 
     @patch('sys.stderr', new_callable=StringIO)
@@ -574,5 +576,191 @@ class TestStandardResultHandler(ExcInfoFixture, unittest.TestCase):
         description = handler.get_test_description(
             self,).replace('(', r'\(').replace(')', r'\)').replace('\n', '')
         self.assertRegexpMatches(
-            output, '{}.*?Traceback.*?AssertionError'.format(
+            output, '{0}.*?Traceback.*?AssertionError'.format(
+                description))
+
+
+class TestVerboseResultHandler(ExcInfoFixture, unittest.TestCase):
+
+    @patch('sys.stderr', new_callable=StringIO)
+    def test_output_start_test_run(self, stderr):
+        # Given
+        handler = VerboseTestResultHandler(test_count=1)
+
+        # When
+        handler.start_test_run()
+
+        # Then
+        output = stderr.getvalue()
+        self.assertEqual(output, '')
+
+    @patch('sys.stderr', new_callable=StringIO)
+    def test_no_output_stop_test_run(self, stderr):
+        # Given
+        handler = VerboseTestResultHandler(test_count=1)
+
+        # When
+        handler.stop_test_run()
+
+        # Then
+        output = stderr.getvalue()
+        self.assertEqual(output, '\n')
+
+    @patch('time.ctime')
+    @patch('sys.stderr', new_callable=StringIO)
+    def test_output_start_test(self, stderr, mock_ctime):
+        # Given
+        handler = VerboseTestResultHandler(test_count=1)
+        mock_ctime.return_value = expected_time = ctime()
+        expected_description = handler.get_test_description(self)
+
+        # When
+        handler.start_test(self)
+
+        # Then
+        output = stderr.getvalue()
+        self.assertEqual(
+            output, '[{0}] (1/1) {1} ... '.format(
+                expected_time, expected_description))
+
+    @patch('sys.stderr', new_callable=StringIO)
+    def test_no_output_stop_test(self, stderr):
+        # Given
+        handler = VerboseTestResultHandler(test_count=1)
+
+        # When
+        handler.stop_test(self)
+
+        # Then
+        output = stderr.getvalue()
+        self.assertEqual(output, '')
+
+    @patch('sys.stderr', new_callable=StringIO)
+    def test_output_on_error(self, stderr):
+        # Given
+        handler = VerboseTestResultHandler(test_count=1)
+        with self.exc_info(RuntimeError) as exc_info:
+            result = TestResult.from_test_case(
+                self, TestCompletionStatus.error, exception=exc_info)
+
+        # When
+        handler(result)
+
+        # Then
+        output = stderr.getvalue()
+        self.assertEqual(output, 'ERROR\n')
+
+    @patch('sys.stderr', new_callable=StringIO)
+    def test_output_on_failure(self, stderr):
+        # Given
+        handler = VerboseTestResultHandler(test_count=1)
+        with self.exc_info(AssertionError) as exc_info:
+            result = TestResult.from_test_case(
+                self, TestCompletionStatus.failure, exception=exc_info)
+
+        # When
+        handler(result)
+
+        # Then
+        output = stderr.getvalue()
+        self.assertEqual(output, 'FAIL\n')
+
+    @patch('sys.stderr', new_callable=StringIO)
+    def test_output_on_success(self, stderr):
+        # Given
+        handler = VerboseTestResultHandler(test_count=1)
+        result = TestResult.from_test_case(
+            self, TestCompletionStatus.success)
+
+        # When
+        handler(result)
+
+        # Then
+        output = stderr.getvalue()
+        self.assertEqual(output, 'ok\n')
+
+    @patch('sys.stderr', new_callable=StringIO)
+    def test_output_on_skip(self, stderr):
+        # Given
+        handler = VerboseTestResultHandler(test_count=1)
+        result = TestResult.from_test_case(
+            self, TestCompletionStatus.skipped, message='reason')
+
+        # When
+        handler(result)
+
+        # Then
+        output = stderr.getvalue()
+        self.assertEqual(output, 'skipped \'reason\'\n')
+
+    @patch('sys.stderr', new_callable=StringIO)
+    def test_output_on_expected_fail(self, stderr):
+        # Given
+        handler = VerboseTestResultHandler(test_count=1)
+        with self.exc_info(RuntimeError) as exc_info:
+            result = TestResult.from_test_case(
+                self, TestCompletionStatus.expected_failure,
+                exception=exc_info)
+
+        # When
+        handler(result)
+
+        # Then
+        output = stderr.getvalue()
+        self.assertEqual(output, 'expected failure\n')
+
+    @patch('sys.stderr', new_callable=StringIO)
+    def test_output_on_unexpected_success(self, stderr):
+        # Given
+        handler = VerboseTestResultHandler(test_count=1)
+        result = TestResult.from_test_case(
+            self, TestCompletionStatus.unexpected_success)
+
+        # When
+        handler(result)
+
+        # Then
+        output = stderr.getvalue()
+        self.assertEqual(output, 'unexpected success\n')
+
+    @patch('sys.stderr', new_callable=StringIO)
+    def test_output_with_error_on_stop_test_run(self, stderr):
+        # Given
+        handler = VerboseTestResultHandler(test_count=1)
+        with self.exc_info(RuntimeError) as exc_info:
+            result = TestResult.from_test_case(
+                self, TestCompletionStatus.error, exception=exc_info)
+
+        # When
+        handler(result)
+        handler.stop_test_run()
+
+        # Then
+        output = stderr.getvalue().replace('\n', '')
+        description = handler.get_test_description(
+            self,).replace('(', r'\(').replace(')', r'\)')
+        self.assertRegexpMatches(
+            output, '{0}.*?Traceback.*?RuntimeError'.format(
+                description))
+
+    @patch('sys.stderr', new_callable=StringIO)
+    def test_output_with_failure_on_stop_test_run(self, stderr):
+        """Has a docstring for test.
+        """
+        # Given
+        handler = VerboseTestResultHandler(test_count=1)
+        with self.exc_info(AssertionError) as exc_info:
+            result = TestResult.from_test_case(
+                self, TestCompletionStatus.failure, exception=exc_info)
+
+        # When
+        handler(result)
+        handler.stop_test_run()
+
+        # Then
+        output = stderr.getvalue().replace('\n', '')
+        description = handler.get_test_description(
+            self,).replace('(', r'\(').replace(')', r'\)').replace('\n', '')
+        self.assertRegexpMatches(
+            output, '{0}.*?Traceback.*?AssertionError'.format(
                 description))
