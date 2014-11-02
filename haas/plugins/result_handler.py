@@ -1,21 +1,8 @@
-from argparse import Action
 import sys
 import time
 
 from haas.result import TestCompletionStatus, separator2
 from .i_result_handler_plugin import IResultHandlerPlugin
-
-
-class VerbosityAction(Action):
-
-    def __init__(self, callback, *args, **kwargs):
-        self.callback = callback
-        kwargs['nargs'] = 0
-        super(VerbosityAction, self).__init__(*args, **kwargs)
-
-    def __call__(self, parser, namespace, values, option_string):
-        setattr(namespace, self.dest, self.const)
-        self.callback(namespace)
 
 
 class _WritelnDecorator(object):
@@ -62,16 +49,7 @@ class QuietTestResultHandler(IResultHandlerPlugin):
 
     @classmethod
     def add_parser_arguments(self, parser, option_prefix, dest_prefix):
-        verbosity = next(group for group in parser._mutually_exclusive_groups
-                         if group.title == 'verbosity')
-
-        def callback(ns):
-            setattr(ns, dest_prefix[:-1], 'quiet')
-
-        action = lambda *a, **k: VerbosityAction(callback, *a, **k)
-        verbosity.add_argument(
-            '-q', '--quiet', action=action, const=0, default=1,
-            dest='verbosity', help='Quiet output')
+        pass
 
     def get_test_description(self, test):
         doc_first_line = test.shortDescription()
@@ -124,8 +102,16 @@ class StandardTestResultHandler(QuietTestResultHandler):
     }
 
     @classmethod
-    def add_parser_arguments(self, parser, option_prefix, dest_prefix):
-        pass
+    def from_args(cls, args, arg_prefix, test_count):
+        dest = arg_prefix[:-1]
+        result_handler = getattr(args, dest)
+        if result_handler == 'default' and args.verbosity == 0:
+            return QuietTestResultHandler.from_args(
+                args, arg_prefix, test_count)
+        elif result_handler == 'default' and args.verbosity == 2:
+            return VerboseTestResultHandler.from_args(
+                args, arg_prefix, test_count)
+        return cls(test_count)
 
     def stop_test_run(self):
         self.stream.write('\n')
@@ -149,17 +135,8 @@ class VerboseTestResultHandler(StandardTestResultHandler):
     }
 
     @classmethod
-    def add_parser_arguments(self, parser, option_prefix, dest_prefix):
-        verbosity = next(group for group in parser._mutually_exclusive_groups
-                         if group.title == 'verbosity')
-
-        def callback(ns):
-            setattr(ns, dest_prefix[:-1], 'verbose')
-
-        action = lambda *a, **k: VerbosityAction(callback, *a, **k)
-        verbosity.add_argument(
-            '-v', '--verbose', action=action, const=2, default=1,
-            dest='verbosity', help='Verbose output')
+    def from_args(cls, args, arg_prefix, test_count):
+        return cls(test_count)
 
     def start_test(self, test):
         super(VerboseTestResultHandler, self).start_test(test)
