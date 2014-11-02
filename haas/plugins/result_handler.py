@@ -1,3 +1,11 @@
+# -*- coding: utf-8 -*-
+# Copyright (c) 2013-2014 Simon Jagoe
+# All rights reserved.
+#
+# This software may be modified and distributed under the terms
+# of the 3-clause BSD license.  See the LICENSE.txt file for details.
+from __future__ import absolute_import, unicode_literals
+
 import sys
 import time
 
@@ -165,6 +173,6 @@ class VerboseTestResultHandler(StandardTestResultHandler):
     def __call__(self, result):
         super(VerboseTestResultHandler, self).__call__(result)
         if result.message is not None:
-            self.stream.write(' {!r}'.format(result.message))
+            self.stream.write(' {0!r}'.format(result.message))
         self.stream.writeln()
         self.stream.flush()
