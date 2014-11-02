@@ -79,12 +79,20 @@ if not is_released:
         # must be a source distribution, use existing version file
         try:
             from haas._version import git_revision as git_rev
+            from haas._version import full_version as full_v
         except ImportError:
             raise ImportError("Unable to import git_revision. Try removing "
                               "haas/_version.py and the build "
                               "directory before building.")
+        import re
+        match = re.match(r'.*?\.dev(?P<dev_num>\d+)\+.*', full_v)
+        if match is None:
+            dev_num = '0'
+        else:
+            dev_num = match.group('dev_num')
     else:
         git_rev = "Unknown"
+        dev_num = '0'
 
     if not IS_RELEASED:
         fullversion += '.dev{0}+'.format(dev_num) + git_rev[:7]
