@@ -104,14 +104,6 @@ class TestResult(object):
     def test(self):
         return self.test_class(self.test_method_name)
 
-    def get_test_description(self, show_doc_first_line):
-        test = self.test
-        doc_first_line = test.shortDescription()
-        if show_doc_first_line and doc_first_line:
-            return '\n'.join((str(test), doc_first_line))
-        else:
-            return str(test)
-
     def to_dict(self):
         return {
             'test_class': self.test_class,
@@ -241,6 +233,13 @@ class QuietTestResultHandler(object):
             TestCompletionStatus.skipped: skipped,
         }
 
+    def get_test_description(self, test):
+        doc_first_line = test.shortDescription()
+        if self.descriptions and doc_first_line:
+            return '\n'.join((str(test), doc_first_line))
+        else:
+            return str(test)
+
     def start_test(self, test):
         self.tests_run += 1
 
@@ -262,8 +261,8 @@ class QuietTestResultHandler(object):
         for result in errors:
             self.stream.writeln(self.separator1)
             self.stream.writeln(
-                '%s: %s' % (error_kind, result.get_test_description(
-                    self.descriptions)))
+                '%s: %s' % (error_kind, self.get_test_description(
+                    result.test)))
             self.stream.writeln(self.separator2)
             self.stream.writeln(result.exception)
 
