@@ -173,6 +173,6 @@ class VerboseTestResultHandler(StandardTestResultHandler):
     def __call__(self, result):
         super(VerboseTestResultHandler, self).__call__(result)
         if result.message is not None:
-            self.stream.write(' {0!r}'.format(result.message))
+            self.stream.write(" '{0}'".format(result.message))
         self.stream.writeln()
         self.stream.flush()
