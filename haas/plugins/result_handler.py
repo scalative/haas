@@ -1,3 +1,4 @@
+from argparse import Action
 import sys
 import time
 
@@ -5,11 +6,40 @@ from haas.result import TestCompletionStatus, separator2
 from .i_result_handler_plugin import IResultHandlerPlugin
 
 
+class VerbosityAction(Action):
+
+    def __init__(self, callback, *args, **kwargs):
+        self.callback = callback
+        kwargs['nargs'] = 0
+        super(VerbosityAction, self).__init__(*args, **kwargs)
+
+    def __call__(self, parser, namespace, values, option_string):
+        setattr(namespace, self.dest, self.const)
+        self.callback(namespace)
+
+
+class _WritelnDecorator(object):
+    """Used to decorate file-like objects with a handy 'writeln' method"""
+    def __init__(self, stream):
+        self.stream = stream
+
+    def __getattr__(self, attr):
+        if attr in ('stream', '__getstate__'):
+            raise AttributeError(attr)
+        return getattr(self.stream, attr)
+
+    def writeln(self, arg=None):
+        if arg:
+            self.write(arg)
+        self.write('\n')  # text-mode streams translate to \r\n if needed
+
+
 class QuietTestResultHandler(IResultHandlerPlugin):
     separator1 = '=' * 70
     separator2 = separator2
 
     def __init__(self, test_count):
+        self.stream = _WritelnDecorator(sys.stderr)
         self._test_count = test_count
         self.tests_run = 0
         self.descriptions = True
@@ -27,12 +57,21 @@ class QuietTestResultHandler(IResultHandlerPlugin):
         }
 
     @classmethod
-    def from_args(cls, test_count, args, arg_prefix):
+    def from_args(cls, args, arg_prefix, test_count):
         return cls(test_count)
 
     @classmethod
     def add_parser_arguments(self, parser, option_prefix, dest_prefix):
-        pass
+        verbosity = next(group for group in parser._mutually_exclusive_groups
+                         if group.title == 'verbosity')
+
+        def callback(ns):
+            setattr(ns, dest_prefix[:-1], 'quiet')
+
+        action = lambda *a, **k: VerbosityAction(callback, *a, **k)
+        verbosity.add_argument(
+            '-q', '--quiet', action=action, const=0, default=1,
+            dest='verbosity', help='Quiet output')
 
     def get_test_description(self, test):
         doc_first_line = test.shortDescription()
@@ -84,10 +123,9 @@ class StandardTestResultHandler(QuietTestResultHandler):
         TestCompletionStatus.skipped: 's',
     }
 
-    def __init__(self, test_count):
-        super(StandardTestResultHandler, self).__init__(test_count)
-        from unittest.runner import _WritelnDecorator
-        self.stream = _WritelnDecorator(sys.stderr)
+    @classmethod
+    def add_parser_arguments(self, parser, option_prefix, dest_prefix):
+        pass
 
     def stop_test_run(self):
         self.stream.write('\n')
@@ -109,6 +147,19 @@ class VerboseTestResultHandler(StandardTestResultHandler):
         TestCompletionStatus.expected_failure: 'expected failure',
         TestCompletionStatus.skipped: 'skipped',
     }
+
+    @classmethod
+    def add_parser_arguments(self, parser, option_prefix, dest_prefix):
+        verbosity = next(group for group in parser._mutually_exclusive_groups
+                         if group.title == 'verbosity')
+
+        def callback(ns):
+            setattr(ns, dest_prefix[:-1], 'verbose')
+
+        action = lambda *a, **k: VerbosityAction(callback, *a, **k)
+        verbosity.add_argument(
+            '-v', '--verbose', action=action, const=2, default=1,
+            dest='verbosity', help='Quiet output')
 
     def start_test(self, test):
         super(VerboseTestResultHandler, self).start_test(test)

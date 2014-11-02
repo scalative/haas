@@ -17,17 +17,17 @@ from haas.utils import abstractclassmethod
 class IResultHandlerPlugin(object):
 
     @abstractclassmethod
-    def from_args(cls, test_count, args, arg_prefix):
+    def from_args(cls, args, arg_prefix, test_count):
         """Construct the result handler from parsed command line arguments.
 
         Parameters
         ----------
-        test_count : int
-            The totel number of tests discovered.
         args : argparse.Namespace
             The ``argparse.Namespace`` containing parsed arguments.
         arg_prefix : str
             The prefix used for arguments beloning solely to this plugin.
+        test_count : int
+            The totel number of tests discovered.
 
         """
 

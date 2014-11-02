@@ -105,9 +105,10 @@ class PluginManager(object):
         return [plugin for plugin in manager.map(self._filter_enabled_plugins)
                 if plugin is not None]
 
-    def get_driver(self, namespace, args):
+    def get_driver(self, namespace, parsed_args, **kwargs):
         option, dest = self._namespace_to_option(namespace)
         dest_prefix = '{0}_'.format(dest)
-        driver_name = getattr(args, dest, 'default')
+        driver_name = getattr(parsed_args, dest, 'default')
         driver_extension = self.driver_managers[namespace][driver_name]
-        return driver_extension.plugin.from_args(args, dest_prefix)
+        return driver_extension.plugin.from_args(
+            parsed_args, dest_prefix, **kwargs)
