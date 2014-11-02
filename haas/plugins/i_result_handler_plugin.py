@@ -6,14 +6,14 @@
 # of the 3-clause BSD license.  See the LICENSE.txt file for details.
 from __future__ import absolute_import, unicode_literals
 
-import abc
+from abc import ABCMeta, abstractmethod
 
 from six import add_metaclass
 
 from haas.utils import abstractclassmethod
 
 
-@add_metaclass(abc.ABCMeta)
+@add_metaclass(ABCMeta)
 class IResultHandlerPlugin(object):
 
     @abstractclassmethod
@@ -44,5 +44,35 @@ class IResultHandlerPlugin(object):
         dest_prefix : str
             The prefix that ``dest`` strings for options added by this
             plugin should use.
+
+        """
+
+    @abstractmethod
+    def start_test(self, test):
+        """Perform tasks at the start of a single test.
+
+        """
+
+    @abstractmethod
+    def stop_test(self, test):
+        """Perform tasks at the end of a single test.
+
+        """
+
+    @abstractmethod
+    def start_test_run(self):
+        """Perform tasks at the very start of the test run.
+
+        """
+
+    @abstractmethod
+    def stop_test_run(self):
+        """Perform tasks at the very end of the test run.
+
+        """
+
+    @abstractmethod
+    def __call__(self, result):
+        """Handle the completed test result ``result``.
 
         """

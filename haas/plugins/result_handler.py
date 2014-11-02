@@ -71,11 +71,24 @@ class QuietTestResultHandler(IResultHandlerPlugin):
         self.print_errors()
 
     def print_errors(self):
+        """Print all errors and failures to the console.
+
+        """
         self.stream.writeln()
         self.print_error_list('ERROR', self.errors)
         self.print_error_list('FAIL', self.failures)
 
     def print_error_list(self, error_kind, errors):
+        """Print the list of errors or failures.
+
+        Parameters
+        ----------
+        error_kind : str
+            ``'ERROR'`` or ``'FAIL'``
+        errors : list
+            List of :ref:`haas.result.TestResult`
+
+        """
         for result in errors:
             self.stream.writeln(self.separator1)
             self.stream.writeln(
