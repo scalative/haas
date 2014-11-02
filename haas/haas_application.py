@@ -110,7 +110,7 @@ class HaasApplication(object):
             result_handler = plugin_manager.get_driver(
                 plugin_manager.RESULT_HANDLERS, args, test_count=test_count)
 
-            def result_factory(*args):
+            def result_factory(*factory_args):
                 collector = ResultCollecter(buffer=args.buffer)
                 collector.add_result_handler(result_handler)
                 return collector
