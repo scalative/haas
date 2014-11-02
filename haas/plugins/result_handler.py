@@ -159,7 +159,7 @@ class VerboseTestResultHandler(StandardTestResultHandler):
         action = lambda *a, **k: VerbosityAction(callback, *a, **k)
         verbosity.add_argument(
             '-v', '--verbose', action=action, const=2, default=1,
-            dest='verbosity', help='Quiet output')
+            dest='verbosity', help='Verbose output')
 
     def start_test(self, test):
         super(VerboseTestResultHandler, self).start_test(test)
