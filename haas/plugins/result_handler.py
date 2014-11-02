@@ -126,10 +126,6 @@ class StandardTestResultHandler(QuietTestResultHandler):
                 args, arg_prefix, test_count)
         return cls(test_count)
 
-    def stop_test_run(self):
-        self.stream.write('\n')
-        super(StandardTestResultHandler, self).stop_test_run()
-
     def __call__(self, result):
         super(StandardTestResultHandler, self).__call__(result)
         self.stream.write(self._result_formats[result.status])

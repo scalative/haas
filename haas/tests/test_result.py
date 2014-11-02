@@ -13,7 +13,8 @@ from mock import Mock, patch
 from six.moves import StringIO
 
 from ..plugins.i_result_handler_plugin import IResultHandlerPlugin
-from ..plugins.result_handler import QuietTestResultHandler
+from ..plugins.result_handler import (
+    QuietTestResultHandler, StandardTestResultHandler)
 from ..result import ResultCollecter, TestResult, TestCompletionStatus
 from ..testing import unittest
 
@@ -379,6 +380,187 @@ class TestQuietResultHandler(ExcInfoFixture, unittest.TestCase):
         """
         # Given
         handler = QuietTestResultHandler(test_count=1)
+        with self.exc_info(AssertionError) as exc_info:
+            result = TestResult.from_test_case(
+                self, TestCompletionStatus.failure, exception=exc_info)
+
+        # When
+        handler(result)
+        handler.stop_test_run()
+
+        # Then
+        output = stderr.getvalue().replace('\n', '')
+        description = handler.get_test_description(
+            self,).replace('(', r'\(').replace(')', r'\)').replace('\n', '')
+        self.assertRegexpMatches(
+            output, '{}.*?Traceback.*?AssertionError'.format(
+                description))
+
+
+class TestStandardResultHandler(ExcInfoFixture, unittest.TestCase):
+
+    @patch('sys.stderr', new_callable=StringIO)
+    def test_no_output_start_test_run(self, stderr):
+        # Given
+        handler = StandardTestResultHandler(test_count=1)
+
+        # When
+        handler.start_test_run()
+
+        # Then
+        output = stderr.getvalue()
+        self.assertEqual(output, '')
+
+    @patch('sys.stderr', new_callable=StringIO)
+    def test_no_output_stop_test_run(self, stderr):
+        # Given
+        handler = StandardTestResultHandler(test_count=1)
+
+        # When
+        handler.stop_test_run()
+
+        # Then
+        output = stderr.getvalue()
+        self.assertEqual(output, '\n')
+
+    @patch('sys.stderr', new_callable=StringIO)
+    def test_no_output_start_test(self, stderr):
+        # Given
+        handler = StandardTestResultHandler(test_count=1)
+
+        # When
+        handler.start_test(self)
+
+        # Then
+        output = stderr.getvalue()
+        self.assertEqual(output, '')
+
+    @patch('sys.stderr', new_callable=StringIO)
+    def test_no_output_stop_test(self, stderr):
+        # Given
+        handler = StandardTestResultHandler(test_count=1)
+
+        # When
+        handler.stop_test(self)
+
+        # Then
+        output = stderr.getvalue()
+        self.assertEqual(output, '')
+
+    @patch('sys.stderr', new_callable=StringIO)
+    def test_no_output_on_error(self, stderr):
+        # Given
+        handler = StandardTestResultHandler(test_count=1)
+        with self.exc_info(RuntimeError) as exc_info:
+            result = TestResult.from_test_case(
+                self, TestCompletionStatus.error, exception=exc_info)
+
+        # When
+        handler(result)
+
+        # Then
+        output = stderr.getvalue()
+        self.assertEqual(output, 'E')
+
+    @patch('sys.stderr', new_callable=StringIO)
+    def test_no_output_on_failure(self, stderr):
+        # Given
+        handler = StandardTestResultHandler(test_count=1)
+        with self.exc_info(AssertionError) as exc_info:
+            result = TestResult.from_test_case(
+                self, TestCompletionStatus.failure, exception=exc_info)
+
+        # When
+        handler(result)
+
+        # Then
+        output = stderr.getvalue()
+        self.assertEqual(output, 'F')
+
+    @patch('sys.stderr', new_callable=StringIO)
+    def test_no_output_on_success(self, stderr):
+        # Given
+        handler = StandardTestResultHandler(test_count=1)
+        result = TestResult.from_test_case(
+            self, TestCompletionStatus.success)
+
+        # When
+        handler(result)
+
+        # Then
+        output = stderr.getvalue()
+        self.assertEqual(output, '.')
+
+    @patch('sys.stderr', new_callable=StringIO)
+    def test_no_output_on_skip(self, stderr):
+        # Given
+        handler = StandardTestResultHandler(test_count=1)
+        result = TestResult.from_test_case(
+            self, TestCompletionStatus.skipped, message='reason')
+
+        # When
+        handler(result)
+
+        # Then
+        output = stderr.getvalue()
+        self.assertEqual(output, 's')
+
+    @patch('sys.stderr', new_callable=StringIO)
+    def test_no_output_on_expected_fail(self, stderr):
+        # Given
+        handler = StandardTestResultHandler(test_count=1)
+        with self.exc_info(RuntimeError) as exc_info:
+            result = TestResult.from_test_case(
+                self, TestCompletionStatus.expected_failure,
+                exception=exc_info)
+
+        # When
+        handler(result)
+
+        # Then
+        output = stderr.getvalue()
+        self.assertEqual(output, 'x')
+
+    @patch('sys.stderr', new_callable=StringIO)
+    def test_no_output_on_unexpected_success(self, stderr):
+        # Given
+        handler = StandardTestResultHandler(test_count=1)
+        result = TestResult.from_test_case(
+            self, TestCompletionStatus.unexpected_success)
+
+        # When
+        handler(result)
+
+        # Then
+        output = stderr.getvalue()
+        self.assertEqual(output, 'u')
+
+    @patch('sys.stderr', new_callable=StringIO)
+    def test_no_output_with_error_on_stop_test_run(self, stderr):
+        # Given
+        handler = StandardTestResultHandler(test_count=1)
+        with self.exc_info(RuntimeError) as exc_info:
+            result = TestResult.from_test_case(
+                self, TestCompletionStatus.error, exception=exc_info)
+
+        # When
+        handler(result)
+        handler.stop_test_run()
+
+        # Then
+        output = stderr.getvalue().replace('\n', '')
+        description = handler.get_test_description(
+            self,).replace('(', r'\(').replace(')', r'\)')
+        self.assertRegexpMatches(
+            output, '{}.*?Traceback.*?RuntimeError'.format(
+                description))
+
+    @patch('sys.stderr', new_callable=StringIO)
+    def test_no_output_with_failure_on_stop_test_run(self, stderr):
+        """Has a docstring for test.
+        """
+        # Given
+        handler = StandardTestResultHandler(test_count=1)
         with self.exc_info(AssertionError) as exc_info:
             result = TestResult.from_test_case(
                 self, TestCompletionStatus.failure, exception=exc_info)
