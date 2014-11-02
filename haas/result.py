@@ -77,6 +77,20 @@ class TestResult(object):
         # self.started_time = started_time
         self.completed_time = completed_time
 
+    def __eq__(self, other):
+        if not isinstance(other, TestResult):
+            return NotImplemented
+        return (
+            self.test_class == other.test_class and
+            self.test_method_name == other.test_method_name and
+            self.status == other.status and
+            self.exception == other.exception and
+            self.message == other.message
+        )
+
+    def __ne__(self, other):
+        return not (self == other)
+
     @classmethod
     def from_test_case(cls, test_case, status,  # started_time,
                        exception=None,
