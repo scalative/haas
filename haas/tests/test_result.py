@@ -6,37 +6,162 @@
 # of the 3-clause BSD license.  See the LICENSE.txt file for details.
 from __future__ import absolute_import, unicode_literals
 
-import mock
-from six.moves import cStringIO as StringIO
+from contextlib import contextmanager
+import sys
 
-from ..result import TextTestResult
+from mock import Mock
+
+from ..plugins.i_result_handler_plugin import IResultHandlerPlugin
+from ..result import ResultCollecter, TestResult, TestCompletionStatus
 from ..testing import unittest
 
 
 class TestTextTestResult(unittest.TestCase):
 
-    def setUp(self):
-        self.time = 'Sun Apr  6 21:46:20 2014'
+    @contextmanager
+    def exc_info(self, cls):
+        try:
+            raise cls()
+        except cls:
+            yield sys.exc_info()
 
-    def _run_with_verbosity(self, verbosity):
-        stream = StringIO()
-        result = TextTestResult(
-            total_tests=100,
-            stream=stream,
-            descriptions=False,
-            verbosity=verbosity,
-        )
-        with mock.patch('time.ctime') as ctime:
-            ctime.return_value = self.time
-            result.startTest(self)
-        return stream.getvalue()
+    def test_result_collector_calls_handlers_start_stop_methods(self):
+        # Given
+        handler = Mock(spec=IResultHandlerPlugin)
+        collector = ResultCollecter()
+        collector.add_result_handler(handler)
 
-    def test_start_test_verbosity_1(self):
-        expected = ''
-        output = self._run_with_verbosity(1)
-        self.assertEqual(output, expected)
+        # When
+        handler.reset_mock()
+        collector.startTestRun()
 
-    def test_start_test_verbosity_2(self):
-        expected = '[{0}] (  1/100) {1} ... '.format(self.time, str(self))
-        output = self._run_with_verbosity(2)
-        self.assertEqual(output, expected)
+        # Then
+        handler.start_test_run.assert_called_once_with()
+        self.assertFalse(handler.called)
+        self.assertFalse(handler.stop_test_run.called)
+        self.assertFalse(handler.start_test.called)
+        self.assertFalse(handler.stop_test.called)
+
+        # When
+        handler.reset_mock()
+        collector.stopTestRun()
+
+        # Then
+        handler.stop_test_run.assert_called_once_with()
+        self.assertFalse(handler.called)
+        self.assertFalse(handler.start_test_run.called)
+        self.assertFalse(handler.start_test.called)
+        self.assertFalse(handler.stop_test.called)
+
+        # When
+        handler.reset_mock()
+        collector.startTest(self)
+
+        # Then
+        handler.start_test.assert_called_once_with(self)
+        self.assertFalse(handler.called)
+        self.assertFalse(handler.start_test_run.called)
+        self.assertFalse(handler.stop_test_run.called)
+        self.assertFalse(handler.stop_test.called)
+
+        # When
+        handler.reset_mock()
+        collector.stopTest(self)
+
+        # Then
+        handler.stop_test.assert_called_once_with(self)
+        self.assertFalse(handler.called)
+        self.assertFalse(handler.start_test_run.called)
+        self.assertFalse(handler.stop_test_run.called)
+        self.assertFalse(handler.start_test.called)
+
+    def test_result_collector_calls_handlers_call_method(self):
+        # Given
+        handler = Mock(spec=IResultHandlerPlugin)
+        collector = ResultCollecter()
+        collector.add_result_handler(handler)
+
+        # When
+        handler.reset_mock()
+        with self.exc_info(RuntimeError) as exc_info:
+            # Given
+            expected_result = TestResult.from_test_case(
+                self, TestCompletionStatus.error, exception=exc_info)
+            collector.addError(self, exc_info)
+
+        # Then
+        handler.assert_called_once_with(expected_result)
+        self.assertFalse(handler.start_test_run.called)
+        self.assertFalse(handler.stop_test_run.called)
+        self.assertFalse(handler.start_test.called)
+        self.assertFalse(handler.stop_test.called)
+
+        # When
+        handler.reset_mock()
+        with self.exc_info(AssertionError) as exc_info:
+            # Given
+            expected_result = TestResult.from_test_case(
+                self, TestCompletionStatus.failure, exception=exc_info)
+            collector.addFailure(self, exc_info)
+
+        # Then
+        handler.assert_called_once_with(expected_result)
+        self.assertFalse(handler.start_test_run.called)
+        self.assertFalse(handler.stop_test_run.called)
+        self.assertFalse(handler.start_test.called)
+        self.assertFalse(handler.stop_test.called)
+
+        # When
+        handler.reset_mock()
+        expected_result = TestResult.from_test_case(
+            self, TestCompletionStatus.success)
+        collector.addSuccess(self)
+
+        # Then
+        handler.assert_called_once_with(expected_result)
+        self.assertFalse(handler.start_test_run.called)
+        self.assertFalse(handler.stop_test_run.called)
+        self.assertFalse(handler.start_test.called)
+        self.assertFalse(handler.stop_test.called)
+
+        # When
+        handler.reset_mock()
+        expected_result = TestResult.from_test_case(
+            self, TestCompletionStatus.skipped, message='reason')
+        collector.addSkip(self, 'reason')
+
+        # Then
+        handler.assert_called_once_with(expected_result)
+        self.assertFalse(handler.start_test_run.called)
+        self.assertFalse(handler.stop_test_run.called)
+        self.assertFalse(handler.start_test.called)
+        self.assertFalse(handler.stop_test.called)
+
+        # When
+        handler.reset_mock()
+        with self.exc_info(RuntimeError) as exc_info:
+            # Given
+            expected_result = TestResult.from_test_case(
+                self, TestCompletionStatus.expected_failure,
+                exception=exc_info)
+            collector.addExpectedFailure(self, exc_info)
+
+        # Then
+        handler.assert_called_once_with(expected_result)
+        self.assertFalse(handler.start_test_run.called)
+        self.assertFalse(handler.stop_test_run.called)
+        self.assertFalse(handler.start_test.called)
+        self.assertFalse(handler.stop_test.called)
+
+        # When
+        handler.reset_mock()
+        expected_result = TestResult.from_test_case(
+            self, TestCompletionStatus.unexpected_success)
+        collector.addUnexpectedSuccess(self)
+
+        # Then
+        handler.assert_called_once_with(expected_result)
+        self.assertFalse(handler.start_test_run.called)
+        self.assertFalse(handler.stop_test_run.called)
+        self.assertFalse(handler.start_test.called)
+        self.assertFalse(handler.stop_test.called)
