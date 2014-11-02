@@ -24,6 +24,13 @@ from ..testing import unittest
 class ExcInfoFixture(object):
 
     @contextmanager
+    def failure_exc_info(self):
+        try:
+            self.fail()
+        except self.failureException:
+            yield sys.exc_info()
+
+    @contextmanager
     def exc_info(self, cls):
         try:
             raise cls()
@@ -111,7 +118,7 @@ class TestTextTestResult(ExcInfoFixture, unittest.TestCase):
         collector.add_result_handler(handler)
 
         # When
-        with self.exc_info(AssertionError) as exc_info:
+        with self.failure_exc_info() as exc_info:
             # Given
             expected_result = TestResult.from_test_case(
                 self, TestCompletionStatus.failure, exception=exc_info)
@@ -287,7 +294,7 @@ class TestQuietResultHandler(ExcInfoFixture, unittest.TestCase):
     def test_no_output_on_failure(self, stderr):
         # Given
         handler = QuietTestResultHandler(test_count=1)
-        with self.exc_info(AssertionError) as exc_info:
+        with self.failure_exc_info() as exc_info:
             result = TestResult.from_test_case(
                 self, TestCompletionStatus.failure, exception=exc_info)
 
@@ -382,7 +389,7 @@ class TestQuietResultHandler(ExcInfoFixture, unittest.TestCase):
         """
         # Given
         handler = QuietTestResultHandler(test_count=1)
-        with self.exc_info(AssertionError) as exc_info:
+        with self.failure_exc_info() as exc_info:
             result = TestResult.from_test_case(
                 self, TestCompletionStatus.failure, exception=exc_info)
 
@@ -397,6 +404,8 @@ class TestQuietResultHandler(ExcInfoFixture, unittest.TestCase):
         self.assertRegexpMatches(
             output, '{0}.*?Traceback.*?AssertionError'.format(
                 description))
+        # The contents of unittest.TestCase should not be in the traceback
+        self.assertNotIn('raise', output)
 
 
 class TestStandardResultHandler(ExcInfoFixture, unittest.TestCase):
@@ -468,7 +477,7 @@ class TestStandardResultHandler(ExcInfoFixture, unittest.TestCase):
     def test_no_output_on_failure(self, stderr):
         # Given
         handler = StandardTestResultHandler(test_count=1)
-        with self.exc_info(AssertionError) as exc_info:
+        with self.failure_exc_info() as exc_info:
             result = TestResult.from_test_case(
                 self, TestCompletionStatus.failure, exception=exc_info)
 
@@ -563,7 +572,7 @@ class TestStandardResultHandler(ExcInfoFixture, unittest.TestCase):
         """
         # Given
         handler = StandardTestResultHandler(test_count=1)
-        with self.exc_info(AssertionError) as exc_info:
+        with self.failure_exc_info() as exc_info:
             result = TestResult.from_test_case(
                 self, TestCompletionStatus.failure, exception=exc_info)
 
@@ -578,6 +587,8 @@ class TestStandardResultHandler(ExcInfoFixture, unittest.TestCase):
         self.assertRegexpMatches(
             output, '{0}.*?Traceback.*?AssertionError'.format(
                 description))
+        # The contents of unittest.TestCase should not be in the traceback
+        self.assertNotIn('raise', output)
 
 
 class TestVerboseResultHandler(ExcInfoFixture, unittest.TestCase):
@@ -654,7 +665,7 @@ class TestVerboseResultHandler(ExcInfoFixture, unittest.TestCase):
     def test_output_on_failure(self, stderr):
         # Given
         handler = VerboseTestResultHandler(test_count=1)
-        with self.exc_info(AssertionError) as exc_info:
+        with self.failure_exc_info() as exc_info:
             result = TestResult.from_test_case(
                 self, TestCompletionStatus.failure, exception=exc_info)
 
@@ -749,7 +760,7 @@ class TestVerboseResultHandler(ExcInfoFixture, unittest.TestCase):
         """
         # Given
         handler = VerboseTestResultHandler(test_count=1)
-        with self.exc_info(AssertionError) as exc_info:
+        with self.failure_exc_info() as exc_info:
             result = TestResult.from_test_case(
                 self, TestCompletionStatus.failure, exception=exc_info)
 
@@ -764,3 +775,5 @@ class TestVerboseResultHandler(ExcInfoFixture, unittest.TestCase):
         self.assertRegexpMatches(
             output, '{0}.*?Traceback.*?AssertionError'.format(
                 description))
+        # The contents of unittest.TestCase should not be in the traceback
+        self.assertNotIn('raise', output)

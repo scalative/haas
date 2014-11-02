@@ -98,7 +98,8 @@ class TestResult(object):
         test_class = type(test_case)
         test_method_name = test_case._testMethodName
         if exception is not None:
-            is_failure = exception is test_case.failureException
+            exctype, value, tb = exception
+            is_failure = exctype is test_case.failureException
             exception = _format_exception(
                 exception, is_failure, stdout, stderr)
         completed_time = datetime.utcnow()
