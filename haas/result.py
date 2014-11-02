@@ -298,6 +298,38 @@ class StandardTestResultHandler(QuietTestResultHandler):
         self.stream.flush()
 
 
+class VerboseTestResultHandler(StandardTestResultHandler):
+
+    _result_formats = {
+        TestCompletionStatus.success: 'ok',
+        TestCompletionStatus.failure: 'FAIL',
+        TestCompletionStatus.error: 'ERROR',
+        TestCompletionStatus.unexpected_success: 'unexpected success',
+        TestCompletionStatus.expected_failure: 'expected failure',
+        TestCompletionStatus.skipped: 'skipped',
+    }
+
+    def start_test(self, test):
+        super(VerboseTestResultHandler, self).start_test(test)
+        padding = len(str(self._test_count))
+        prefix = '[{timestamp}] ({run: >{padding}d}/{total:d}) '.format(
+            timestamp=time.ctime(),
+            run=self.tests_run,
+            padding=padding,
+            total=self._test_count,
+        )
+        self.stream.write(prefix)
+        description = self.get_test_description(test)
+        self.stream.write(description)
+        self.stream.write(' ... ')
+        self.stream.flush()
+
+    def __call__(self, result):
+        super(VerboseTestResultHandler, self).__call__(result)
+        self.stream.writeln()
+        self.stream.flush()
+
+
 class TextTestResult(unittest.TextTestResult):
     """A simple extension to ``unittest.TextTestResult`` that displays
     progression of testing when run in verbose mode.
