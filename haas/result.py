@@ -137,7 +137,7 @@ class ResultCollecter(object):
     # Temporary compatibility with unittest's runner
     separator2 = separator2
 
-    def __init__(self, test_count, buffer=False):
+    def __init__(self, buffer=False):
         self.buffer = buffer
         self._handlers = []
         self.testsRun = 0
@@ -224,7 +224,9 @@ class QuietTestResultHandler(object):
     separator1 = '=' * 70
     separator2 = separator2
 
-    def __init__(self):
+    def __init__(self, test_count):
+        self._test_count = test_count
+        self.tests_run = 0
         self.descriptions = True
         self.expectedFailures = expectedFailures = []
         self.unexpectedSuccesses = unexpectedSuccesses = []
@@ -240,7 +242,7 @@ class QuietTestResultHandler(object):
         }
 
     def start_test(self, test):
-        pass
+        self.tests_run += 1
 
     def stop_test(self, test):
         pass
@@ -282,8 +284,8 @@ class StandardTestResultHandler(QuietTestResultHandler):
         TestCompletionStatus.skipped: 's',
     }
 
-    def __init__(self):
-        super(StandardTestResultHandler, self).__init__()
+    def __init__(self, test_count):
+        super(StandardTestResultHandler, self).__init__(test_count)
         from unittest.runner import _WritelnDecorator
         self.stream = _WritelnDecorator(sys.stderr)
 
