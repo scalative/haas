@@ -8,6 +8,7 @@ from __future__ import absolute_import, unicode_literals
 
 from datetime import datetime
 from enum import Enum
+import sys
 import time
 import traceback
 
@@ -17,11 +18,11 @@ STDOUT_LINE = '\nStdout:\n%s'
 STDERR_LINE = '\nStderr:\n%s'
 
 
-def _is_relevant_tb_level(self, tb):
+def _is_relevant_tb_level(tb):
     return '__unittest' in tb.tb_frame.f_globals
 
 
-def _count_relevant_tb_levels(self, tb):
+def _count_relevant_tb_levels(tb):
     length = 0
     while tb and not _is_relevant_tb_level(tb):
         length += 1
@@ -99,6 +100,18 @@ class TestResult(object):
             type(self).__name__, self.test_class.__name__,
             self.test_method_name)
 
+    @property
+    def test(self):
+        return self.test_class(self.test_method_name)
+
+    def get_test_description(self, show_doc_first_line):
+        test = self.test
+        doc_first_line = test.shortDescription()
+        if show_doc_first_line and doc_first_line:
+            return '\n'.join((str(test), doc_first_line))
+        else:
+            return str(test)
+
     def to_dict(self):
         return {
             'test_class': self.test_class,
@@ -115,29 +128,49 @@ class TestResult(object):
         return cls(**data)
 
 
+# Temporary compatibility with unittest's runner
+separator2 = '-' * 70
+
+
 class ResultCollecter(object):
 
-    def __init__(self, buffer=False):
+    # Temporary compatibility with unittest's runner
+    separator2 = separator2
+
+    def __init__(self, test_count, buffer=False):
         self.buffer = buffer
         self._handlers = []
-        self.tests_run = 0
-        self._test_results = []
+        self.testsRun = 0
+        self.expectedFailures = []
+        self.unexpectedSuccesses = []
+        self.skipped = []
+        self.failures = []
+        self.errors = []
         self._successful = True
+        self.shouldStop = False
+
+    def printErrors(self):
+        pass
 
     def add_result_handler(self, handler):
         self._handlers.append(handler)
 
-    def startTest(self):
-        self.tests_run += 1
+    def startTest(self, test):
+        self.testsRun += 1
+        for handler in self._handlers:
+            handler.start_test(test)
 
-    def stopTest(self):
-        pass
+    def stopTest(self, test):
+        for handler in self._handlers:
+            handler.start_test(test)
 
     def startTestRun(self):
-        pass
+        for handler in self._handlers:
+            handler.start_test_run()
 
     def stopTestRun(self):
-        pass
+        for handler in self._handlers:
+            handler.stop_test_run()
 
     def _handle_result(self, test, status, exception=None, message=None):
         result = TestResult.from_test_case(
@@ -150,35 +183,118 @@ class ResultCollecter(object):
             handler(result)
         if self._successful and result.status not in _successful_results:
             self._successful = False
-        self._test_results.append(result)
+        return result
 
     def addError(self, test, exception):
-        self._handle_result(
+        result = self._handle_result(
             test, TestCompletionStatus.error, exception=exception)
+        self.errors.append(result)
 
     def addFailure(self, test, exception):
-        self._handle_result(
+        result = self._handle_result(
             test, TestCompletionStatus.failure, exception=exception)
+        self.failures.append(result)
 
     def addSuccess(self, test):
         self._handle_result(test, TestCompletionStatus.success)
 
     def addSkip(self, test, reason):
-        self._handle_result(
+        result = self._handle_result(
             test, TestCompletionStatus.skipped, message=reason)
+        self.skipped.append(result)
 
     def addExpectedFailure(self, test, exception):
-        self._handle_result(
+        result = self._handle_result(
             test, TestCompletionStatus.expected_failure, exception=exception)
+        self.expectedFailures.append(result)
 
     def addUnexpectedSuccess(self, test):
-        self._handle_result(test, TestCompletionStatus.unexpected_success)
+        result = self._handle_result(
+            test, TestCompletionStatus.unexpected_success)
+        self.unexpectedSuccesses.append(result)
 
     def wasSuccessful(self):
         return self._successful
 
     def stop(self):
+        self.shouldStop = True
+
+
+class QuietTestResultHandler(object):
+    separator1 = '=' * 70
+    separator2 = separator2
+
+    def __init__(self):
+        self.descriptions = True
+        self.expectedFailures = expectedFailures = []
+        self.unexpectedSuccesses = unexpectedSuccesses = []
+        self.skipped = skipped = []
+        self.failures = failures = []
+        self.errors = errors = []
+        self._collectors = {
+            TestCompletionStatus.failure: failures,
+            TestCompletionStatus.error: errors,
+            TestCompletionStatus.unexpected_success: unexpectedSuccesses,
+            TestCompletionStatus.expected_failure: expectedFailures,
+            TestCompletionStatus.skipped: skipped,
+        }
+
+    def start_test(self, test):
         pass
+
+    def stop_test(self, test):
+        pass
+
+    def start_test_run(self):
+        pass
+
+    def stop_test_run(self):
+        self.print_errors()
+
+    def print_errors(self):
+        self.stream.writeln()
+        self.print_error_list('ERROR', self.errors)
+        self.print_error_list('FAIL', self.failures)
+
+    def print_error_list(self, error_kind, errors):
+        for result in errors:
+            self.stream.writeln(self.separator1)
+            self.stream.writeln(
+                '%s: %s' % (error_kind, result.get_test_description(
+                    self.descriptions)))
+            self.stream.writeln(self.separator2)
+            self.stream.writeln(result.exception)
+
+    def __call__(self, result):
+        collector = self._collectors.get(result.status)
+        if collector is not None:
+            collector.append(result)
+
+
+class StandardTestResultHandler(QuietTestResultHandler):
+
+    _result_formats = {
+        TestCompletionStatus.success: '.',
+        TestCompletionStatus.failure: 'F',
+        TestCompletionStatus.error: 'E',
+        TestCompletionStatus.unexpected_success: 'u',
+        TestCompletionStatus.expected_failure: 'x',
+        TestCompletionStatus.skipped: 's',
+    }
+
+    def __init__(self):
+        super(StandardTestResultHandler, self).__init__()
+        from unittest.runner import _WritelnDecorator
+        self.stream = _WritelnDecorator(sys.stderr)
+
+    def stop_test_run(self):
+        self.stream.write('\n')
+        super(StandardTestResultHandler, self).stop_test_run()
+
+    def __call__(self, result):
+        super(StandardTestResultHandler, self).__call__(result)
+        self.stream.write(self._result_formats[result.status])
+        self.stream.flush()
 
 
 class TextTestResult(unittest.TextTestResult):
