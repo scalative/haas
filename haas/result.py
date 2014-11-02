@@ -162,7 +162,7 @@ class ResultCollecter(object):
 
     def stopTest(self, test):
         for handler in self._handlers:
-            handler.start_test(test)
+            handler.stop_test(test)
 
     def startTestRun(self):
         for handler in self._handlers:
