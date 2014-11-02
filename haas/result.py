@@ -6,8 +6,11 @@
 # of the 3-clause BSD license.  See the LICENSE.txt file for details.
 from __future__ import absolute_import, unicode_literals
 
+from six.moves import StringIO
+
 from datetime import datetime
 from enum import Enum
+import sys
 import traceback
 
 
@@ -107,9 +110,9 @@ class TestResult(object):
                    completed_time, exception, message)
 
     def __repr__(self):
-        return '<{0} class={1}, method={2}>'.format(
+        return '<{0} class={1}, method={2}, exc={3!r}>'.format(
             type(self).__name__, self.test_class.__name__,
-            self.test_method_name)
+            self.test_method_name, self.exception)
 
     @property
     def test(self):
@@ -149,8 +152,42 @@ class ResultCollecter(object):
         self.skipped = []
         self.failures = []
         self.errors = []
-        self._successful = True
         self.shouldStop = False
+        self._successful = True
+        self._mirror_output = False
+        self._stderr_buffer = None
+        self._stdout_buffer = None
+        self._original_stderr = sys.stderr
+        self._original_stdout = sys.stdout
+
+    def _setup_stdout(self):
+        if self.buffer:
+            if self._stderr_buffer is None:
+                self._stderr_buffer = StringIO()
+                self._stdout_buffer = StringIO()
+            sys.stdout = self._stdout_buffer
+            sys.stderr = self._stderr_buffer
+
+    def _restore_stdout(self):
+        if self.buffer:
+            if self._mirror_output:
+                output = sys.stdout.getvalue()
+                error = sys.stderr.getvalue()
+                if output:
+                    if not output.endswith('\n'):
+                        output += '\n'
+                    self._original_stdout.write(STDOUT_LINE % output)
+                if error:
+                    if not error.endswith('\n'):
+                        error += '\n'
+                    self._original_stderr.write(STDERR_LINE % error)
+
+            sys.stdout = self._original_stdout
+            sys.stderr = self._original_stderr
+            self._stdout_buffer.seek(0)
+            self._stdout_buffer.truncate()
+            self._stderr_buffer.seek(0)
+            self._stderr_buffer.truncate()
 
     def printErrors(self):  # pragma: no cover
         pass
@@ -159,6 +196,8 @@ class ResultCollecter(object):
         self._handlers.append(handler)
 
     def startTest(self, test):
+        self._mirror_output = False
+        self._setup_stdout()
         self.testsRun += 1
         for handler in self._handlers:
             handler.start_test(test)
@@ -166,6 +205,8 @@ class ResultCollecter(object):
     def stopTest(self, test):
         for handler in self._handlers:
             handler.stop_test(test)
+        self._restore_stdout()
+        self._mirror_output = False
 
     def startTestRun(self):
         for handler in self._handlers:
@@ -176,11 +217,18 @@ class ResultCollecter(object):
             handler.stop_test_run()
 
     def _handle_result(self, test, status, exception=None, message=None):
+        if self.buffer:
+            stderr = self._stderr_buffer.getvalue()
+            stdout = self._stdout_buffer.getvalue()
+        else:
+            stderr = stdout = None
         result = TestResult.from_test_case(
             test,
             status,
             exception=exception,
             message=message,
+            stdout=stdout,
+            stderr=stderr,
         )
         for handler in self._handlers:
             handler(result)
@@ -192,11 +240,13 @@ class ResultCollecter(object):
         result = self._handle_result(
             test, TestCompletionStatus.error, exception=exception)
         self.errors.append(result)
+        self._mirror_output = True
 
     def addFailure(self, test, exception):
         result = self._handle_result(
             test, TestCompletionStatus.failure, exception=exception)
         self.failures.append(result)
+        self._mirror_output = True
 
     def addSuccess(self, test):
         self._handle_result(test, TestCompletionStatus.success)

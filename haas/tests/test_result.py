@@ -225,6 +225,63 @@ class TestTextTestResult(ExcInfoFixture, unittest.TestCase):
         self.assertTrue(collector.shouldStop)
 
 
+class TestBuffering(ExcInfoFixture, unittest.TestCase):
+
+    @patch('sys.stderr', new_callable=StringIO)
+    def test_buffering_stderr(self, stderr):
+        # Given
+        handler = Mock(spec=IResultHandlerPlugin)
+        collector = ResultCollecter(buffer=True)
+        collector.add_result_handler(handler)
+        collector.startTest(self)
+        test_stderr = 'My Test Output'
+
+        # When
+        sys.stderr.write(test_stderr)
+
+        # Then
+        self.assertEqual(stderr.getvalue(), '')
+
+        # When
+        with self.exc_info(RuntimeError) as exc_info:
+            expected_result = TestResult.from_test_case(
+                self, TestCompletionStatus.error, exception=exc_info,
+                stderr=test_stderr)
+            collector.addError(self, exc_info)
+        collector.stopTest(self)
+
+        # Then
+        self.assertIn(test_stderr, expected_result.exception)
+        handler.assert_called_once_with(expected_result)
+
+    @patch('sys.stdout', new_callable=StringIO)
+    def test_buffering_stdout(self, stdout):
+        # Given
+        handler = Mock(spec=IResultHandlerPlugin)
+        collector = ResultCollecter(buffer=True)
+        collector.add_result_handler(handler)
+        collector.startTest(self)
+        test_stdout = 'My Test Output'
+
+        # When
+        sys.stdout.write(test_stdout)
+
+        # Then
+        self.assertEqual(stdout.getvalue(), '')
+
+        # When
+        with self.exc_info(RuntimeError) as exc_info:
+            expected_result = TestResult.from_test_case(
+                self, TestCompletionStatus.error, exception=exc_info,
+                stdout=test_stdout)
+            collector.addError(self, exc_info)
+        collector.stopTest(self)
+
+        # Then
+        self.assertIn(test_stdout, expected_result.exception)
+        handler.assert_called_once_with(expected_result)
+
+
 class TestQuietResultHandler(ExcInfoFixture, unittest.TestCase):
 
     @patch('sys.stderr', new_callable=StringIO)
