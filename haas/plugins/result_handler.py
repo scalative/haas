@@ -2,9 +2,10 @@ import sys
 import time
 
 from haas.result import TestCompletionStatus, separator2
+from .i_result_handler_plugin import IResultHandlerPlugin
 
 
-class QuietTestResultHandler(object):
+class QuietTestResultHandler(IResultHandlerPlugin):
     separator1 = '=' * 70
     separator2 = separator2
 
@@ -24,6 +25,14 @@ class QuietTestResultHandler(object):
             TestCompletionStatus.expected_failure: expectedFailures,
             TestCompletionStatus.skipped: skipped,
         }
+
+    @classmethod
+    def from_args(cls, test_count, args, arg_prefix):
+        return cls(test_count)
+
+    @classmethod
+    def add_parser_arguments(self, parser, option_prefix, dest_prefix):
+        pass
 
     def get_test_description(self, test):
         doc_first_line = test.shortDescription()
