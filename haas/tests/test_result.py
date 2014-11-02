@@ -352,3 +352,45 @@ class TestQuietResultHandler(ExcInfoFixture, unittest.TestCase):
         # Then
         output = stderr.getvalue()
         self.assertEqual(output, '')
+
+    @patch('sys.stderr', new_callable=StringIO)
+    def test_no_output_with_error_on_stop_test_run(self, stderr):
+        # Given
+        handler = QuietTestResultHandler(test_count=1)
+        with self.exc_info(RuntimeError) as exc_info:
+            result = TestResult.from_test_case(
+                self, TestCompletionStatus.error, exception=exc_info)
+
+        # When
+        handler(result)
+        handler.stop_test_run()
+
+        # Then
+        output = stderr.getvalue().replace('\n', '')
+        description = handler.get_test_description(
+            self,).replace('(', r'\(').replace(')', r'\)')
+        self.assertRegexpMatches(
+            output, '{}.*?Traceback.*?RuntimeError'.format(
+                description))
+
+    @patch('sys.stderr', new_callable=StringIO)
+    def test_no_output_with_failure_on_stop_test_run(self, stderr):
+        """Has a docstring for test.
+        """
+        # Given
+        handler = QuietTestResultHandler(test_count=1)
+        with self.exc_info(AssertionError) as exc_info:
+            result = TestResult.from_test_case(
+                self, TestCompletionStatus.failure, exception=exc_info)
+
+        # When
+        handler(result)
+        handler.stop_test_run()
+
+        # Then
+        output = stderr.getvalue().replace('\n', '')
+        description = handler.get_test_description(
+            self,).replace('(', r'\(').replace(')', r'\)').replace('\n', '')
+        self.assertRegexpMatches(
+            output, '{}.*?Traceback.*?AssertionError'.format(
+                description))
