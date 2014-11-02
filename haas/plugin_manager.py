@@ -23,14 +23,18 @@ class PluginManager(object):
 
     ENVIRONMENT_HOOK = 'haas.hooks.environment'
 
+    RESULT_HANDLERS = 'haas.result.handler'
+
     TEST_RUNNER = 'haas.runner'
 
     _help = {
-        TEST_RUNNER: 'Test runner implementation to use.'
+        TEST_RUNNER: 'Test runner implementation to use.',
+        RESULT_HANDLERS: 'Test result handler implementation to use.',
     }
 
     _namespace_to_option_parts = {
         TEST_RUNNER: ['runner'],
+        RESULT_HANDLERS: ['result', 'handler'],
     }
 
     def __init__(self):
@@ -43,6 +47,9 @@ class PluginManager(object):
         self.driver_managers = OrderedDict()
         self.driver_managers[self.TEST_RUNNER] = ExtensionManager(
             namespace=self.TEST_RUNNER,
+        )
+        self.driver_managers[self.RESULT_HANDLERS] = ExtensionManager(
+            namespace=self.RESULT_HANDLERS,
         )
 
     @classmethod

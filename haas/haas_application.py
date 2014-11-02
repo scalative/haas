@@ -14,7 +14,7 @@ from .discoverer import Discoverer
 from .loader import Loader
 from .plugin_context import PluginContext
 from .plugin_manager import PluginManager
-from .result import TextTestResult
+from .result import ResultCollecter
 from .utils import configure_logging
 
 
@@ -26,10 +26,7 @@ def create_argument_parser():
     parser.add_argument('--version', action='version',
                         version='%(prog)s {0}'.format(haas.__version__))
     verbosity = parser.add_mutually_exclusive_group()
-    verbosity.add_argument('-v', '--verbose', action='store_const', default=1,
-                           dest='verbosity', const=2, help='Verbose output')
-    verbosity.add_argument('-q', '--quiet', action='store_const', const=0,
-                           dest='verbosity', help='Quiet output')
+    verbosity.title = 'verbosity'
     parser.add_argument('-f', '--failfast', action='store_true', default=False,
                         help='Stop on first fail or error')
     parser.add_argument('-c', '--catch', dest='catch_interrupt',
@@ -107,7 +104,14 @@ class HaasApplication(object):
             else:
                 suite = loader.create_suite(suites)
             test_count = suite.countTestCases()
-            result_factory = lambda *args: TextTestResult(test_count, *args)
+            result_handler = plugin_manager.get_driver(
+                plugin_manager.RESULT_HANDLERS, args, test_count=test_count)
+
+            def result_factory(*args):
+                collector = ResultCollecter()
+                collector.add_result_handler(result_handler)
+                return collector
+
             # FIXME
             runner.resultclass = result_factory
             result = runner.run(suite)
