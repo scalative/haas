@@ -10,13 +10,15 @@ from contextlib import contextmanager
 import sys
 
 from mock import Mock
+from testfixtures import OutputCapture
 
 from ..plugins.i_result_handler_plugin import IResultHandlerPlugin
+from ..plugins.result_handler import QuietTestResultHandler
 from ..result import ResultCollecter, TestResult, TestCompletionStatus
 from ..testing import unittest
 
 
-class TestTextTestResult(unittest.TestCase):
+class ExcInfoFixture(object):
 
     @contextmanager
     def exc_info(self, cls):
@@ -24,6 +26,9 @@ class TestTextTestResult(unittest.TestCase):
             raise cls()
         except cls:
             yield sys.exc_info()
+
+
+class TestTextTestResult(ExcInfoFixture, unittest.TestCase):
 
     def test_result_collector_calls_handlers_start_stop_methods(self):
         # Given
@@ -208,3 +213,120 @@ class TestTextTestResult(unittest.TestCase):
 
         # Then
         self.assertTrue(collector.shouldStop)
+
+
+class TestQuietResultHandler(ExcInfoFixture, unittest.TestCase):
+
+    def test_no_output(self):
+        # Given
+        handler = QuietTestResultHandler(test_count=1)
+
+        # When
+        with OutputCapture() as output:
+            handler.start_test_run()
+
+        # Then
+        output.compare('')
+
+        # When
+        with OutputCapture() as output:
+            handler.stop_test_run()
+
+        # Then
+        output.compare('')
+
+        # When
+        with OutputCapture() as output:
+            handler.start_test(self)
+
+        # Then
+        output.compare('')
+
+        # When
+        with OutputCapture() as output:
+            handler.stop_test(self)
+
+        # Then
+        output.compare('')
+
+    def test_no_output_on_error(self):
+        # Given
+        handler = QuietTestResultHandler(test_count=1)
+        with self.exc_info(RuntimeError) as exc_info:
+            result = TestResult.from_test_case(
+                self, TestCompletionStatus.error, exception=exc_info)
+
+        # When
+        with OutputCapture() as output:
+            handler(result)
+
+        # Then
+        output.compare('')
+
+    def test_no_output_on_failure(self):
+        # Given
+        handler = QuietTestResultHandler(test_count=1)
+        with self.exc_info(AssertionError) as exc_info:
+            result = TestResult.from_test_case(
+                self, TestCompletionStatus.failure, exception=exc_info)
+
+        # When
+        with OutputCapture() as output:
+            handler(result)
+
+        # Then
+        output.compare('')
+
+    def test_no_output_on_success(self):
+        # Given
+        handler = QuietTestResultHandler(test_count=1)
+        result = TestResult.from_test_case(
+            self, TestCompletionStatus.success)
+
+        # When
+        with OutputCapture() as output:
+            handler(result)
+
+        # Then
+        output.compare('')
+
+    def test_no_output_on_skip(self):
+        # Given
+        handler = QuietTestResultHandler(test_count=1)
+        result = TestResult.from_test_case(
+            self, TestCompletionStatus.skipped, message='reason')
+
+        # When
+        with OutputCapture() as output:
+            handler(result)
+
+        # Then
+        output.compare('')
+
+    def test_no_output_on_expected_fail(self):
+        # Given
+        handler = QuietTestResultHandler(test_count=1)
+        with self.exc_info(RuntimeError) as exc_info:
+            result = TestResult.from_test_case(
+                self, TestCompletionStatus.expected_failure,
+                exception=exc_info)
+
+        # When
+        with OutputCapture() as output:
+            handler(result)
+
+        # Then
+        output.compare('')
+
+    def test_no_output_on_unexpected_success(self):
+        # Given
+        handler = QuietTestResultHandler(test_count=1)
+        result = TestResult.from_test_case(
+            self, TestCompletionStatus.unexpected_success)
+
+        # When
+        with OutputCapture() as output:
+            handler(result)
+
+        # Then
+        output.compare('')
