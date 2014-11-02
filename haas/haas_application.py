@@ -25,13 +25,11 @@ def create_argument_parser():
     parser = argparse.ArgumentParser(prog='haas')
     parser.add_argument('--version', action='version',
                         version='%(prog)s {0}'.format(haas.__version__))
-
     verbosity = parser.add_mutually_exclusive_group()
     verbosity.add_argument('-v', '--verbose', action='store_const', default=1,
                            dest='verbosity', const=2, help='Verbose output')
     verbosity.add_argument('-q', '--quiet', action='store_const', const=0,
                            dest='verbosity', help='Quiet output')
-
     parser.add_argument('-f', '--failfast', action='store_true', default=False,
                         help='Stop on first fail or error')
     parser.add_argument('-c', '--catch', dest='catch_interrupt',
