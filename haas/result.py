@@ -151,7 +151,7 @@ class ResultCollecter(object):
         self._successful = True
         self.shouldStop = False
 
-    def printErrors(self):
+    def printErrors(self):  # pragma: no cover
         pass
 
     def add_result_handler(self, handler):

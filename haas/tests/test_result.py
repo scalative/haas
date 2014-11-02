@@ -75,14 +75,13 @@ class TestTextTestResult(unittest.TestCase):
         self.assertFalse(handler.stop_test_run.called)
         self.assertFalse(handler.start_test.called)
 
-    def test_result_collector_calls_handlers_call_method(self):
+    def test_result_collector_calls_handlers_on_error(self):
         # Given
         handler = Mock(spec=IResultHandlerPlugin)
         collector = ResultCollecter()
         collector.add_result_handler(handler)
 
         # When
-        handler.reset_mock()
         with self.exc_info(RuntimeError) as exc_info:
             # Given
             expected_result = TestResult.from_test_case(
@@ -95,9 +94,15 @@ class TestTextTestResult(unittest.TestCase):
         self.assertFalse(handler.stop_test_run.called)
         self.assertFalse(handler.start_test.called)
         self.assertFalse(handler.stop_test.called)
+        self.assertFalse(collector.wasSuccessful())
+
+    def test_result_collector_calls_handlers_on_failure(self):
+        # Given
+        handler = Mock(spec=IResultHandlerPlugin)
+        collector = ResultCollecter()
+        collector.add_result_handler(handler)
 
         # When
-        handler.reset_mock()
         with self.exc_info(AssertionError) as exc_info:
             # Given
             expected_result = TestResult.from_test_case(
@@ -110,9 +115,15 @@ class TestTextTestResult(unittest.TestCase):
         self.assertFalse(handler.stop_test_run.called)
         self.assertFalse(handler.start_test.called)
         self.assertFalse(handler.stop_test.called)
+        self.assertFalse(collector.wasSuccessful())
+
+    def test_result_collector_calls_handlers_on_success(self):
+        # Given
+        handler = Mock(spec=IResultHandlerPlugin)
+        collector = ResultCollecter()
+        collector.add_result_handler(handler)
 
         # When
-        handler.reset_mock()
         expected_result = TestResult.from_test_case(
             self, TestCompletionStatus.success)
         collector.addSuccess(self)
@@ -123,9 +134,15 @@ class TestTextTestResult(unittest.TestCase):
         self.assertFalse(handler.stop_test_run.called)
         self.assertFalse(handler.start_test.called)
         self.assertFalse(handler.stop_test.called)
+        self.assertTrue(collector.wasSuccessful())
+
+    def test_result_collector_calls_handlers_on_skip(self):
+        # Given
+        handler = Mock(spec=IResultHandlerPlugin)
+        collector = ResultCollecter()
+        collector.add_result_handler(handler)
 
         # When
-        handler.reset_mock()
         expected_result = TestResult.from_test_case(
             self, TestCompletionStatus.skipped, message='reason')
         collector.addSkip(self, 'reason')
@@ -136,9 +153,15 @@ class TestTextTestResult(unittest.TestCase):
         self.assertFalse(handler.stop_test_run.called)
         self.assertFalse(handler.start_test.called)
         self.assertFalse(handler.stop_test.called)
+        self.assertTrue(collector.wasSuccessful())
+
+    def test_result_collector_calls_handlers_on_expected_fail(self):
+        # Given
+        handler = Mock(spec=IResultHandlerPlugin)
+        collector = ResultCollecter()
+        collector.add_result_handler(handler)
 
         # When
-        handler.reset_mock()
         with self.exc_info(RuntimeError) as exc_info:
             # Given
             expected_result = TestResult.from_test_case(
@@ -152,9 +175,15 @@ class TestTextTestResult(unittest.TestCase):
         self.assertFalse(handler.stop_test_run.called)
         self.assertFalse(handler.start_test.called)
         self.assertFalse(handler.stop_test.called)
+        self.assertTrue(collector.wasSuccessful())
+
+    def test_result_collector_calls_handlers_on_unexpected_success(self):
+        # Given
+        handler = Mock(spec=IResultHandlerPlugin)
+        collector = ResultCollecter()
+        collector.add_result_handler(handler)
 
         # When
-        handler.reset_mock()
         expected_result = TestResult.from_test_case(
             self, TestCompletionStatus.unexpected_success)
         collector.addUnexpectedSuccess(self)
@@ -165,3 +194,17 @@ class TestTextTestResult(unittest.TestCase):
         self.assertFalse(handler.stop_test_run.called)
         self.assertFalse(handler.start_test.called)
         self.assertFalse(handler.stop_test.called)
+        self.assertFalse(collector.wasSuccessful())
+
+    def test_result_collector_should_stop(self):
+        # Given
+        collector = ResultCollecter()
+
+        # Then
+        self.assertFalse(collector.shouldStop)
+
+        # When
+        collector.stop()
+
+        # Then
+        self.assertTrue(collector.shouldStop)
