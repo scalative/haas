@@ -1,6 +1,6 @@
 import time
 
-from mock import patch
+from mock import Mock, patch
 from six.moves import StringIO
 
 from ..plugins.parallel_runner import ChildResultHandler, ParallelTestRunner
@@ -8,6 +8,16 @@ from ..result import ResultCollecter, TestCompletionStatus, TestResult
 from ..suite import TestSuite
 from ..testing import unittest
 from . import _test_cases
+
+
+def apply_async(func, args=None, kwargs=None, callback=None):
+    if args is None:
+        args = ()
+    if kwargs is None:
+        kwargs = {}
+    result = func(*args, **kwargs)
+    if callback is not None:
+        callback(result)
 
 
 class TestChildResultHandler(unittest.TestCase):
@@ -81,3 +91,32 @@ class TestParallelTestRunner(unittest.TestCase):
 
         # Then
         self.assertEqual(result_handler.results, [expected_result])
+
+    @patch('haas.plugins.parallel_runner.Pool')
+    def test_parallel_test_runner_mock_subprocess(self, pool_class):
+        # Given
+        pool = Mock()
+        pool_class.return_value = pool
+        pool.apply_async.side_effect = apply_async
+
+        test_case = _test_cases.TestCase('test_method')
+        test_suite = TestSuite([test_case])
+
+        expected_result = TestResult.from_test_case(
+            test_case, TestCompletionStatus.success)
+
+        processes = 5
+
+        result_handler = ChildResultHandler()
+        result_collector = ResultCollecter()
+        result_collector.add_result_handler(result_handler)
+        runner = ParallelTestRunner(processes)
+
+        # When
+        runner.run(result_collector, test_suite)
+
+        # Then
+        self.assertEqual(result_handler.results, [expected_result])
+        pool_class.assert_called_once_with(processes=processes)
+        pool.close.assert_called_once_with()
+        pool.join.assert_called_once_with()
