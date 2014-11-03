@@ -2,16 +2,16 @@
  haas package
 ==============
 
+Subpackages
+===========
+
+.. toctree::
+
+    haas.plugins
+    haas.tests
+
 Submodules
 ==========
-
-haas.coverage module
---------------------
-
-.. automodule:: haas.coverage
-    :members:
-    :undoc-members:
-    :show-inheritance:
 
 haas.discoverer module
 ----------------------
@@ -25,6 +25,14 @@ haas.error_holder module
 ------------------------
 
 .. automodule:: haas.error_holder
+    :members:
+    :undoc-members:
+    :show-inheritance:
+
+haas.exceptions module
+----------------------
+
+.. automodule:: haas.exceptions
     :members:
     :undoc-members:
     :show-inheritance:
@@ -53,6 +61,14 @@ haas.main module
     :undoc-members:
     :show-inheritance:
 
+haas.module_import_error module
+-------------------------------
+
+.. automodule:: haas.module_import_error
+    :members:
+    :undoc-members:
+    :show-inheritance:
+
 haas.plugin_context module
 --------------------------
 
@@ -65,6 +81,14 @@ haas.plugin_manager module
 --------------------------
 
 .. automodule:: haas.plugin_manager
+    :members:
+    :undoc-members:
+    :show-inheritance:
+
+haas.result module
+------------------
+
+.. automodule:: haas.result
     :members:
     :undoc-members:
     :show-inheritance:
