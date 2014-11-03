@@ -50,6 +50,8 @@ class QuietTestResultHandler(IResultHandlerPlugin):
             TestCompletionStatus.expected_failure: expectedFailures,
             TestCompletionStatus.skipped: skipped,
         }
+        self.start_time = None
+        self.stop_time = None
 
     @classmethod
     def from_args(cls, args, arg_prefix, test_count):
@@ -73,10 +75,12 @@ class QuietTestResultHandler(IResultHandlerPlugin):
         pass
 
     def start_test_run(self):
-        pass
+        self.start_time = time.time()
 
     def stop_test_run(self):
+        self.stop_time = time.time()
         self.print_errors()
+        self.print_summary()
 
     def print_errors(self):
         """Print all errors and failures to the console.
@@ -104,6 +108,47 @@ class QuietTestResultHandler(IResultHandlerPlugin):
                     result.test)))
             self.stream.writeln(self.separator2)
             self.stream.writeln(result.exception)
+
+    def print_summary(self):
+        self.stream.writeln(self.separator2)
+        time_taken = self.stop_time - self.start_time
+
+        run = self.tests_run
+
+        self.stream.writeln("Ran %d test%s in %.3fs" %
+                            (run, run != 1 and "s" or "", time_taken))
+        self.stream.writeln()
+
+        selfs = map(len, (self.expectedFailures,
+                          self.unexpectedSuccesses,
+                          self.skipped))
+        expectedFails, unexpectedSuccesses, skipped = selfs
+
+        infos = []
+        if not self.was_successful():
+            self.stream.write("FAILED")
+            failed, errored = len(self.failures), len(self.errors)
+            if failed:
+                infos.append("failures=%d" % failed)
+            if errored:
+                infos.append("errors=%d" % errored)
+        else:
+            self.stream.write("OK")
+        if skipped:
+            infos.append("skipped=%d" % skipped)
+        if expectedFails:
+            infos.append("expected failures=%d" % expectedFails)
+        if unexpectedSuccesses:
+            infos.append("unexpected successes=%d" % unexpectedSuccesses)
+        if infos:
+            self.stream.writeln(" (%s)" % (", ".join(infos),))
+        else:
+            self.stream.write("\n")
+
+    def was_successful(self):
+        return (len(self.errors) == 0 and
+                len(self.failures) == 0 and
+                len(self.unexpectedSuccesses) == 0)
 
     def __call__(self, result):
         collector = self._collectors.get(result.status)

@@ -74,7 +74,6 @@ class BaseTestRunner(IRunnerPlugin):
                         'module',
                         category=DeprecationWarning,
                         message='Please use assert\w+ instead.')
-            startTime = time.time()
             startTestRun = getattr(result, 'startTestRun', None)
             if startTestRun is not None:
                 startTestRun()
@@ -84,13 +83,11 @@ class BaseTestRunner(IRunnerPlugin):
                 stopTestRun = getattr(result, 'stopTestRun', None)
                 if stopTestRun is not None:
                     stopTestRun()
-            stopTime = time.time()
 
-        return result, startTime, stopTime
+        return result
 
     def run(self, test):
-        result, _, _ = self._run(test)
-        return result
+        return self._run(test)
 
 
 class TextTestRunner(BaseTestRunner):
@@ -129,45 +126,4 @@ class TextTestRunner(BaseTestRunner):
         return result
 
     def run(self, test):
-        result, startTime, stopTime = self._run(test)
-        timeTaken = stopTime - startTime
-
-        result.printErrors()
-        if hasattr(result, 'separator2'):
-            self.stream.writeln(result.separator2)
-        run = result.testsRun
-        self.stream.writeln("Ran %d test%s in %.3fs" %
-                            (run, run != 1 and "s" or "", timeTaken))
-        self.stream.writeln()
-
-        expectedFails = unexpectedSuccesses = skipped = 0
-        try:
-            results = map(len, (result.expectedFailures,
-                                result.unexpectedSuccesses,
-                                result.skipped))
-        except AttributeError:
-            pass
-        else:
-            expectedFails, unexpectedSuccesses, skipped = results
-
-        infos = []
-        if not result.wasSuccessful():
-            self.stream.write("FAILED")
-            failed, errored = len(result.failures), len(result.errors)
-            if failed:
-                infos.append("failures=%d" % failed)
-            if errored:
-                infos.append("errors=%d" % errored)
-        else:
-            self.stream.write("OK")
-        if skipped:
-            infos.append("skipped=%d" % skipped)
-        if expectedFails:
-            infos.append("expected failures=%d" % expectedFails)
-        if unexpectedSuccesses:
-            infos.append("unexpected successes=%d" % unexpectedSuccesses)
-        if infos:
-            self.stream.writeln(" (%s)" % (", ".join(infos),))
-        else:
-            self.stream.write("\n")
-        return result
+        return self._run(test)

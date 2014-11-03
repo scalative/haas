@@ -370,16 +370,20 @@ class TestQuietResultHandler(ExcInfoFixture, unittest.TestCase):
         self.assertEqual(output, '')
 
     @patch('sys.stderr', new_callable=StringIO)
-    def test_no_output_stop_test_run(self, stderr):
+    def test_output_stop_test_run(self, stderr):
         # Given
         handler = QuietTestResultHandler(test_count=1)
+        handler.start_test_run()
 
         # When
         handler.stop_test_run()
 
         # Then
         output = stderr.getvalue()
-        self.assertEqual(output, '\n')
+        self.assertTrue(output.startswith('\n' + handler.separator2))
+        self.assertTrue(output.endswith('OK\n'))
+        self.assertRegexpMatches(
+            output.replace('\n', ''), r'--+.*?Ran 0 tests.*?OK')
 
     @patch('sys.stderr', new_callable=StringIO)
     def test_no_output_start_test(self, stderr):
@@ -497,6 +501,7 @@ class TestQuietResultHandler(ExcInfoFixture, unittest.TestCase):
     def test_no_output_with_error_on_stop_test_run(self, stderr):
         # Given
         handler = QuietTestResultHandler(test_count=1)
+        handler.start_test_run()
         with self.exc_info(RuntimeError) as exc_info:
             result = TestResult.from_test_case(
                 self, TestCompletionStatus.error, exception=exc_info)
@@ -519,6 +524,7 @@ class TestQuietResultHandler(ExcInfoFixture, unittest.TestCase):
         """
         # Given
         handler = QuietTestResultHandler(test_count=1)
+        handler.start_test_run()
         with self.failure_exc_info() as exc_info:
             result = TestResult.from_test_case(
                 self, TestCompletionStatus.failure, exception=exc_info)
@@ -553,16 +559,20 @@ class TestStandardResultHandler(ExcInfoFixture, unittest.TestCase):
         self.assertEqual(output, '')
 
     @patch('sys.stderr', new_callable=StringIO)
-    def test_no_output_stop_test_run(self, stderr):
+    def test_output_stop_test_run(self, stderr):
         # Given
         handler = StandardTestResultHandler(test_count=1)
+        handler.start_test_run()
 
         # When
         handler.stop_test_run()
 
         # Then
         output = stderr.getvalue()
-        self.assertEqual(output, '\n')
+        self.assertTrue(output.startswith('\n' + handler.separator2))
+        self.assertTrue(output.endswith('OK\n'))
+        self.assertRegexpMatches(
+            output.replace('\n', ''), r'--+.*?Ran 0 tests.*?OK')
 
     @patch('sys.stderr', new_callable=StringIO)
     def test_no_output_start_test(self, stderr):
@@ -680,6 +690,7 @@ class TestStandardResultHandler(ExcInfoFixture, unittest.TestCase):
     def test_no_output_with_error_on_stop_test_run(self, stderr):
         # Given
         handler = StandardTestResultHandler(test_count=1)
+        handler.start_test_run()
         with self.exc_info(RuntimeError) as exc_info:
             result = TestResult.from_test_case(
                 self, TestCompletionStatus.error, exception=exc_info)
@@ -702,6 +713,7 @@ class TestStandardResultHandler(ExcInfoFixture, unittest.TestCase):
         """
         # Given
         handler = StandardTestResultHandler(test_count=1)
+        handler.start_test_run()
         with self.failure_exc_info() as exc_info:
             result = TestResult.from_test_case(
                 self, TestCompletionStatus.failure, exception=exc_info)
@@ -739,13 +751,17 @@ class TestVerboseResultHandler(ExcInfoFixture, unittest.TestCase):
     def test_no_output_stop_test_run(self, stderr):
         # Given
         handler = VerboseTestResultHandler(test_count=1)
+        handler.start_test_run()
 
         # When
         handler.stop_test_run()
 
         # Then
         output = stderr.getvalue()
-        self.assertEqual(output, '\n')
+        self.assertTrue(output.startswith('\n' + handler.separator2))
+        self.assertTrue(output.endswith('OK\n'))
+        self.assertRegexpMatches(
+            output.replace('\n', ''), r'--+.*?Ran 0 tests.*?OK')
 
     @patch('time.ctime')
     @patch('sys.stderr', new_callable=StringIO)
@@ -868,6 +884,7 @@ class TestVerboseResultHandler(ExcInfoFixture, unittest.TestCase):
     def test_output_with_error_on_stop_test_run(self, stderr):
         # Given
         handler = VerboseTestResultHandler(test_count=1)
+        handler.start_test_run()
         with self.exc_info(RuntimeError) as exc_info:
             result = TestResult.from_test_case(
                 self, TestCompletionStatus.error, exception=exc_info)
@@ -890,6 +907,7 @@ class TestVerboseResultHandler(ExcInfoFixture, unittest.TestCase):
         """
         # Given
         handler = VerboseTestResultHandler(test_count=1)
+        handler.start_test_run()
         with self.failure_exc_info() as exc_info:
             result = TestResult.from_test_case(
                 self, TestCompletionStatus.failure, exception=exc_info)
