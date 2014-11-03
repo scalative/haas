@@ -3,8 +3,11 @@ import time
 from mock import patch
 from six.moves import StringIO
 
-from ..plugins.parallel_runner import ChildResultHandler
+from ..plugins.parallel_runner import ChildResultHandler, ParallelTestRunner
+from ..result import ResultCollecter, TestCompletionStatus, TestResult
+from ..suite import TestSuite
 from ..testing import unittest
+from . import _test_cases
 
 
 class TestChildResultHandler(unittest.TestCase):
@@ -53,3 +56,28 @@ class TestChildResultHandler(unittest.TestCase):
         # Finally, no output is produced
         self.assertEqual(stdout.getvalue(), '')
         self.assertEqual(stderr.getvalue(), '')
+
+
+class TestParallelTestRunner(unittest.TestCase):
+
+    def test_parallel_test_runner_with_subprocess(self):
+        """Run a simple test case in a subprocess and receive the result.
+
+        """
+        # Given
+        test_case = _test_cases.TestCase('test_method')
+        test_suite = TestSuite([test_case])
+
+        expected_result = TestResult.from_test_case(
+            test_case, TestCompletionStatus.success)
+
+        result_handler = ChildResultHandler()
+        result_collector = ResultCollecter()
+        result_collector.add_result_handler(result_handler)
+        runner = ParallelTestRunner(1)
+
+        # When
+        runner.run(result_collector, test_suite)
+
+        # Then
+        self.assertEqual(result_handler.results, [expected_result])
