@@ -63,6 +63,16 @@ class ParallelTestRunner(BaseTestRunner):
         super(ParallelTestRunner, self).__init__(warnings=warnings)
         self.process_count = process_count
 
+    @classmethod
+    def from_args(cls, args, arg_prefix):
+        return cls(process_count=args.processes)
+
+    @classmethod
+    def add_parser_arguments(self, parser, option_prefix, dest_prefix):
+        help_ = ('Number of processes to use if running tests in paralled.  '
+                 'Defaults to number of processor cores.')
+        parser.add_argument('--processes', help=help_, type=int, default=None)
+
     def _handle_result(self, result, collected_result):
         for test_result in collected_result:
             test = test_result.test
