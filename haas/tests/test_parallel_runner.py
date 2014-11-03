@@ -98,3 +98,27 @@ class TestParallelTestRunner(unittest.TestCase):
         pool_class.assert_called_once_with(processes=processes)
         pool.close.assert_called_once_with()
         pool.join.assert_called_once_with()
+
+    @patch('haas.plugins.parallel_runner.Pool')
+    def test_parallel_runner_single_call_to_start_stop_test_run(self,
+                                                                pool_class):
+        # Given
+        pool = Mock()
+        pool_class.return_value = pool
+        pool.apply_async.side_effect = apply_async
+
+        test_case = _test_cases.TestCase('test_method')
+        test_suite = TestSuite([test_case])
+
+        result_collector = Mock()
+        runner = ParallelTestRunner()
+
+        # When
+        runner.run(result_collector, test_suite)
+
+        # Then
+        pool_class.assert_called_once_with(processes=None)
+        pool.close.assert_called_once_with()
+        pool.join.assert_called_once_with()
+        result_collector.startTestRun.assert_called_once_with()
+        result_collector.stopTestRun.assert_called_once_with()
