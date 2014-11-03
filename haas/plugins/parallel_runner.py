@@ -69,14 +69,15 @@ class ParallelTestRunner(BaseTestRunner):
     def _run_tests(self, result, test):
         pool = Pool()
 
-        callback = lambda collected_result: self._handle_result(
-            result, collected_result)
-        for test_case in find_test_cases(test):
-            pool.apply_async(
-                _run_test_in_process, args=(test_case,), callback=callback)
-
-        pool.close()
-        pool.join()
+        try:
+            callback = lambda collected_result: self._handle_result(
+                result, collected_result)
+            for test_case in find_test_cases(test):
+                pool.apply_async(
+                    _run_test_in_process, args=(test_case,), callback=callback)
+        finally:
+            pool.close()
+            pool.join()
 
     def run(self, result_collector, test_to_run):
         test = lambda result: self._run_tests(result_collector, test_to_run)
