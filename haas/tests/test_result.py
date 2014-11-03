@@ -225,7 +225,80 @@ class TestTextTestResult(ExcInfoFixture, unittest.TestCase):
         self.assertTrue(collector.shouldStop)
 
 
-class TestBuffering(ExcInfoFixture, unittest.TestCase):
+class TestFailfast(ExcInfoFixture, unittest.TestCase):
+
+    def test_failfast_enabled_on_error(self):
+        # Given
+        collector = ResultCollecter(failfast=True)
+        self.assertFalse(collector.shouldStop)
+
+        # When
+        with self.exc_info(RuntimeError) as exc_info:
+            collector.addError(self, exc_info)
+
+        # Then
+        self.assertTrue(collector.shouldStop)
+
+    def test_failfast_enabled_on_failure(self):
+        # Given
+        collector = ResultCollecter(failfast=True)
+        self.assertFalse(collector.shouldStop)
+
+        # When
+        with self.failure_exc_info() as exc_info:
+            collector.addFailure(self, exc_info)
+
+        # Then
+        self.assertTrue(collector.shouldStop)
+
+    def test_failfast_enabled_on_unexpected_success(self):
+        # Given
+        collector = ResultCollecter(failfast=False)
+        self.assertFalse(collector.shouldStop)
+
+        # When
+        collector.addUnexpectedSuccess(self)
+
+        # Then
+        self.assertFalse(collector.shouldStop)
+
+    def test_failfast_disabled_on_error(self):
+        # Given
+        collector = ResultCollecter(failfast=False)
+        self.assertFalse(collector.shouldStop)
+
+        # When
+        with self.exc_info(RuntimeError) as exc_info:
+            collector.addError(self, exc_info)
+
+        # Then
+        self.assertFalse(collector.shouldStop)
+
+    def test_failfast_disabled_on_failure(self):
+        # Given
+        collector = ResultCollecter(failfast=False)
+        self.assertFalse(collector.shouldStop)
+
+        # When
+        with self.failure_exc_info() as exc_info:
+            collector.addFailure(self, exc_info)
+
+        # Then
+        self.assertFalse(collector.shouldStop)
+
+    def test_failfast_disabled_on_unexpected_success(self):
+        # Given
+        collector = ResultCollecter(failfast=False)
+        self.assertFalse(collector.shouldStop)
+
+        # When
+        collector.addUnexpectedSuccess(self)
+
+        # Then
+        self.assertFalse(collector.shouldStop)
+
+
+class TestBuffering(ExcInfoFixture):
 
     @patch('sys.stderr', new_callable=StringIO)
     def test_buffering_stderr(self, stderr):

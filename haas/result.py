@@ -6,12 +6,13 @@
 # of the 3-clause BSD license.  See the LICENSE.txt file for details.
 from __future__ import absolute_import, unicode_literals
 
-from six.moves import StringIO
-
 from datetime import datetime
 from enum import Enum
+from functools import wraps
 import sys
 import traceback
+
+from six.moves import StringIO
 
 
 class TestCompletionStatus(Enum):
@@ -138,13 +139,24 @@ class TestResult(object):
 separator2 = '-' * 70
 
 
+# Copied from unittest.result
+def failfast(method):
+    @wraps(method)
+    def inner(self, *args, **kw):
+        if self.failfast:
+            self.stop()
+        return method(self, *args, **kw)
+    return inner
+
+
 class ResultCollecter(object):
 
     # Temporary compatibility with unittest's runner
     separator2 = separator2
 
-    def __init__(self, buffer=False):
+    def __init__(self, buffer=False, failfast=False):
         self.buffer = buffer
+        self.failfast = failfast
         self._handlers = []
         self.testsRun = 0
         self.expectedFailures = []
@@ -236,12 +248,14 @@ class ResultCollecter(object):
             self._successful = False
         return result
 
+    @failfast
     def addError(self, test, exception):
         result = self._handle_result(
             test, TestCompletionStatus.error, exception=exception)
         self.errors.append(result)
         self._mirror_output = True
 
+    @failfast
     def addFailure(self, test, exception):
         result = self._handle_result(
             test, TestCompletionStatus.failure, exception=exception)
@@ -261,6 +275,7 @@ class ResultCollecter(object):
             test, TestCompletionStatus.expected_failure, exception=exception)
         self.expectedFailures.append(result)
 
+    @failfast
     def addUnexpectedSuccess(self, test):
         result = self._handle_result(
             test, TestCompletionStatus.unexpected_success)

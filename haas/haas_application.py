@@ -111,7 +111,8 @@ class HaasApplication(object):
                 plugin_manager.RESULT_HANDLERS, args, test_count=test_count)
 
             def result_factory(*factory_args):
-                collector = ResultCollecter(buffer=args.buffer)
+                collector = ResultCollecter(
+                    buffer=args.buffer, failfast=args.failfast)
                 collector.add_result_handler(result_handler)
                 return collector
 
