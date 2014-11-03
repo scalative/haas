@@ -70,28 +70,6 @@ class TestChildResultHandler(unittest.TestCase):
 
 class TestParallelTestRunner(unittest.TestCase):
 
-    def test_parallel_test_runner_with_subprocess(self):
-        """Run a simple test case in a subprocess and receive the result.
-
-        """
-        # Given
-        test_case = _test_cases.TestCase('test_method')
-        test_suite = TestSuite([test_case])
-
-        expected_result = TestResult.from_test_case(
-            test_case, TestCompletionStatus.success)
-
-        result_handler = ChildResultHandler()
-        result_collector = ResultCollecter()
-        result_collector.add_result_handler(result_handler)
-        runner = ParallelTestRunner(1)
-
-        # When
-        runner.run(result_collector, test_suite)
-
-        # Then
-        self.assertEqual(result_handler.results, [expected_result])
-
     @patch('haas.plugins.parallel_runner.Pool')
     def test_parallel_test_runner_mock_subprocess(self, pool_class):
         # Given
