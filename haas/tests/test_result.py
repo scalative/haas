@@ -298,7 +298,7 @@ class TestFailfast(ExcInfoFixture, unittest.TestCase):
         self.assertFalse(collector.shouldStop)
 
 
-class TestBuffering(ExcInfoFixture):
+class TestBuffering(ExcInfoFixture, unittest.TestCase):
 
     @patch('sys.stderr', new_callable=StringIO)
     def test_buffering_stderr(self, stderr):
