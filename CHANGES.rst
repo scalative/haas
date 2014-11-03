@@ -5,6 +5,14 @@
 Change Summary since 0.4.1
 ==========================
 
+Enhancements
+------------
+
+* Added a plugin manager based on ``stevedore``
+  https://pypi.python.org/pypi/stevedore (#16).
+* Decouple test result collection from test result presentation (PR
+  #83).
+
 
 Version 0.4.1
 =============
