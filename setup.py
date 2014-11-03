@@ -149,7 +149,7 @@ if __name__ == "__main__":
                 'coverage = haas.plugins.coverage:Coverage',
             ],
             'haas.runner': [
-                'default = haas.plugins.runner:TextTestRunner',
+                'default = haas.plugins.runner:BaseTestRunner',
             ],
             'haas.result.handler': [
                 'default = haas.plugins.result_handler:StandardTestResultHandler',  # noqa

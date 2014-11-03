@@ -110,13 +110,9 @@ class HaasApplication(object):
             result_handler = plugin_manager.get_driver(
                 plugin_manager.RESULT_HANDLERS, args, test_count=test_count)
 
-            def result_factory(*factory_args):
-                collector = ResultCollecter(
-                    buffer=args.buffer, failfast=args.failfast)
-                collector.add_result_handler(result_handler)
-                return collector
+            result_collector = ResultCollecter(
+                buffer=args.buffer, failfast=args.failfast)
+            result_collector.add_result_handler(result_handler)
 
-            # FIXME
-            runner.resultclass = result_factory
-            result = runner.run(suite)
+            result = runner.run(result_collector, suite)
             return not result.wasSuccessful()
