@@ -25,3 +25,7 @@ class IHookPlugin(object):
     @abc.abstractmethod
     def add_parser_arguments(parser):  # pragma: no cover
         pass
+
+    @abc.abstractmethod
+    def configure(self, args):  # pragma: no cover
+        pass
