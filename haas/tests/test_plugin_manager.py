@@ -11,7 +11,7 @@ from argparse import ArgumentParser
 from stevedore.extension import ExtensionManager, Extension
 
 from haas.plugins.base_hook_plugin import BaseHookPlugin
-from haas.plugins.runner import TextTestRunner
+from haas.plugins.runner import BaseTestRunner
 from ..haas_application import create_argument_parser
 from ..plugin_manager import PluginManager
 from ..testing import unittest
@@ -112,7 +112,7 @@ class TestPluginManager(unittest.TestCase):
     def test_driver_hooks_found(self):
         # Given
         extension = Extension(
-            'haas.runner', None, unittest.TextTestRunner, None)
+            'haas.runner', None, BaseTestRunner, None)
         driver_managers = [
             (PluginManager.TEST_RUNNER, ExtensionManager.make_test_instance(
                 [extension], namespace=PluginManager.TEST_RUNNER)),
@@ -132,11 +132,11 @@ class TestPluginManager(unittest.TestCase):
 
     def test_get_default_driver(self):
         # Given
-        class OtherRunner(TextTestRunner):
+        class OtherRunner(BaseTestRunner):
             pass
 
         default = Extension(
-            'default', None, TextTestRunner, None)
+            'default', None, BaseTestRunner, None)
         other = Extension(
             'other', None, OtherRunner, None)
         driver_managers = [
@@ -158,11 +158,11 @@ class TestPluginManager(unittest.TestCase):
 
     def test_get_other_driver(self):
         # Given
-        class OtherRunner(TextTestRunner):
+        class OtherRunner(BaseTestRunner):
             pass
 
         default = Extension(
-            'default', None, TextTestRunner, None)
+            'default', None, BaseTestRunner, None)
         other = Extension(
             'other', None, OtherRunner, None)
         driver_managers = [

@@ -18,7 +18,7 @@ from mock import Mock, patch
 from stevedore.extension import ExtensionManager, Extension
 
 import haas
-from ..discoverer import Discoverer, find_test_cases
+from ..discoverer import Discoverer
 from ..haas_application import HaasApplication
 from ..loader import Loader
 from ..plugin_manager import PluginManager
@@ -44,45 +44,48 @@ class MockLambda(object):
 def with_patched_test_runner(fn):
     @wraps(fn)
     def wrapper(*args):
-        with patch('haas.plugins.runner.TextTestRunner') as runner_class:
-            environment_manager = ExtensionManager.make_test_instance(
-                [], namespace=PluginManager.ENVIRONMENT_HOOK,
-            )
-            env_managers = [
-                (PluginManager.ENVIRONMENT_HOOK, environment_manager),
-            ]
-            runner = Extension('default', None, runner_class, None)
-            result_handler = Extension('default', None, Mock(), None)
-            driver_managers = [
-                (
-                    PluginManager.TEST_RUNNER,
-                    ExtensionManager.make_test_instance(
-                        [runner], namespace=PluginManager.TEST_RUNNER),
-                ),
-                (
-                    PluginManager.RESULT_HANDLERS,
-                    ExtensionManager.make_test_instance(
-                        [result_handler],
-                        namespace=PluginManager.RESULT_HANDLERS),
-                ),
-            ]
-            plugin_manager = PluginManager.testing_plugin_manager(
-                hook_managers=env_managers,
-                driver_managers=driver_managers)
-            args_ = args + (runner_class, plugin_manager,)
-            return fn(*args_)
+        with patch('haas.haas_application.ResultCollecter') as result_cls:
+            with patch('haas.plugins.runner.BaseTestRunner') as runner_class:
+                environment_manager = ExtensionManager.make_test_instance(
+                    [], namespace=PluginManager.ENVIRONMENT_HOOK,
+                )
+                env_managers = [
+                    (PluginManager.ENVIRONMENT_HOOK, environment_manager),
+                ]
+                runner = Extension('default', None, runner_class, None)
+                result_handler = Extension(
+                    'default', None, result_cls, None)
+                driver_managers = [
+                    (
+                        PluginManager.TEST_RUNNER,
+                        ExtensionManager.make_test_instance(
+                            [runner], namespace=PluginManager.TEST_RUNNER),
+                    ),
+                    (
+                        PluginManager.RESULT_HANDLERS,
+                        ExtensionManager.make_test_instance(
+                            [result_handler],
+                            namespace=PluginManager.RESULT_HANDLERS),
+                    ),
+                ]
+                plugin_manager = PluginManager.testing_plugin_manager(
+                    hook_managers=env_managers,
+                    driver_managers=driver_managers)
+                args_ = args + (runner_class, result_cls, plugin_manager,)
+                return fn(*args_)
     return wrapper
 
 
 class TestHaasApplication(unittest.TestCase):
 
-    def _run_with_arguments(self, runner_class, *args, **kwargs):
+    def _run_with_arguments(self, runner_class, result_class, *args, **kwargs):
         plugin_manager = kwargs.get('plugin_manager')
         runner = Mock()
         runner_class.from_args.return_value = runner
 
         result = Mock()
         result.wasSuccessful = Mock()
+        result_class.return_value = result
         run_method = Mock(return_value=result)
         runner.run = run_method
 
@@ -91,10 +94,11 @@ class TestHaasApplication(unittest.TestCase):
         return run_method, result
 
     @with_patched_test_runner
-    def test_main_default_arguments(self, runner_class, plugin_manager):
+    def test_main_default_arguments(self, runner_class, result_class,
+                                    plugin_manager):
         # When
         run, result = self._run_with_arguments(
-            runner_class, plugin_manager=plugin_manager)
+            runner_class, result_class, plugin_manager=plugin_manager)
 
         # Then
         self.assertEqual(runner_class.from_args.call_count, 1)
@@ -108,14 +112,14 @@ class TestHaasApplication(unittest.TestCase):
         self.assertFalse(ns.buffer)
 
         suite = Discoverer(Loader()).discover('haas')
-        run.assert_called_once_with(suite)
+        run.assert_called_once_with(result, suite)
         result.wasSuccessful.assert_called_once_with()
 
     @with_patched_test_runner
-    def test_main_quiet(self, runner_class, plugin_manager):
+    def test_main_quiet(self, runner_class, result_class, plugin_manager):
         # When
         run, result = self._run_with_arguments(
-            runner_class, '-q', plugin_manager=plugin_manager)
+            runner_class, result_class, '-q', plugin_manager=plugin_manager)
 
         # Then
         args = runner_class.from_args.call_args
@@ -127,22 +131,22 @@ class TestHaasApplication(unittest.TestCase):
         self.assertFalse(ns.buffer)
 
         suite = Discoverer(Loader()).discover('haas')
-        run.assert_called_once_with(suite)
+        run.assert_called_once_with(result, suite)
         result.wasSuccessful.assert_called_once_with()
 
     @patch('sys.stdout')
     @patch('sys.stderr')
-    @patch('haas.plugins.runner.TextTestRunner')
-    def test_main_quiet_and_verbose_not_allowed(self, runner_class, stdout,
-                                                stderr):
+    @patch('haas.plugins.runner.BaseTestRunner')
+    def test_main_quiet_and_verbose_not_allowed(self,
+                                                runner_class, stdout, stderr):
         with self.assertRaises(SystemExit):
-            self._run_with_arguments(runner_class, '-q', '-v')
+            self._run_with_arguments(runner_class, Mock(), '-q', '-v')
 
     @with_patched_test_runner
-    def test_main_verbose(self, runner_class, plugin_manager):
+    def test_main_verbose(self, runner_class, result_class, plugin_manager):
         # When
         run, result = self._run_with_arguments(
-            runner_class, '-v', plugin_manager=plugin_manager)
+            runner_class, result_class, '-v', plugin_manager=plugin_manager)
 
         # Then
         args = runner_class.from_args.call_args
@@ -154,14 +158,14 @@ class TestHaasApplication(unittest.TestCase):
         self.assertFalse(ns.buffer)
 
         suite = Discoverer(Loader()).discover('haas')
-        run.assert_called_once_with(suite)
+        run.assert_called_once_with(result, suite)
         result.wasSuccessful.assert_called_once_with()
 
     @with_patched_test_runner
-    def test_main_failfast(self, runner_class, plugin_manager):
+    def test_main_failfast(self, runner_class, result_class, plugin_manager):
         # When
         run, result = self._run_with_arguments(
-            runner_class, '-f', plugin_manager=plugin_manager)
+            runner_class, result_class, '-f', plugin_manager=plugin_manager)
 
         # Then
         args = runner_class.from_args.call_args
@@ -173,14 +177,14 @@ class TestHaasApplication(unittest.TestCase):
         self.assertFalse(ns.buffer)
 
         suite = Discoverer(Loader()).discover('haas')
-        run.assert_called_once_with(suite)
+        run.assert_called_once_with(result, suite)
         result.wasSuccessful.assert_called_once_with()
 
     @with_patched_test_runner
-    def test_main_buffer(self, runner_class, plugin_manager):
+    def test_main_buffer(self, runner_class, result_class, plugin_manager):
         # When
         run, result = self._run_with_arguments(
-            runner_class, '-b', plugin_manager=plugin_manager)
+            runner_class, result_class, '-b', plugin_manager=plugin_manager)
 
         # Then
         args = runner_class.from_args.call_args
@@ -192,15 +196,16 @@ class TestHaasApplication(unittest.TestCase):
         self.assertTrue(ns.buffer)
 
         suite = Discoverer(Loader()).discover('haas')
-        run.assert_called_once_with(suite)
+        run.assert_called_once_with(result, suite)
         result.wasSuccessful.assert_called_once_with()
 
     @patch('logging.getLogger')
     @with_patched_test_runner
-    def test_with_logging(self, get_logger, runner_class, plugin_manager):
+    def test_with_logging(self, get_logger, runner_class, result_class,
+                          plugin_manager):
         # Given
         run, result = self._run_with_arguments(
-            runner_class, '--log-level', 'debug',
+            runner_class, result_class, '--log-level', 'debug',
             plugin_manager=plugin_manager)
         get_logger.assert_called_once_with(haas.__name__)
 
@@ -214,18 +219,18 @@ class TestHaasApplication(unittest.TestCase):
         self.assertFalse(ns.buffer)
 
         suite = Discoverer(Loader()).discover('haas')
-        run.assert_called_once_with(suite)
+        run.assert_called_once_with(result, suite)
         result.wasSuccessful.assert_called_once_with()
 
     @patch('sys.stdout')
     @patch('sys.stderr')
     @patch('coverage.coverage')
-    @patch('haas.plugins.runner.TextTestRunner')
-    def test_with_coverage_plugin(self, runner_class, coverage, stdout,
-                                  stderr):
+    @patch('haas.plugins.runner.BaseTestRunner')
+    def test_with_coverage_plugin(self, runner_class, coverage,
+                                  stdout, stderr):
         # When
         run, result = self._run_with_arguments(
-            runner_class, '--with-coverage')
+            runner_class, Mock(), '--with-coverage')
 
         # Then
         coverage.assert_called_once_with()
@@ -265,8 +270,9 @@ class TestHaasApplication(unittest.TestCase):
         suite.run(result)
         self.assertEqual(result.testsRun, 1)
 
-    @patch('haas.plugins.runner.TextTestRunner')
-    def test_multiple_start_directories(self, runner_class):
+    @with_patched_test_runner
+    def test_multiple_start_directories(self, runner_class, result_class,
+                                        plugin_manager):
         # Given
         module = builder.Module(
             'test_something.py',
@@ -296,7 +302,9 @@ class TestHaasApplication(unittest.TestCase):
             # When
             with cd(top_level):
                 run, result = self._run_with_arguments(
-                    runner_class, '-t', top_level, 'first', 'second')
+                    runner_class, result_class, '-t', top_level, 'first',
+                    'second', plugin_manager=plugin_manager,
+                )
 
             loader = Loader()
             suite1 = Discoverer(loader).discover('first', top_level)
@@ -304,13 +312,15 @@ class TestHaasApplication(unittest.TestCase):
             suite = loader.create_suite((suite1, suite2))
 
             # Then
-            run.assert_called_once_with(suite)
+            run.assert_called_once_with(result, suite)
 
         finally:
             shutil.rmtree(tempdir)
 
-    @patch('haas.plugins.runner.TextTestRunner')
-    def test_multiple_start_directories_non_package(self, runner_class):
+    @with_patched_test_runner
+    def test_multiple_start_directories_non_package(self, runner_class,
+                                                    result_class,
+                                                    plugin_manager):
         # Given
         module = builder.Module(
             'test_something.py',
@@ -341,7 +351,8 @@ class TestHaasApplication(unittest.TestCase):
             with cd(top_level):
                 with self.assertRaises(ImportError):
                     run, result = self._run_with_arguments(
-                        runner_class, '-t', top_level, 'first', 'second')
+                        runner_class, result_class, '-t', top_level, 'first',
+                        'second', plugin_manager=plugin_manager)
 
         finally:
             shutil.rmtree(tempdir)
