@@ -7,11 +7,7 @@
 from __future__ import absolute_import, unicode_literals
 
 from .i_runner_plugin import IRunnerPlugin
-import sys
-import time
 import warnings
-
-from ..testing import unittest
 
 
 class _WritelnDecorator(object):
