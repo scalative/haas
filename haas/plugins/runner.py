@@ -10,22 +10,6 @@ from .i_runner_plugin import IRunnerPlugin
 import warnings
 
 
-class _WritelnDecorator(object):
-    """Used to decorate file-like objects with a handy 'writeln' method"""
-    def __init__(self, stream):
-        self.stream = stream
-
-    def __getattr__(self, attr):
-        if attr in ('stream', '__getstate__'):
-            raise AttributeError(attr)
-        return getattr(self.stream, attr)
-
-    def writeln(self, arg=None):
-        if arg:
-            self.write(arg)
-        self.write('\n')  # text-mode streams translate to \r\n if needed
-
-
 class BaseTestRunner(IRunnerPlugin):
     """A test runner class that does not print any output itself.
 
@@ -60,14 +44,10 @@ class BaseTestRunner(IRunnerPlugin):
                         'module',
                         category=DeprecationWarning,
                         message='Please use assert\w+ instead.')
-            startTestRun = getattr(result_collector, 'startTestRun', None)
-            if startTestRun is not None:
-                startTestRun()
+            result_collector.startTestRun()
             try:
                 test(result_collector)
             finally:
-                stopTestRun = getattr(result_collector, 'stopTestRun', None)
-                if stopTestRun is not None:
-                    stopTestRun()
+                result_collector.stopTestRun()
 
         return result_collector
