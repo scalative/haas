@@ -228,6 +228,12 @@ class ResultCollecter(object):
         for handler in self._handlers:
             handler.stop_test_run()
 
+    def add_result(self, result):
+        for handler in self._handlers:
+            handler(result)
+        if self._successful and result.status not in _successful_results:
+            self._successful = False
+
     def _handle_result(self, test, status, exception=None, message=None):
         if self.buffer:
             stderr = self._stderr_buffer.getvalue()
@@ -242,10 +248,7 @@ class ResultCollecter(object):
             stdout=stdout,
             stderr=stderr,
         )
-        for handler in self._handlers:
-            handler(result)
-        if self._successful and result.status not in _successful_results:
-            self._successful = False
+        self.add_result(result)
         return result
 
     @failfast
