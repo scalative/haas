@@ -95,9 +95,4 @@ class ParallelTestRunner(BaseTestRunner):
 
     def run(self, result_collector, test_to_run):
         test = lambda result: self._run_tests(result_collector, test_to_run)
-        result_collector.startTestRun()
-        try:
-            return super(ParallelTestRunner, self).run(
-                result_collector, test)
-        finally:
-            result_collector.stopTestRun()
+        return super(ParallelTestRunner, self).run(result_collector, test)
