@@ -108,6 +108,8 @@ if __name__ == "__main__":
     install_requires = ['stevedore', 'six']
     if sys.version_info < (2, 7):
         install_requires += ['unittest2', 'argparse', 'ordereddict']
+    if sys.version_info < (3, 4):
+        install_requires += ['enum34']
 
     write_version_py()
     from haas import __version__
@@ -141,7 +143,7 @@ if __name__ == "__main__":
         install_requires=install_requires,
         entry_points={
             'console_scripts': [
-                'haas=haas.main:main',
+                'haas = haas.main:main',
             ],
             'haas.hooks.environment': [
                 'coverage = haas.plugins.coverage:Coverage',
@@ -149,5 +151,10 @@ if __name__ == "__main__":
             'haas.runner': [
                 'default = haas.plugins.runner:TextTestRunner',
             ],
+            'haas.result.handler': [
+                'default = haas.plugins.result_handler:StandardTestResultHandler',  # noqa
+                'quiet = haas.plugins.result_handler:QuietTestResultHandler',
+                'verbose = haas.plugins.result_handler:VerboseTestResultHandler',  # noqa
+            ]
         },
     )

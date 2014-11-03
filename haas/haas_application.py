@@ -14,7 +14,7 @@ from .discoverer import Discoverer
 from .loader import Loader
 from .plugin_context import PluginContext
 from .plugin_manager import PluginManager
-from .result import TextTestResult
+from .result import ResultCollecter
 from .utils import configure_logging
 
 
@@ -107,7 +107,15 @@ class HaasApplication(object):
             else:
                 suite = loader.create_suite(suites)
             test_count = suite.countTestCases()
-            result_factory = lambda *args: TextTestResult(test_count, *args)
+            result_handler = plugin_manager.get_driver(
+                plugin_manager.RESULT_HANDLERS, args, test_count=test_count)
+
+            def result_factory(*factory_args):
+                collector = ResultCollecter(
+                    buffer=args.buffer, failfast=args.failfast)
+                collector.add_result_handler(result_handler)
+                return collector
+
             # FIXME
             runner.resultclass = result_factory
             result = runner.run(suite)
