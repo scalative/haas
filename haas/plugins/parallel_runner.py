@@ -10,23 +10,22 @@ from .runner import BaseTestRunner
 class ChildResultHandler(IResultHandlerPlugin):
 
     def __init__(self):
-        self.tests_run = 0
         self.start_time = None
         self.stop_time = None
         self.results = []
 
     # To keep the interface happy
     @classmethod
-    def from_args(cls, args, arg_prefix, test_count):
+    def from_args(cls, args, arg_prefix, test_count):  # pragma: no cover
         pass
 
     # To keep the interface happy
     @classmethod
-    def add_parser_arguments(self, parser, option_prefix, dest_prefix):
+    def add_parser_arguments(self, parser, option_prefix, dest_prefix):  # pragma: no cover  # noqa
         pass
 
     def start_test(self, test):
-        self.tests_run += 1
+        pass
 
     def stop_test(self, test):
         pass
