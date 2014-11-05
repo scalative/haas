@@ -95,13 +95,13 @@ class TestParallelTestRunner(unittest.TestCase):
 
         # Then
         self.assertEqual(result_handler.results, [expected_result])
-        pool_class.assert_called_once_with(processes=processes)
+        pool_class.assert_called_once_with(
+            processes=processes, initializer=None)
         pool.close.assert_called_once_with()
         pool.join.assert_called_once_with()
 
     @patch('haas.plugins.parallel_runner.Pool')
-    def test_parallel_runner_single_call_to_start_stop_test_run(self,
-                                                                pool_class):
+    def test_parallel_runner_single_start_stop_test_run(self, pool_class):
         # Given
         pool = Mock()
         pool_class.return_value = pool
@@ -117,8 +117,40 @@ class TestParallelTestRunner(unittest.TestCase):
         runner.run(result_collector, test_suite)
 
         # Then
-        pool_class.assert_called_once_with(processes=None)
+        pool_class.assert_called_once_with(
+            processes=None, initializer=None)
         pool.close.assert_called_once_with()
         pool.join.assert_called_once_with()
         result_collector.startTestRun.assert_called_once_with()
         result_collector.stopTestRun.assert_called_once_with()
+
+    @patch('haas.plugins.parallel_runner.Pool')
+    def test_parallel_runner_initializer(self, pool_class):
+        # Given
+        initializer = Mock()
+        pool = Mock()
+        pool_class.return_value = pool
+        pool.apply_async.side_effect = apply_async
+
+        test_case = _test_cases.TestCase('test_method')
+        test_suite = TestSuite([test_case])
+
+        expected_result = TestResult.from_test_case(
+            test_case, TestCompletionStatus.success)
+
+        processes = 5
+
+        result_handler = ChildResultHandler()
+        result_collector = ResultCollecter()
+        result_collector.add_result_handler(result_handler)
+        runner = ParallelTestRunner(processes, initializer=initializer)
+
+        # When
+        runner.run(result_collector, test_suite)
+
+        # Then
+        self.assertEqual(result_handler.results, [expected_result])
+        pool_class.assert_called_once_with(
+            processes=processes, initializer=initializer)
+        pool.close.assert_called_once_with()
+        pool.join.assert_called_once_with()
