@@ -11,6 +11,8 @@ import os
 import sys
 import re
 
+import six
+
 import haas
 
 
@@ -38,12 +40,16 @@ def configure_logging(level):
                 logging.getLevelName(actual_level))
 
 
-def get_module_by_name(name):
-    """Import a module and return the imported module object.
+if six.PY2:
+    def get_module_by_name(name):
+        """Import a module and return the imported module object.
 
-    """
-    __import__(name)
-    return sys.modules[name]
+        """
+        __import__(name)
+        return sys.modules[name]
+else:
+    import importlib
+    get_module_by_name = importlib.import_module
 
 
 UNCAMELCASE_FIRST_PASS = re.compile(
