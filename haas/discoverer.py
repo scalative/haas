@@ -267,10 +267,10 @@ class Discoverer(object):
         module : module
             The imported Python module containing the TestCase to be
             loaded.
-        case_attributes : list of str
-            A list of length 1 or 2.  The first component must be the
-            name of a TestCase subclass.  The second component must be
-            the name of a method in the TestCase.
+        case_attributes : list
+            A list (length 1 or 2) of str.  The first component must be
+            the name of a TestCase subclass.  The second component must
+            be the name of a method in the TestCase.
 
         """
         # Find single case
