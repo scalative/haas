@@ -29,3 +29,7 @@ class TestCase(NotTestCase, unittest.TestCase):
 class TestSuite(NotTestCase, unittest.TestSuite):
 
     pass
+
+
+def subprocess_initializer():
+    pass
