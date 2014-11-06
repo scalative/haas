@@ -65,6 +65,9 @@ def _add_log_level_option(parser):
 
 
 class HaasApplication(object):
+    """Main haas application entry-point.
+
+    """
 
     def __init__(self, argv, **kwargs):
         super(HaasApplication, self).__init__(**kwargs)
@@ -78,6 +81,17 @@ class HaasApplication(object):
         self.parser = create_argument_parser()
 
     def run(self, plugin_manager=None):
+        """Run the haas test runner.
+
+        This will load and configure the selected plugins, set up the
+        environment and begin test discovery, loading and running.
+
+        Parameters
+        ----------
+        plugin_manager : haas.plugin_manager.PluginManager
+            [Optional] Override the use of the default plugin manager.
+
+        """
         if plugin_manager is None:
             plugin_manager = PluginManager()
         plugin_manager.add_plugin_arguments(self.parser)
