@@ -407,23 +407,58 @@ class ResultCollecter(object):
         self._handle_result(test, TestCompletionStatus.success)
 
     def addSkip(self, test, reason):
+        """Register that a test that was skipped.
+
+        Parameters
+        ----------
+        test : unittest.TestCase
+            The test that has completed.
+        reason : str
+            The reason the test was skipped.
+
+        """
         result = self._handle_result(
             test, TestCompletionStatus.skipped, message=reason)
         self.skipped.append(result)
 
     def addExpectedFailure(self, test, exception):
+        """Register that a test that failed and was expected to fail.
+
+        Parameters
+        ----------
+        test : unittest.TestCase
+            The test that has completed.
+        exception : tuple
+            ``exc_info`` tuple ``(type, value, traceback)``.
+
+        """
         result = self._handle_result(
             test, TestCompletionStatus.expected_failure, exception=exception)
         self.expectedFailures.append(result)
 
     @failfast
     def addUnexpectedSuccess(self, test):
+        """Register a test that passed unexpectedly.
+
+        Parameters
+        ----------
+        test : unittest.TestCase
+            The test that has completed.
+
+        """
         result = self._handle_result(
             test, TestCompletionStatus.unexpected_success)
         self.unexpectedSuccesses.append(result)
 
     def wasSuccessful(self):
+        """Return ``True`` if the run was successful.
+
+        """
         return self._successful
 
     def stop(self):
+        """Set the ``shouldStop`` flag, used by the test cases to determine if
+        they should terminate early.
+
+        """
         self.shouldStop = True
