@@ -3,6 +3,7 @@ import time
 
 from haas.discoverer import find_test_cases
 from haas.result import ResultCollecter
+from haas.utils import get_module_by_name
 from .i_result_handler_plugin import IResultHandlerPlugin
 from .runner import BaseTestRunner
 
@@ -59,19 +60,35 @@ class ParallelTestRunner(BaseTestRunner):
 
     """
 
-    def __init__(self, process_count=None, warnings=None):
+    def __init__(self, process_count=None, initializer=None, warnings=None):
         super(ParallelTestRunner, self).__init__(warnings=warnings)
         self.process_count = process_count
+        self.initializer = initializer
 
     @classmethod
     def from_args(cls, args, arg_prefix):
-        return cls(process_count=args.processes)
+        initializer_spec = args.process_init
+        if initializer_spec is None:
+            initializer = None
+        else:
+            module_name, initializer_name = initializer_spec.rsplit('.', 1)
+            init_module = get_module_by_name(module_name)
+            initializer = getattr(init_module, initializer_name)
+        return cls(process_count=args.processes, initializer=initializer)
 
     @classmethod
     def add_parser_arguments(self, parser, option_prefix, dest_prefix):
-        help_ = ('Number of processes to use if running tests in paralled.  '
-                 'Defaults to number of processor cores.')
-        parser.add_argument('--processes', help=help_, type=int, default=None)
+        process_count_help = (
+            'Number of processes to use if running tests in paralled.  '
+            'Defaults to number of processor cores.')
+        process_init_help = (
+            'The dotted module path to a subprocess initialization function. '
+            'This function will be passed to the subprocess and called with '
+            'zero arguments.')
+        parser.add_argument(
+            '--processes', help=process_count_help, type=int, default=None)
+        parser.add_argument(
+            '--process-init', help=process_init_help, default=None)
 
     def _handle_result(self, result, collected_result):
         for test_result in collected_result:
@@ -81,7 +98,8 @@ class ParallelTestRunner(BaseTestRunner):
             result.stopTest(test)
 
     def _run_tests(self, result, test):
-        pool = Pool(processes=self.process_count)
+        pool = Pool(processes=self.process_count,
+                    initializer=self.initializer)
 
         try:
             callback = lambda collected_result: self._handle_result(

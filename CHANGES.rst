@@ -12,6 +12,7 @@ Enhancements
   https://pypi.python.org/pypi/stevedore (#16).
 * Decouple test result collection from test result presentation (PR
   #83).
+* Added a basic parallel test runner plugin (#78, #88).
 
 
 Version 0.4.1
