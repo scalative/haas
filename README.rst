@@ -20,42 +20,51 @@ built-in unittest Test Cases, but supports more advanced features, such
 as project-specific plugins.
 
 
-Feature Ideas
-=============
+Features
+========
 
-* Default ``Loader``, ``TestSuite``, ``TestRunner``, ``TestResult``
+* Runs ``unittest.TestCase`` based tests!
 
-  * Possible to override defaults using plugins
+* Plugin system, based on stevedore_.
 
-  * Defaults classes take options via command line or config file
+  * Still subject to change and revision to clean the plugin APIs.
 
-* System-level plugins
+  * Plugins for whole-test-run environment configuration (run before any
+    client-code is imported).
 
-  * Allow plugins to be easily contributed
+  * Plugins for test result output formatting.
 
-  * Plugins loaded at startup before running any user code
+  * Plugins for test runner scheme (e.g. parallel runner)
 
-  * Plugins optionally enabled and disabled through command line flags
+* Generic test result collection, presentation & output handled by
+  plugins.
 
-    * Plugin options loaded before plugin functionality
+* (Very) Basic parallel test run support.
 
-  * Possible plugin functionality
 
-    * Pre-testing environment configuration
+.. _stevedore: https://pypi.python.org/pypi/stevedore
 
-    * Custom loader, runner, results collection, reporting, ???
+Missing (unittest) Features
+===========================
 
-* Project-level plugins
+* Does not support the ``unittest.load_tests`` protocol.
 
-  * Allow projects to contribute project-specific plugins
+* Does not support subtests.
 
-  * Specified by command-line
 
-  * Specified by config file
+Future Features
+===============
 
-* Plugin config read from config file in project directory
+* Per-project config file
 
-  * Config file specified on command line
+* Improve parallel test runner to allow conditional splitting of tests,
+  or allow tests to be run in the main process.
+
+* Improve plugin system
+
+* More result output plugins/options (xunit, result summary)
+
+* ... ?
 
 
 Copyright

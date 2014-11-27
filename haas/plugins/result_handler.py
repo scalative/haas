@@ -98,7 +98,7 @@ class QuietTestResultHandler(IResultHandlerPlugin):
         error_kind : str
             ``'ERROR'`` or ``'FAIL'``
         errors : list
-            List of :ref:`haas.result.TestResult`
+            List of :class:`~haas.result.TestResult`
 
         """
         for result in errors:

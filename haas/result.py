@@ -16,11 +16,26 @@ from six.moves import StringIO
 
 
 class TestCompletionStatus(Enum):
+    """Enumeration to represent the status of a single test.
+
+    """
+
+    #: The test completed successfully.
     success = 1
+
+    #: The test failed, but did not encounter an unexpected error.
     failure = 2
+
+    #: The test encountered an unexpected error.
     error = 3
+
+    #: A test marked as expected to fail unexpected passed.
     unexpected_success = 4
+
+    #: A test failed as expected
     expected_failure = 5
+
+    #: A test was skipped
     skipped = 6
 
 
@@ -70,6 +85,12 @@ def _format_exception(err, is_failure, stdout=None, stderr=None):
 
 
 class TestResult(object):
+    """Container object for all information related to the run of a single
+    test.  This contains the test itself, the actual status including
+    the reason or error associated with status, along with timing
+    information.
+
+    """
 
     def __init__(self, test_class, test_method_name, status,  # started_time,
                  completed_time, exception=None, message=None):
@@ -99,6 +120,25 @@ class TestResult(object):
     def from_test_case(cls, test_case, status,  # started_time,
                        exception=None,
                        message=None, stdout=None, stderr=None):
+        """Construct a :class:`~.TestResult` object from the test and a status.
+
+        Parameters
+        ----------
+        test_case : unittest.TestCase
+            The test that this result will represent.
+        status : haas.result.TestCompletionStatus
+            The status of the test.
+        exception : tuple
+            ``exc_info`` tuple ``(type, value, traceback)``.
+        message : str
+            Optional message associated with the result (e.g. skip
+            reason).
+        stdout : str
+            The test stdout if stdout was buffered.
+        stderr : str
+            The test stderr if stderr was buffered.
+
+        """
         test_class = type(test_case)
         test_method_name = test_case._testMethodName
         if exception is not None:
@@ -117,9 +157,15 @@ class TestResult(object):
 
     @property
     def test(self):
+        """The test case instance this result represents.
+
+        """
         return self.test_class(self.test_method_name)
 
     def to_dict(self):
+        """Serialize the ``TestResult`` to a dictionary.
+
+        """
         return {
             'test_class': self.test_class,
             'test_method_name': self.test_method_name,
@@ -132,6 +178,10 @@ class TestResult(object):
 
     @classmethod
     def from_dict(cls, data):
+        """Create a ``TestResult`` from a dictionary created by
+        :meth:`~.TestResult.to_dict`
+
+        """
         return cls(**data)
 
 
@@ -150,6 +200,11 @@ def failfast(method):
 
 
 class ResultCollecter(object):
+    """Collecter for test results.  This handles creating
+    :class:`~.TestResult` instances and handing them off the registered
+    result output handlers.
+
+    """
 
     # Temporary compatibility with unittest's runner
     separator2 = separator2
@@ -173,6 +228,9 @@ class ResultCollecter(object):
         self._original_stdout = sys.stdout
 
     def _setup_stdout(self):
+        """Hook stdout and stderr if buffering is enabled.
+
+        """
         if self.buffer:
             if self._stderr_buffer is None:
                 self._stderr_buffer = StringIO()
@@ -181,6 +239,9 @@ class ResultCollecter(object):
             sys.stderr = self._stderr_buffer
 
     def _restore_stdout(self):
+        """Unhook stdout and stderr if buffering is enabled.
+
+        """
         if self.buffer:
             if self._mirror_output:
                 output = sys.stdout.getvalue()
@@ -202,12 +263,24 @@ class ResultCollecter(object):
             self._stderr_buffer.truncate()
 
     def printErrors(self):  # pragma: no cover
+        # FIXME: Remove
         pass
 
     def add_result_handler(self, handler):
+        """Register a new result handler.
+
+        """
         self._handlers.append(handler)
 
     def startTest(self, test):
+        """Indicate that an individual test is starting.
+
+        Parameters
+        ----------
+        test : unittest.TestCase
+            The test that is starting.
+
+        """
         self._mirror_output = False
         self._setup_stdout()
         self.testsRun += 1
@@ -215,26 +288,63 @@ class ResultCollecter(object):
             handler.start_test(test)
 
     def stopTest(self, test):
+        """Indicate that an individual test has completed.
+
+        Parameters
+        ----------
+        test : unittest.TestCase
+            The test that has completed.
+
+        """
         for handler in self._handlers:
             handler.stop_test(test)
         self._restore_stdout()
         self._mirror_output = False
 
     def startTestRun(self):
+        """Indicate that the test run is starting.
+
+        """
         for handler in self._handlers:
             handler.start_test_run()
 
     def stopTestRun(self):
+        """Indicate that the test run has completed.
+
+        """
         for handler in self._handlers:
             handler.stop_test_run()
 
     def add_result(self, result):
+        """Add an already-constructed :class:`~.TestResult` to this
+        :class:`~.ResultCollecter`.
+
+        This may be used when collecting results created by other
+        ResultCollecters (e.g. in subprocesses).
+
+        """
         for handler in self._handlers:
             handler(result)
         if self._successful and result.status not in _successful_results:
             self._successful = False
 
     def _handle_result(self, test, status, exception=None, message=None):
+        """Create a :class:`~.TestResult` and add it to this
+        :class:`~ResultCollecter`.
+
+        Parameters
+        ----------
+        test : unittest.TestCase
+            The test that this result will represent.
+        status : haas.result.TestCompletionStatus
+            The status of the test.
+        exception : tuple
+            ``exc_info`` tuple ``(type, value, traceback)``.
+        message : str
+            Optional message associated with the result (e.g. skip
+            reason).
+
+        """
         if self.buffer:
             stderr = self._stderr_buffer.getvalue()
             stdout = self._stdout_buffer.getvalue()
@@ -253,6 +363,16 @@ class ResultCollecter(object):
 
     @failfast
     def addError(self, test, exception):
+        """Register that a test ended in an error.
+
+        Parameters
+        ----------
+        test : unittest.TestCase
+            The test that has completed.
+        exception : tuple
+            ``exc_info`` tuple ``(type, value, traceback)``.
+
+        """
         result = self._handle_result(
             test, TestCompletionStatus.error, exception=exception)
         self.errors.append(result)
@@ -260,32 +380,85 @@ class ResultCollecter(object):
 
     @failfast
     def addFailure(self, test, exception):
+        """Register that a test ended with a failure.
+
+        Parameters
+        ----------
+        test : unittest.TestCase
+            The test that has completed.
+        exception : tuple
+            ``exc_info`` tuple ``(type, value, traceback)``.
+
+        """
         result = self._handle_result(
             test, TestCompletionStatus.failure, exception=exception)
         self.failures.append(result)
         self._mirror_output = True
 
     def addSuccess(self, test):
+        """Register that a test ended in success.
+
+        Parameters
+        ----------
+        test : unittest.TestCase
+            The test that has completed.
+
+        """
         self._handle_result(test, TestCompletionStatus.success)
 
     def addSkip(self, test, reason):
+        """Register that a test that was skipped.
+
+        Parameters
+        ----------
+        test : unittest.TestCase
+            The test that has completed.
+        reason : str
+            The reason the test was skipped.
+
+        """
         result = self._handle_result(
             test, TestCompletionStatus.skipped, message=reason)
         self.skipped.append(result)
 
     def addExpectedFailure(self, test, exception):
+        """Register that a test that failed and was expected to fail.
+
+        Parameters
+        ----------
+        test : unittest.TestCase
+            The test that has completed.
+        exception : tuple
+            ``exc_info`` tuple ``(type, value, traceback)``.
+
+        """
         result = self._handle_result(
             test, TestCompletionStatus.expected_failure, exception=exception)
         self.expectedFailures.append(result)
 
     @failfast
     def addUnexpectedSuccess(self, test):
+        """Register a test that passed unexpectedly.
+
+        Parameters
+        ----------
+        test : unittest.TestCase
+            The test that has completed.
+
+        """
         result = self._handle_result(
             test, TestCompletionStatus.unexpected_success)
         self.unexpectedSuccesses.append(result)
 
     def wasSuccessful(self):
+        """Return ``True`` if the run was successful.
+
+        """
         return self._successful
 
     def stop(self):
+        """Set the ``shouldStop`` flag, used by the test cases to determine if
+        they should terminate early.
+
+        """
         self.shouldStop = True

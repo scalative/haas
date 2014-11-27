@@ -9,6 +9,10 @@ from .runner import BaseTestRunner
 
 
 class ChildResultHandler(IResultHandlerPlugin):
+    """A result handler that simply collects :class`TestResults
+    <haas.result.TestResult>` for returning to the parent process.
+
+    """
 
     def __init__(self):
         self.start_time = None
@@ -67,6 +71,9 @@ class ParallelTestRunner(BaseTestRunner):
 
     @classmethod
     def from_args(cls, args, arg_prefix):
+        """Create a :class:`~.ParallelTestRunner` from command-line arguments.
+
+        """
         initializer_spec = args.process_init
         if initializer_spec is None:
             initializer = None
@@ -112,5 +119,8 @@ class ParallelTestRunner(BaseTestRunner):
             pool.join()
 
     def run(self, result_collector, test_to_run):
+        """Run the tests in subprocesses.
+
+        """
         test = lambda result: self._run_tests(result_collector, test_to_run)
         return super(ParallelTestRunner, self).run(result_collector, test)
