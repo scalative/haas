@@ -54,6 +54,9 @@ class PluginManager(object):
 
     @classmethod
     def testing_plugin_manager(cls, hook_managers, driver_managers):
+        """Create a fabricated plugin manager for testing.
+
+        """
         plugin_manager = cls.__new__(cls)
         plugin_manager.hook_managers = OrderedDict(hook_managers)
         plugin_manager.driver_managers = OrderedDict(driver_managers)
@@ -82,6 +85,14 @@ class PluginManager(object):
         return option, dest
 
     def add_plugin_arguments(self, parser):
+        """Add plugin arguments to argument parser.
+
+        Parameters
+        ----------
+        parser : argparse.ArgumentParser
+            The main haas ArgumentParser.
+
+        """
         for manager in self.hook_managers.values():
             if len(list(manager)) == 0:
                 continue
@@ -100,12 +111,18 @@ class PluginManager(object):
                         parser, option_prefix, dest_prefix)
 
     def configure_plugins(self, args):
+        """Configure enabled plugins with parsed commandline arguments.
+
+        """
         for manager in self.hook_managers.values():
             if len(list(manager)) == 0:
                 continue
             manager.map(self._configure_hook_extension, args)
 
     def get_enabled_hook_plugins(self, hook):
+        """Get enabled plugins for specified hook name.
+
+        """
         manager = self.hook_managers[hook]
         if len(list(manager)) == 0:
             return []
@@ -113,6 +130,9 @@ class PluginManager(object):
                 if plugin is not None]
 
     def get_driver(self, namespace, parsed_args, **kwargs):
+        """Get mutually-exlusive plugin for plugin namespace.
+
+        """
         option, dest = self._namespace_to_option(namespace)
         dest_prefix = '{0}_'.format(dest)
         driver_name = getattr(parsed_args, dest, 'default')
