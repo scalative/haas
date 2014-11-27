@@ -13,7 +13,7 @@ from setuptools import setup
 
 MAJOR = 0
 MINOR = 5
-MICRO = 0
+MICRO = 1
 
 IS_RELEASED = True
 
@@ -106,10 +106,12 @@ if not is_released:
 
 if __name__ == "__main__":
     install_requires = ['stevedore', 'six']
+    py_2_3_requires = ['enum34']
+    py26_requires = ['unittest2', 'argparse', 'ordereddict'] + py_2_3_requires
     if sys.version_info < (2, 7):
-        install_requires += ['unittest2', 'argparse', 'ordereddict']
-    if sys.version_info < (3, 4):
-        install_requires += ['enum34']
+        install_requires += py26_requires
+    elif sys.version_info < (3, 4):
+        install_requires += py_2_3_requires
 
     write_version_py()
     from haas import __version__
@@ -157,5 +159,11 @@ if __name__ == "__main__":
                 'quiet = haas.plugins.result_handler:QuietTestResultHandler',
                 'verbose = haas.plugins.result_handler:VerboseTestResultHandler',  # noqa
             ]
+        },
+        extras_require={
+            ':python_version=="2.6"': py26_requires,
+            ':python_version=="2.7"': py_2_3_requires,
+            ':python_version=="3.2"': py_2_3_requires,
+            ':python_version=="3.3"': py_2_3_requires,
         },
     )

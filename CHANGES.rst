@@ -2,6 +2,17 @@
  ``haas`` CHANGELOG
 ====================
 
+Version 0.5.1
+=============
+
+Bugs Fixed
+----------
+
+* With ``v0.5.0``, wheels were only valid on CPython 3.4, despite being
+  labelled universal.  In ``v0.5.1``, wheels are built correctly for all
+  supported versions.
+
+
 Version 0.5.0
 =============
 
