@@ -2,8 +2,8 @@
  ``haas`` CHANGELOG
 ====================
 
-Change Summary since 0.4.1
-==========================
+Version 0.5.0
+=============
 
 Enhancements
 ------------
