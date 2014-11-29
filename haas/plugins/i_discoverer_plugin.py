@@ -26,7 +26,7 @@ class IDiscovererPlugin(object):
             The ``argparse.Namespace`` containing parsed arguments.
         arg_prefix : str
             The prefix used for arguments beloning solely to this plugin.
-        test_count : haas.loader.Loader
+        loader : haas.loader.Loader
             The test loader used to construct TestCase and TestSuite instances.
 
         """
