@@ -107,7 +107,8 @@ class HaasApplication(object):
 
         with PluginContext(environment_plugins):
             loader = Loader()
-            discoverer = Discoverer(loader)
+            discoverer = plugin_manager.get_driver(
+                plugin_manager.TEST_DISCOVERY, args, loader=loader)
             suites = [
                 discoverer.discover(
                     start=start,

@@ -14,6 +14,7 @@ import traceback
 
 from .exceptions import DotInModuleNameError
 from .module_import_error import ModuleImportError
+from .plugins.i_discoverer_plugin import IDiscovererPlugin
 from .testing import unittest
 from .utils import get_module_by_name
 
@@ -159,7 +160,7 @@ def filter_test_suite(suite, filter_name):
     return filtered_cases
 
 
-class Discoverer(object):
+class Discoverer(IDiscovererPlugin):
     """The ``Discoverer`` is responsible for finding tests that can be
     loaded by a :class:`~haas.loader.Loader`.
 
@@ -168,6 +169,38 @@ class Discoverer(object):
     def __init__(self, loader, **kwargs):
         super(Discoverer, self).__init__(**kwargs)
         self._loader = loader
+
+    @classmethod
+    def from_args(cls, args, arg_prefix, loader):
+        """Construct the discoverer from parsed command line arguments.
+
+        Parameters
+        ----------
+        args : argparse.Namespace
+            The ``argparse.Namespace`` containing parsed arguments.
+        arg_prefix : str
+            The prefix used for arguments beloning solely to this plugin.
+        test_count : haas.loader.Loader
+            The test loader used to construct TestCase and TestSuite instances.
+
+        """
+        return cls(loader)
+
+    @classmethod
+    def add_parser_arguments(cls, parser, option_prefix, dest_prefix):
+        """Add options for the plugin to the main argument parser.
+
+        Parameters
+        ----------
+        parser : argparse.ArgumentParser
+            The parser to extend
+        option_prefix : str
+            The prefix that option strings added by this plugin should use.
+        dest_prefix : str
+            The prefix that ``dest`` strings for options added by this
+            plugin should use.
+
+        """
 
     def discover(self, start, top_level_directory=None, pattern='test*.py'):
         """Do test case discovery.
