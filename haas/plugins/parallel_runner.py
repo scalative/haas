@@ -1,7 +1,7 @@
 from multiprocessing import Pool
 import time
 
-from haas.discoverer import find_test_cases
+from haas.suite import find_test_cases
 from haas.result import ResultCollecter
 from haas.utils import get_module_by_name
 from .i_result_handler_plugin import IResultHandlerPlugin

@@ -151,7 +151,7 @@ if __name__ == "__main__":
                 'coverage = haas.plugins.coverage:Coverage',
             ],
             'haas.discovery': [
-                'default = haas.discoverer:Discoverer',
+                'default = haas.plugins.discoverer:Discoverer',
             ],
             'haas.runner': [
                 'default = haas.plugins.runner:BaseTestRunner',

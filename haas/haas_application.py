@@ -10,7 +10,6 @@ import argparse
 import os
 
 import haas
-from .discoverer import Discoverer
 from .loader import Loader
 from .plugin_context import PluginContext
 from .plugin_manager import PluginManager

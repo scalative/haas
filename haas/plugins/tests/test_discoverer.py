@@ -16,19 +16,18 @@ from mock import Mock, patch
 
 from haas.testing import unittest
 
-from . import _test_cases, builder
+from haas.tests import _test_cases, builder
+from haas.loader import Loader
+from haas.module_import_error import ModuleImportError
+from haas.suite import find_test_cases, TestSuite
+from haas.utils import cd
 from ..discoverer import (
     Discoverer,
     filter_test_suite,
     find_module_by_name,
-    find_test_cases,
     find_top_level_directory,
     get_module_name,
 )
-from ..loader import Loader
-from ..module_import_error import ModuleImportError
-from ..suite import TestSuite
-from ..utils import cd
 
 
 class FilterTestCase(_test_cases.TestCase):

@@ -12,11 +12,12 @@ import os
 import sys
 import traceback
 
-from .exceptions import DotInModuleNameError
-from .module_import_error import ModuleImportError
-from .plugins.i_discoverer_plugin import IDiscovererPlugin
-from .testing import unittest
-from .utils import get_module_by_name
+from haas.exceptions import DotInModuleNameError
+from haas.module_import_error import ModuleImportError
+from haas.suite import find_test_cases
+from haas.testing import unittest
+from haas.utils import get_module_by_name
+from .i_discoverer_plugin import IDiscovererPlugin
 
 logger = logging.getLogger(__name__)
 
@@ -113,25 +114,6 @@ def find_top_level_directory(start_directory):
         if top_level == os.path.dirname(top_level):
             raise ValueError("Can't find top level directory")
     return os.path.abspath(top_level)
-
-
-def find_test_cases(suite):
-    """Generate a list of all test cases contained in a test suite.
-
-    Parameters
-    ----------
-    suite : haas.suite.TestSuite
-        The test suite from which to generate the test case list.
-
-    """
-    try:
-        iter(suite)
-    except TypeError:
-        yield suite
-    else:
-        for test in suite:
-            for test_ in find_test_cases(test):
-                yield test_
 
 
 def filter_test_suite(suite, filter_name):

@@ -18,10 +18,10 @@ from mock import Mock, patch
 from stevedore.extension import ExtensionManager, Extension
 
 import haas
-from ..discoverer import Discoverer
 from ..haas_application import HaasApplication
 from ..loader import Loader
 from ..plugin_manager import PluginManager
+from ..plugins.discoverer import Discoverer
 from ..suite import TestSuite
 from ..testing import unittest
 from ..utils import cd
