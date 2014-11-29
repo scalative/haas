@@ -2,8 +2,14 @@
  ``haas`` CHANGELOG
 ====================
 
-Changes since version 0.5.1
-===========================
+Version 0.6.0
+=============
+
+Enhancements
+------------
+
+* Haas now supports replacing the test discovery mechanism with plugins
+  (#106).
 
 
 Version 0.5.1
