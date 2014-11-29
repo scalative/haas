@@ -12,8 +12,8 @@ from setuptools import setup
 
 
 MAJOR = 0
-MINOR = 5
-MICRO = 2
+MINOR = 6
+MICRO = 0
 
 IS_RELEASED = False
 
@@ -149,6 +149,9 @@ if __name__ == "__main__":
             ],
             'haas.hooks.environment': [
                 'coverage = haas.plugins.coverage:Coverage',
+            ],
+            'haas.discovery': [
+                'default = haas.plugins.discoverer:Discoverer',
             ],
             'haas.runner': [
                 'default = haas.plugins.runner:BaseTestRunner',

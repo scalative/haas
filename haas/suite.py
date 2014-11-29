@@ -13,6 +13,25 @@ from .error_holder import ErrorHolder
 logger = logging.getLogger(__name__)
 
 
+def find_test_cases(suite):
+    """Generate a list of all test cases contained in a test suite.
+
+    Parameters
+    ----------
+    suite : haas.suite.TestSuite
+        The test suite from which to generate the test case list.
+
+    """
+    try:
+        iter(suite)
+    except TypeError:
+        yield suite
+    else:
+        for test in suite:
+            for test_ in find_test_cases(test):
+                yield test_
+
+
 class _TestSuiteState(object):
 
     def __init__(self, result):

@@ -10,7 +10,6 @@ import argparse
 import os
 
 import haas
-from .discoverer import Discoverer
 from .loader import Loader
 from .plugin_context import PluginContext
 from .plugin_manager import PluginManager
@@ -107,7 +106,8 @@ class HaasApplication(object):
 
         with PluginContext(environment_plugins):
             loader = Loader()
-            discoverer = Discoverer(loader)
+            discoverer = plugin_manager.get_driver(
+                plugin_manager.TEST_DISCOVERY, args, loader=loader)
             suites = [
                 discoverer.discover(
                     start=start,

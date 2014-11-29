@@ -27,12 +27,16 @@ class PluginManager(object):
 
     TEST_RUNNER = 'haas.runner'
 
+    TEST_DISCOVERY = 'haas.discovery'
+
     _help = {
+        TEST_DISCOVERY: 'The test discovery implementation to use.',
         TEST_RUNNER: 'Test runner implementation to use.',
         RESULT_HANDLERS: 'Test result handler implementation to use.',
     }
 
     _namespace_to_option_parts = {
+        TEST_DISCOVERY: ['discovery'],
         TEST_RUNNER: ['runner'],
         RESULT_HANDLERS: ['result', 'handler'],
     }
@@ -45,6 +49,9 @@ class PluginManager(object):
         )
 
         self.driver_managers = OrderedDict()
+        self.driver_managers[self.TEST_DISCOVERY] = ExtensionManager(
+            namespace=self.TEST_DISCOVERY,
+        )
         self.driver_managers[self.TEST_RUNNER] = ExtensionManager(
             namespace=self.TEST_RUNNER,
         )
