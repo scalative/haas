@@ -13,14 +13,6 @@ Subpackages
 Submodules
 ==========
 
-haas.discoverer module
-----------------------
-
-.. automodule:: haas.discoverer
-    :members:
-    :undoc-members:
-    :show-inheritance:
-
 haas.error_holder module
 ------------------------
 

@@ -21,6 +21,14 @@ haas.plugins.coverage module
     :undoc-members:
     :show-inheritance:
 
+haas.plugins.discoverer module
+------------------------------
+
+.. automodule:: haas.plugins.discoverer
+    :members:
+    :undoc-members:
+    :show-inheritance:
+
 haas.plugins.i_hook_plugin module
 ---------------------------------
 
