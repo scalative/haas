@@ -97,10 +97,8 @@ class HaasApplication(object):
 
         args = self.parser.parse_args(self.argv[1:])
 
-        plugin_manager.configure_plugins(args)
-
         environment_plugins = plugin_manager.get_enabled_hook_plugins(
-            plugin_manager.ENVIRONMENT_HOOK)
+            plugin_manager.ENVIRONMENT_HOOK, args)
         runner = plugin_manager.get_driver(
             plugin_manager.TEST_RUNNER, args)
 

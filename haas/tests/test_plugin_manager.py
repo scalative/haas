@@ -79,35 +79,25 @@ class TestPluginManager(unittest.TestCase):
         self.assertEqual(action.option_strings, ['--with-testing-plugin'])
 
         # When
+        args = parser.parse_args([])
         enabled_plugins = plugin_manager.get_enabled_hook_plugins(
-            plugin_manager.ENVIRONMENT_HOOK)
+            plugin_manager.ENVIRONMENT_HOOK, args)
 
         # Then
         self.assertEqual(enabled_plugins, [])
+        self.assertEqual(TestingPlugin.from_args_called, 1)
 
         # When
         args = parser.parse_args(['--with-testing-plugin'])
-        plugin_manager.configure_plugins(args)
-
-        plugin_obj = None
-        hook_managers = plugin_manager.hook_managers
-        env_manager = hook_managers[plugin_manager.ENVIRONMENT_HOOK]
-        for extension in env_manager:
-            if extension.obj is not None:
-                plugin_obj = extension.obj
-                break
-
-        # Then
-        self.assertEqual(TestingPlugin.from_args_called, 1)
-        self.assertTrue(plugin_obj.enabled)
-
-        # When
         enabled_plugins = plugin_manager.get_enabled_hook_plugins(
-            plugin_manager.ENVIRONMENT_HOOK)
+            plugin_manager.ENVIRONMENT_HOOK, args)
 
         # Then
+        self.assertEqual(len(enabled_plugins), 1)
+
+        plugin_obj, = enabled_plugins
+        self.assertEqual(TestingPlugin.from_args_called, 2)
         self.assertTrue(plugin_obj.enabled)
-        self.assertEqual(enabled_plugins, [plugin_obj])
 
     def test_driver_hooks_found(self):
         # Given
@@ -216,19 +206,9 @@ class TestPluginManager(unittest.TestCase):
         self.assertEqual(len(actions), 0)
 
         # When
-        enabled_plugins = plugin_manager.get_enabled_hook_plugins(
-            plugin_manager.ENVIRONMENT_HOOK)
-
-        # Then
-        self.assertEqual(enabled_plugins, [])
-
-        # When
         args = parser.parse_args([])
-        plugin_manager.configure_plugins(args)
-
-        # When
         enabled_plugins = plugin_manager.get_enabled_hook_plugins(
-            plugin_manager.ENVIRONMENT_HOOK)
+            plugin_manager.ENVIRONMENT_HOOK, args)
 
         # Then
         self.assertEqual(enabled_plugins, [])

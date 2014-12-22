@@ -90,11 +90,13 @@ class PluginManager(object):
         extension.plugin.add_parser_arguments(
             parser, extension.name, option_prefix, dest_prefix)
 
-    def _configure_hook_extension(self, extension, args):
+    def _create_hook_plugin(self, extension, args):
         option_prefix, dest_prefix = self._hook_extension_option_prefix(
             extension)
         plugin = extension.plugin.from_args(args, extension.name, dest_prefix)
-        extension.obj = plugin
+        if plugin.enabled:
+            return plugin
+        return None
 
     def _add_driver_extension_arguments(self, extension, parser, option_prefix,
                                         dest_prefix):
@@ -127,24 +129,17 @@ class PluginManager(object):
             manager.map(self._add_driver_extension_arguments,
                         parser, option_prefix, dest_prefix)
 
-    def configure_plugins(self, args):
-        """Configure enabled plugins with parsed commandline arguments.
-
-        """
-        for manager in self.hook_managers.values():
-            if len(list(manager)) == 0:
-                continue
-            manager.map(self._configure_hook_extension, args)
-
-    def get_enabled_hook_plugins(self, hook):
+    def get_enabled_hook_plugins(self, hook, args):
         """Get enabled plugins for specified hook name.
 
         """
         manager = self.hook_managers[hook]
         if len(list(manager)) == 0:
             return []
-        return [plugin for plugin in manager.map(self._filter_enabled_plugins)
-                if plugin is not None]
+        return [
+            plugin for plugin in manager.map(self._create_hook_plugin, args)
+            if plugin is not None
+        ]
 
     def get_driver(self, namespace, parsed_args, **kwargs):
         """Get mutually-exlusive plugin for plugin namespace.
