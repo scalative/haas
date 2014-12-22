@@ -45,7 +45,6 @@ class PluginManager(object):
         self.hook_managers = OrderedDict()
         self.hook_managers[self.ENVIRONMENT_HOOK] = ExtensionManager(
             namespace=self.ENVIRONMENT_HOOK,
-            invoke_on_load=True,
         )
 
         self.driver_managers = OrderedDict()
@@ -69,27 +68,38 @@ class PluginManager(object):
         plugin_manager.driver_managers = OrderedDict(driver_managers)
         return plugin_manager
 
-    def _filter_enabled_plugins(self, extension):
-        if extension.obj.enabled:
-            return extension.obj
-        return None
-
-    def _add_hook_extension_arguments(self, extension, parser):
-        extension.obj.add_parser_arguments(parser)
-
-    def _configure_hook_extension(self, extension, args):
-        extension.obj.configure(args)
-
-    def _add_driver_extension_arguments(self, extension, parser, option_prefix,
-                                        dest_prefix):
-        extension.plugin.add_parser_arguments(
-            parser, option_prefix, dest_prefix)
+    def _hook_extension_option_prefix(self, extension):
+        option_prefix = '--{0}-'.format(extension.name)
+        dest_prefix = extension.name.replace('-', '_')
+        return option_prefix, dest_prefix
 
     def _namespace_to_option(self, namespace):
         parts = self._namespace_to_option_parts[namespace]
         option = '--{0}'.format('-'.join(parts))
         dest = '_'.join(parts)
         return option, dest
+
+    def _filter_enabled_plugins(self, extension):
+        if extension.obj.enabled:
+            return extension.obj
+        return None
+
+    def _add_hook_extension_arguments(self, extension, parser):
+        option_prefix, dest_prefix = self._hook_extension_option_prefix(
+            extension)
+        extension.plugin.add_parser_arguments(
+            parser, option_prefix, dest_prefix)
+
+    def _configure_hook_extension(self, extension, args):
+        option_prefix, dest_prefix = self._hook_extension_option_prefix(
+            extension)
+        plugin = extension.plugin.from_args(args, option_prefix, dest_prefix)
+        extension.obj = plugin
+
+    def _add_driver_extension_arguments(self, extension, parser, option_prefix,
+                                        dest_prefix):
+        extension.plugin.add_parser_arguments(
+            parser, option_prefix, dest_prefix)
 
     def add_plugin_arguments(self, parser):
         """Add plugin arguments to argument parser.

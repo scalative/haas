@@ -29,7 +29,7 @@ class TestCoverage(unittest.TestCase):
         coverage_object.stop = Mock()
         coverage_object.save = Mock()
 
-        cov = Coverage()
+        cov = Coverage('coverage', True, 'coverage')
         self.assertFalse(coverage_func.called)
         self.assertFalse(coverage_object.start.called)
         self.assertFalse(coverage_object.stop.called)
