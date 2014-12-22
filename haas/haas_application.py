@@ -119,12 +119,14 @@ class HaasApplication(object):
             else:
                 suite = loader.create_suite(suites)
             test_count = suite.countTestCases()
-            result_handler = plugin_manager.get_driver(
+            result_handlers = plugin_manager.get_enabled_hook_plugins(
                 plugin_manager.RESULT_HANDLERS, args, test_count=test_count)
 
             result_collector = ResultCollecter(
                 buffer=args.buffer, failfast=args.failfast)
-            result_collector.add_result_handler(result_handler)
+
+            for result_handler in result_handlers:
+                result_collector.add_result_handler(result_handler)
 
             result = runner.run(result_collector, suite)
             return not result.wasSuccessful()

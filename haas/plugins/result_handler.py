@@ -34,6 +34,7 @@ class QuietTestResultHandler(IResultHandlerPlugin):
     separator2 = separator2
 
     def __init__(self, test_count):
+        self.enabled = True
         self.stream = _WritelnDecorator(sys.stderr)
         self._test_count = test_count
         self.tests_run = 0
@@ -54,8 +55,9 @@ class QuietTestResultHandler(IResultHandlerPlugin):
         self.stop_time = None
 
     @classmethod
-    def from_args(cls, args, arg_prefix, test_count):
-        return cls(test_count)
+    def from_args(cls, args, name, dest_prefix, test_count):
+        if args.verbosity == 0:
+            return cls(test_count=test_count)
 
     @classmethod
     def add_parser_arguments(self, parser, option_prefix, dest_prefix):
@@ -168,16 +170,9 @@ class StandardTestResultHandler(QuietTestResultHandler):
     }
 
     @classmethod
-    def from_args(cls, args, arg_prefix, test_count):
-        dest = arg_prefix[:-1]
-        result_handler = getattr(args, dest)
-        if result_handler == 'default' and args.verbosity == 0:
-            return QuietTestResultHandler.from_args(
-                args, arg_prefix, test_count)
-        elif result_handler == 'default' and args.verbosity == 2:
-            return VerboseTestResultHandler.from_args(
-                args, arg_prefix, test_count)
-        return cls(test_count)
+    def from_args(cls, args, name, dest_prefix, test_count):
+        if args.verbosity == 1:
+            return cls(test_count=test_count)
 
     def __call__(self, result):
         super(StandardTestResultHandler, self).__call__(result)
@@ -197,8 +192,9 @@ class VerboseTestResultHandler(StandardTestResultHandler):
     }
 
     @classmethod
-    def from_args(cls, args, arg_prefix, test_count):
-        return cls(test_count)
+    def from_args(cls, args, name, dest_prefix, test_count):
+        if args.verbosity == 2:
+            return cls(test_count=test_count)
 
     def start_test(self, test):
         super(VerboseTestResultHandler, self).start_test(test)

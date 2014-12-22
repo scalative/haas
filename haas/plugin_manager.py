@@ -46,6 +46,9 @@ class PluginManager(object):
         self.hook_managers[self.ENVIRONMENT_HOOK] = ExtensionManager(
             namespace=self.ENVIRONMENT_HOOK,
         )
+        self.hook_managers[self.RESULT_HANDLERS] = ExtensionManager(
+            namespace=self.RESULT_HANDLERS,
+        )
 
         self.driver_managers = OrderedDict()
         self.driver_managers[self.TEST_DISCOVERY] = ExtensionManager(
@@ -53,9 +56,6 @@ class PluginManager(object):
         )
         self.driver_managers[self.TEST_RUNNER] = ExtensionManager(
             namespace=self.TEST_RUNNER,
-        )
-        self.driver_managers[self.RESULT_HANDLERS] = ExtensionManager(
-            namespace=self.RESULT_HANDLERS,
         )
 
     @classmethod
