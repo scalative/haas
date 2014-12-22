@@ -90,10 +90,11 @@ class PluginManager(object):
         extension.plugin.add_parser_arguments(
             parser, extension.name, option_prefix, dest_prefix)
 
-    def _create_hook_plugin(self, extension, args):
+    def _create_hook_plugin(self, extension, args, **kwargs):
         option_prefix, dest_prefix = self._hook_extension_option_prefix(
             extension)
-        plugin = extension.plugin.from_args(args, extension.name, dest_prefix)
+        plugin = extension.plugin.from_args(
+            args, extension.name, dest_prefix, **kwargs)
         if plugin.enabled:
             return plugin
         return None
@@ -129,7 +130,7 @@ class PluginManager(object):
             manager.map(self._add_driver_extension_arguments,
                         parser, option_prefix, dest_prefix)
 
-    def get_enabled_hook_plugins(self, hook, args):
+    def get_enabled_hook_plugins(self, hook, args, **kwargs):
         """Get enabled plugins for specified hook name.
 
         """
@@ -137,7 +138,8 @@ class PluginManager(object):
         if len(list(manager)) == 0:
             return []
         return [
-            plugin for plugin in manager.map(self._create_hook_plugin, args)
+            plugin for plugin in manager.map(
+                self._create_hook_plugin, args, **kwargs)
             if plugin is not None
         ]
 
