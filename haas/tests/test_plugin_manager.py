@@ -45,16 +45,17 @@ class TestPluginManager(unittest.TestCase):
             from_args_called = 0
 
             @classmethod
-            def add_parser_arguments(cls, parser, option_prefix, dest_prefix):
+            def add_parser_arguments(cls, parser, name, option_prefix,
+                                     dest_prefix):
                 cls.add_parser_arguments_called += 1
                 return super(TestingPlugin, cls).add_parser_arguments(
-                    parser, option_prefix, dest_prefix)
+                    parser, name, option_prefix, dest_prefix)
 
             @classmethod
-            def from_args(cls, args, option_prefix, dest_prefix):
+            def from_args(cls, args, name, dest_prefix):
                 cls.from_args_called += 1
                 return super(TestingPlugin, cls).from_args(
-                    args, option_prefix, dest_prefix)
+                    args, name, dest_prefix)
 
         # Given
         extension = Extension(

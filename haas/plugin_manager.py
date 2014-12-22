@@ -88,12 +88,12 @@ class PluginManager(object):
         option_prefix, dest_prefix = self._hook_extension_option_prefix(
             extension)
         extension.plugin.add_parser_arguments(
-            parser, option_prefix, dest_prefix)
+            parser, extension.name, option_prefix, dest_prefix)
 
     def _configure_hook_extension(self, extension, args):
         option_prefix, dest_prefix = self._hook_extension_option_prefix(
             extension)
-        plugin = extension.plugin.from_args(args, option_prefix, dest_prefix)
+        plugin = extension.plugin.from_args(args, extension.name, dest_prefix)
         extension.obj = plugin
 
     def _add_driver_extension_arguments(self, extension, parser, option_prefix,

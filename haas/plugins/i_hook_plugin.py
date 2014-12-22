@@ -29,5 +29,5 @@ class IHookPlugin(object):
         pass
 
     @abstractclassmethod
-    def from_args(cls, args, option_prefix, dest_prefix):
+    def from_args(cls, args, dest_prefix):
         pass
