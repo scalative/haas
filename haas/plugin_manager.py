@@ -16,6 +16,8 @@ else:  # pragma: no cover
 
 from stevedore.extension import ExtensionManager
 
+from .utils import uncamelcase
+
 logger = logging.getLogger(__name__)
 
 
@@ -69,8 +71,9 @@ class PluginManager(object):
         return plugin_manager
 
     def _hook_extension_option_prefix(self, extension):
-        option_prefix = '--{0}-'.format(extension.name)
-        dest_prefix = extension.name.replace('-', '_')
+        name = uncamelcase(extension.name, sep='-').replace('_', '-')
+        option_prefix = '--{0}-'.format(name)
+        dest_prefix = name.replace('-', '_')
         return option_prefix, dest_prefix
 
     def _namespace_to_option(self, namespace):
