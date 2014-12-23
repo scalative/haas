@@ -1,9 +1,12 @@
 [run]
 branch = True
 source = haas
-omit = */tests/*
 
 [report]
+omit =
+    */tests/*
+    haas/_version.py
+
 # Regexes for lines to exclude from consideration
 exclude_lines =
     # Have to re-enable the standard pragma
