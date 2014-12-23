@@ -82,11 +82,6 @@ class PluginManager(object):
         dest = '_'.join(parts)
         return option, dest
 
-    def _filter_enabled_plugins(self, extension):
-        if extension.obj.enabled:
-            return extension.obj
-        return None
-
     def _add_hook_extension_arguments(self, extension, parser):
         option_prefix, dest_prefix = self._hook_extension_option_prefix(
             extension)
