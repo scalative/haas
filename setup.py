@@ -95,7 +95,7 @@ if not is_released:
         dev_num = '0'
 
     if not IS_RELEASED:
-        fullversion += '.dev{0}+'.format(dev_num) + git_rev[:7]
+        fullversion += '.dev{0}'.format(dev_num)
 
     with open(filename, "wt") as fp:
         fp.write(template.format(version=VERSION,
