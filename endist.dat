@@ -1,5 +1,5 @@
 packages = [
-    'stevedore',
-    'six',
-    'enum34',
+    'stevedore 1.1.0',
+    'six 1.8.0',
+    'enum34 1.0.4',
 ]
