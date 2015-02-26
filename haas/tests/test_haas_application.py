@@ -7,6 +7,7 @@
 from __future__ import absolute_import, unicode_literals
 
 from argparse import Namespace
+from contextlib import contextmanager
 from functools import wraps
 import os
 import shutil
@@ -100,12 +101,44 @@ class TestHaasApplication(unittest.TestCase):
         app.run(plugin_manager=plugin_manager)
         return run_method, result
 
+    @contextmanager
+    def _basic_test_fixture(self):
+        package_name = 'first'
+        module = builder.Module(
+            'test_something.py',
+            (
+                builder.Class(
+                    'TestSomething',
+                    (
+                        builder.Method('test_method'),
+                    ),
+                ),
+            ),
+        )
+        fixture = builder.Directory(
+            'top',
+            (
+                builder.Package(package_name, (module,)),
+            ),
+        )
+
+        tempdir = tempfile.mkdtemp(prefix='haas-tests-')
+        try:
+            fixture.create(tempdir)
+            top_level = os.path.join(tempdir, fixture.name)
+            with cd(top_level):
+                yield package_name
+        finally:
+            shutil.rmtree(tempdir)
+
     @with_patched_test_runner
     def test_main_default_arguments(self, runner_class, result_class,
                                     plugin_manager):
         # When
-        run, result = self._run_with_arguments(
-            runner_class, result_class, plugin_manager=plugin_manager)
+        with self._basic_test_fixture() as package_name:
+            run, result = self._run_with_arguments(
+                runner_class, result_class, plugin_manager=plugin_manager)
+            suite = Discoverer(Loader()).discover(package_name)
 
         # Then
         self.assertEqual(runner_class.from_args.call_count, 1)
@@ -118,15 +151,17 @@ class TestHaasApplication(unittest.TestCase):
         self.assertFalse(ns.failfast)
         self.assertFalse(ns.buffer)
 
-        suite = Discoverer(Loader()).discover('haas')
         run.assert_called_once_with(result, suite)
         result.wasSuccessful.assert_called_once_with()
 
     @with_patched_test_runner
     def test_main_quiet(self, runner_class, result_class, plugin_manager):
         # When
-        run, result = self._run_with_arguments(
-            runner_class, result_class, '-q', plugin_manager=plugin_manager)
+        with self._basic_test_fixture() as package_name:
+            run, result = self._run_with_arguments(
+                runner_class, result_class, '-q',
+                plugin_manager=plugin_manager)
+            suite = Discoverer(Loader()).discover(package_name)
 
         # Then
         args = runner_class.from_args.call_args
@@ -137,7 +172,6 @@ class TestHaasApplication(unittest.TestCase):
         self.assertFalse(ns.failfast)
         self.assertFalse(ns.buffer)
 
-        suite = Discoverer(Loader()).discover('haas')
         run.assert_called_once_with(result, suite)
         result.wasSuccessful.assert_called_once_with()
 
@@ -152,8 +186,11 @@ class TestHaasApplication(unittest.TestCase):
     @with_patched_test_runner
     def test_main_verbose(self, runner_class, result_class, plugin_manager):
         # When
-        run, result = self._run_with_arguments(
-            runner_class, result_class, '-v', plugin_manager=plugin_manager)
+        with self._basic_test_fixture() as package_name:
+            run, result = self._run_with_arguments(
+                runner_class, result_class, '-v',
+                plugin_manager=plugin_manager)
+            suite = Discoverer(Loader()).discover(package_name)
 
         # Then
         args = runner_class.from_args.call_args
@@ -164,15 +201,17 @@ class TestHaasApplication(unittest.TestCase):
         self.assertFalse(ns.failfast)
         self.assertFalse(ns.buffer)
 
-        suite = Discoverer(Loader()).discover('haas')
         run.assert_called_once_with(result, suite)
         result.wasSuccessful.assert_called_once_with()
 
     @with_patched_test_runner
     def test_main_failfast(self, runner_class, result_class, plugin_manager):
         # When
-        run, result = self._run_with_arguments(
-            runner_class, result_class, '-f', plugin_manager=plugin_manager)
+        with self._basic_test_fixture() as package_name:
+            run, result = self._run_with_arguments(
+                runner_class, result_class, '-f',
+                plugin_manager=plugin_manager)
+            suite = Discoverer(Loader()).discover(package_name)
 
         # Then
         args = runner_class.from_args.call_args
@@ -183,15 +222,17 @@ class TestHaasApplication(unittest.TestCase):
         self.assertTrue(ns.failfast)
         self.assertFalse(ns.buffer)
 
-        suite = Discoverer(Loader()).discover('haas')
         run.assert_called_once_with(result, suite)
         result.wasSuccessful.assert_called_once_with()
 
     @with_patched_test_runner
     def test_main_buffer(self, runner_class, result_class, plugin_manager):
         # When
-        run, result = self._run_with_arguments(
-            runner_class, result_class, '-b', plugin_manager=plugin_manager)
+        with self._basic_test_fixture() as package_name:
+            run, result = self._run_with_arguments(
+                runner_class, result_class, '-b',
+                plugin_manager=plugin_manager)
+            suite = Discoverer(Loader()).discover(package_name)
 
         # Then
         args = runner_class.from_args.call_args
@@ -202,7 +243,6 @@ class TestHaasApplication(unittest.TestCase):
         self.assertFalse(ns.failfast)
         self.assertTrue(ns.buffer)
 
-        suite = Discoverer(Loader()).discover('haas')
         run.assert_called_once_with(result, suite)
         result.wasSuccessful.assert_called_once_with()
 
@@ -211,12 +251,14 @@ class TestHaasApplication(unittest.TestCase):
     def test_with_logging(self, get_logger, runner_class, result_class,
                           plugin_manager):
         # Given
-        run, result = self._run_with_arguments(
-            runner_class, result_class, '--log-level', 'debug',
-            plugin_manager=plugin_manager)
-        get_logger.assert_called_once_with(haas.__name__)
+        with self._basic_test_fixture() as package_name:
+            run, result = self._run_with_arguments(
+                runner_class, result_class, '--log-level', 'debug',
+                plugin_manager=plugin_manager)
+            suite = Discoverer(Loader()).discover(package_name)
 
         # Then
+        get_logger.assert_called_once_with(haas.__name__)
         args = runner_class.from_args.call_args
         args, kwargs = args
         ns, dest = args
@@ -225,7 +267,6 @@ class TestHaasApplication(unittest.TestCase):
         self.assertFalse(ns.failfast)
         self.assertFalse(ns.buffer)
 
-        suite = Discoverer(Loader()).discover('haas')
         run.assert_called_once_with(result, suite)
         result.wasSuccessful.assert_called_once_with()
 
@@ -313,10 +354,10 @@ class TestHaasApplication(unittest.TestCase):
                     'second', plugin_manager=plugin_manager,
                 )
 
-            loader = Loader()
-            suite1 = Discoverer(loader).discover('first', top_level)
-            suite2 = Discoverer(loader).discover('second', top_level)
-            suite = loader.create_suite((suite1, suite2))
+                loader = Loader()
+                suite1 = Discoverer(loader).discover('first', top_level)
+                suite2 = Discoverer(loader).discover('second', top_level)
+                suite = loader.create_suite((suite1, suite2))
 
             # Then
             run.assert_called_once_with(result, suite)
