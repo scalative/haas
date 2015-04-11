@@ -704,6 +704,51 @@ class TestDiscovererNeverFilterModuleImportError(unittest.TestCase):
         self.assertEqual(case._testMethodName, 'test_error')
 
 
+class TestDiscovererSelectiveFilterPackageImportError(unittest.TestCase):
+
+    def setUp(self):
+        self.modules = sys.modules.copy()
+        self.tempdir = tempfile.mkdtemp(prefix='haas-tests-')
+        text = builder.RawText('ImportError', 'from . import i_dont_exist')
+        klass = builder.Class(
+            'TestSomething',
+            (
+                builder.Method('test_method'),
+            ),
+        )
+        module = builder.Module('test_importerror.py', (klass,))
+        fixture = builder.Directory(
+            'testing_package',
+            (
+                builder.Module('__init__.py', (text,)),
+                module,
+            ),
+        )
+
+        fixture.create(self.tempdir)
+
+    def tearDown(self):
+        if self.tempdir in sys.path:
+            sys.path.remove(self.tempdir)
+        modules_to_remove = [key for key in sys.modules
+                             if key not in self.modules]
+        for key in modules_to_remove:
+            del sys.modules[key]
+        del self.modules
+        shutil.rmtree(self.tempdir)
+
+    def test_discover_tests(self):
+        # When
+        with cd(self.tempdir):
+            suite = Discoverer(Loader()).discover('TestSomething', None)
+
+        # Then
+        self.assertEqual(suite.countTestCases(), 1)
+        case, = find_test_cases(suite)
+        self.assertIsInstance(case, ModuleImportError)
+        self.assertEqual(case._testMethodName, 'test_error')
+
+
 class TestDiscovererFindTestsByFilePath(unittest.TestCase):
 
     def setUp(self):
