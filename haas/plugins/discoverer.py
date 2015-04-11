@@ -26,8 +26,11 @@ def _is_in_package(module_name):
     package = module_name.split('.', 1)[0]
     try:
         __import__(package)
-    except ImportError:
-        return False
+    except ImportError as exc:
+        exc_str = str(exc)
+        # Nasty! But fixes #98.
+        if exc_str == 'No module named {0}'.format(package):
+            return False
     return True
 
 
