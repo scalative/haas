@@ -5,6 +5,11 @@
 Changes since version 0.6.0
 ===========================
 
+Packaging
+---------
+
+* Tests can be run on an installed haas tree (PR #112).
+
 Bugs Fixed
 ----------
 
