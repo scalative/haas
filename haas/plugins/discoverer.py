@@ -22,6 +22,15 @@ from .i_discoverer_plugin import IDiscovererPlugin
 logger = logging.getLogger(__name__)
 
 
+def _is_in_package(module_name):
+    package = module_name.split('.', 1)[0]
+    try:
+        __import__(package)
+    except ImportError:
+        return False
+    return True
+
+
 def _is_import_error_test(test):
     return isinstance(test, ModuleImportError)
 
@@ -367,18 +376,17 @@ class Discoverer(IDiscovererPlugin):
         try:
             module = get_module_by_name(module_name)
         except ImportError:
-            test = _create_import_error_test(module_name)
-            return self._loader.create_suite((test,))
+            if _is_in_package(module_name):
+                test = _create_import_error_test(module_name)
+                return self._loader.create_suite((test,))
+            # Non-package import in Python 2.7; we ignore and continue
+            return self._loader.create_suite()
         else:
             return self._loader.load_module(module)
 
     def _discover_tests(self, start_directory, top_level_directory, pattern):
         for curdir, dirnames, filenames in os.walk(start_directory):
             logger.debug('Discovering tests in %r', curdir)
-            dirnames[:] = [
-                dirname for dirname in dirnames
-                if os.path.exists(os.path.join(curdir, dirname, '__init__.py'))
-            ]
             for filename in filenames:
                 filepath = os.path.join(curdir, filename)
                 if not match_path(filename, filepath, pattern):
