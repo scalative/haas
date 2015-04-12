@@ -15,6 +15,8 @@ Bugs Fixed
 
 * Fix crash if a non-ImportError occurs at the top-level of a test
   module (#97).
+* Tests are no longer ignored if there is an import error in the
+  top-level package (#98).
 
 
 Version 0.6.0
