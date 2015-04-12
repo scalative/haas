@@ -376,13 +376,19 @@ class Discoverer(IDiscovererPlugin):
         try:
             module = get_module_by_name(module_name)
         except ImportError:
-            if _is_in_package(module_name):
-                test = _create_import_error_test(module_name)
-                return self._loader.create_suite((test,))
-            # Non-package import in Python 2.7; we ignore and continue
-            return self._loader.create_suite()
+            if not _is_in_package(module_name):
+                # Non-package import in Python 2.7; we ignore and continue
+                return self._loader.create_suite()
+            test = _create_import_error_test(module_name)
+        except Exception:
+            test = _create_import_error_test(module_name)
         else:
+            # No exceptions on module import
+            # Load tests
             return self._loader.load_module(module)
+
+        # Create the test suite containing handled exception on import
+        return self._loader.create_suite((test,))
 
     def _discover_tests(self, start_directory, top_level_directory, pattern):
         for curdir, dirnames, filenames in os.walk(start_directory):
