@@ -5,6 +5,12 @@
 Changes since version 0.6.0
 ===========================
 
+Bug fixes
+---------
+
+* Tests are no longer ignored if there is an import error in the
+  top-level package (#98).
+
 
 Version 0.6.0
 =============
