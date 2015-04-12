@@ -2,6 +2,29 @@
  ``haas`` CHANGELOG
 ====================
 
+Changes since version 0.6.0
+===========================
+
+Packaging
+---------
+
+* Tests can be run on an installed haas tree (PR #112).
+
+Bugs Fixed
+----------
+
+* Fix crash if a non-ImportError occurs at the top-level of a test
+  module (#97).
+* Tests are no longer ignored if there is an import error in the
+  top-level package (#98).
+
+Bugs closed
+-----------
+
+* Haas no longer crashes on temporary emac recovery filed (fixed in a
+  prior release; closed #91).
+
+
 Version 0.6.0
 =============
 
