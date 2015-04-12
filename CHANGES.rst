@@ -10,6 +10,12 @@ Packaging
 
 * Tests can be run on an installed haas tree (PR #112).
 
+Bugs closed
+-----------
+
+* Haas no longer crashes on temporary emac recovery filed (fixed in a
+  prior release; closed #91).
+
 
 Version 0.6.0
 =============
