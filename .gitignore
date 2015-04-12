@@ -6,3 +6,5 @@
 /htmlcov
 /docs/build
 /.tox
+/build
+/dist
