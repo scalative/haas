@@ -594,19 +594,15 @@ class TestDiscovererNonPackageImport(unittest.TestCase):
         del self.modules
         shutil.rmtree(self.tempdir)
 
-    @unittest.skipIf(sys.version_info >= (3, 3),
-                     'Python 3.3+ does not require __init__.py')
     def test_discover_skips_non_packages(self):
         with cd(self.tempdir):
             suite = Discoverer(Loader()).discover(self.tempdir, self.tempdir)
         self.assertEqual(suite.countTestCases(), 0)
 
-    @unittest.skipIf(sys.version_info < (3, 3),
-                     'Python < 3.3 requires __init__.py')
     def test_discover_includes_non_packages(self):
         with cd(self.tempdir):
             suite = Discoverer(Loader()).discover(self.tempdir, self.tempdir)
-        self.assertEqual(suite.countTestCases(), 2)
+        self.assertEqual(suite.countTestCases(), 0)
 
 
 class TestDiscovererDotInModuleName(unittest.TestCase):
@@ -680,6 +676,51 @@ class TestDiscovererNeverFilterModuleImportError(unittest.TestCase):
         module = builder.Module('test_importerror.py', (text, klass,))
         package = builder.Package('package', (module,))
         fixture = builder.Package('fixture', (package,))
+        fixture.create(self.tempdir)
+
+    def tearDown(self):
+        if self.tempdir in sys.path:
+            sys.path.remove(self.tempdir)
+        modules_to_remove = [key for key in sys.modules
+                             if key not in self.modules]
+        for key in modules_to_remove:
+            del sys.modules[key]
+        del self.modules
+        shutil.rmtree(self.tempdir)
+
+    def test_discover_tests(self):
+        # When
+        with cd(self.tempdir):
+            suite = Discoverer(Loader()).discover('TestSomething', None)
+
+        # Then
+        self.assertEqual(suite.countTestCases(), 1)
+        case, = find_test_cases(suite)
+        self.assertIsInstance(case, ModuleImportError)
+        self.assertEqual(case._testMethodName, 'test_error')
+
+
+class TestDiscovererSelectiveFilterPackageImportError(unittest.TestCase):
+
+    def setUp(self):
+        self.modules = sys.modules.copy()
+        self.tempdir = tempfile.mkdtemp(prefix='haas-tests-')
+        text = builder.RawText('ImportError', 'from . import i_dont_exist')
+        klass = builder.Class(
+            'TestSomething',
+            (
+                builder.Method('test_method'),
+            ),
+        )
+        module = builder.Module('test_importerror.py', (klass,))
+        fixture = builder.Directory(
+            'testing_package',
+            (
+                builder.Module('__init__.py', (text,)),
+                module,
+            ),
+        )
+
         fixture.create(self.tempdir)
 
     def tearDown(self):
