@@ -10,6 +10,18 @@ Packaging
 
 * Tests can be run on an installed haas tree (PR #112).
 
+Behaviour changes
+-----------------
+
+* Following the stdlib unittest runner behaviour, ``__init__.py`` is
+  required in packages searched for tests (solving #98).
+
+Bug fixes
+---------
+
+* Tests are no longer ignored if there is an import error in the
+  top-level package (#98).
+
 
 Version 0.6.0
 =============
