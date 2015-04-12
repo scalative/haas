@@ -760,6 +760,50 @@ class TestDiscovererFindTestsByFilePath(unittest.TestCase):
         self.assertEqual(case._testMethodName, 'test_method')
 
 
+class TestDiscovererEmacsRecoveryFiles(unittest.TestCase):
+
+    def setUp(self):
+        self.modules = sys.modules.copy()
+        self.tempdir = tempfile.mkdtemp(prefix='haas-tests-')
+        klass = builder.Class(
+            'TestSomething',
+            (
+                builder.Method('test_method'),
+            ),
+        )
+        module = builder.Module('.#test_module.py', (klass,))
+        module = builder.Module('test_module.py', (klass,))
+        fixture = builder.Package(
+            'testing_package',
+            (
+                module,
+            ),
+        )
+
+        fixture.create(self.tempdir)
+
+    def tearDown(self):
+        if self.tempdir in sys.path:
+            sys.path.remove(self.tempdir)
+        modules_to_remove = [key for key in sys.modules
+                             if key not in self.modules]
+        for key in modules_to_remove:
+            del sys.modules[key]
+        del self.modules
+        shutil.rmtree(self.tempdir)
+
+    def test_discover_error_emacs_recovery_file(self):
+        # When
+        with cd(self.tempdir):
+            suite = Discoverer(Loader()).discover('TestSomething', None)
+
+        # Then
+        self.assertEqual(suite.countTestCases(), 1)
+        case, = find_test_cases(suite)
+        self.assertIsInstance(case, unittest.TestCase)
+        self.assertEqual(case._testMethodName, 'test_method')
+
+
 class TestDiscovererExceptionOnModuleImport(unittest.TestCase):
 
     def setUp(self):
