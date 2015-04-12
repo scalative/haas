@@ -17,6 +17,12 @@ Bugs Fixed
 * Fix crash if a non-ImportError occurs at the top-level of a test
   module (#97).
 
+Bugs closed
+-----------
+
+* Haas no longer crashes on temporary emac recovery filed (fixed in a
+  prior release; closed #91).
+
 
 Version 0.6.0
 =============
