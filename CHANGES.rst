@@ -10,6 +10,12 @@ Packaging
 
 * Tests can be run on an installed haas tree (PR #112).
 
+Bugs Fixed
+----------
+
+* Fix crash if a non-ImportError occurs at the top-level of a test
+  module (#97).
+
 Bugs closed
 -----------
 
