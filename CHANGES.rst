@@ -2,8 +2,12 @@
  ``haas`` CHANGELOG
 ====================
 
-Changes since version 0.6.0
+Changes since version 0.6.1
 ===========================
+
+
+Version 0.6.1
+=============
 
 Packaging
 ---------
