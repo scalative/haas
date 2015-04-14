@@ -5,6 +5,12 @@
 Changes since version 0.6.1
 ===========================
 
+Enhancements
+------------
+
+* Allow multiple result handler plugins to be enabled at the same
+  time (#92).
+
 
 Version 0.6.1
 =============
