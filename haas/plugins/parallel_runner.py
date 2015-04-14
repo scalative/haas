@@ -26,7 +26,7 @@ class ChildResultHandler(IResultHandlerPlugin):
 
     # To keep the interface happy
     @classmethod
-    def add_parser_arguments(self, parser, option_prefix, dest_prefix):  # pragma: no cover  # noqa
+    def add_parser_arguments(self, parser, name, option_prefix, dest_prefix):  # pragma: no cover  # noqa
         pass
 
     def start_test(self, test):

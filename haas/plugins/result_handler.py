@@ -60,7 +60,7 @@ class QuietTestResultHandler(IResultHandlerPlugin):
             return cls(test_count=test_count)
 
     @classmethod
-    def add_parser_arguments(self, parser, option_prefix, dest_prefix):
+    def add_parser_arguments(self, parser, name, option_prefix, dest_prefix):
         pass
 
     def get_test_description(self, test):

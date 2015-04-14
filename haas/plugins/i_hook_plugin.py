@@ -25,7 +25,7 @@ class IHookPlugin(object):
         pass
 
     @abstractclassmethod
-    def add_parser_arguments(cls, parser, option_prefix, dest_prefix):
+    def add_parser_arguments(cls, parser, name, option_prefix, dest_prefix):
         pass
 
     @abstractclassmethod
