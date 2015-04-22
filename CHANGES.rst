@@ -5,6 +5,12 @@
 Changes since version 0.6.1
 ===========================
 
+Packaging
+---------
+
+* Package tests in the haas distribution so that the can actually be
+  run (#125).
+
 
 Version 0.6.1
 =============
