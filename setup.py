@@ -141,7 +141,7 @@ if __name__ == "__main__":
         description='Extensible Python Test Runner',
         long_description=long_description,
         license='BSD',
-        packages=['haas', 'haas.plugins'],
+        packages=['haas', 'haas.plugins', 'haas.tests', 'haas.plugins.tests'],
         install_requires=install_requires,
         entry_points={
             'console_scripts': [
