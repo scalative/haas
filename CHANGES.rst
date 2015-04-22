@@ -12,7 +12,7 @@ Version 0.6.2
 Packaging
 ---------
 
-* Package tests in the haas distribution so that the can actually be
+* Package tests in the haas distribution so that they can actually be
   run (#125).
 
 
