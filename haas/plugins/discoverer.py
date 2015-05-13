@@ -366,11 +366,15 @@ class Discoverer(IDiscovererPlugin):
         logger.debug('Loading tests from %r', module_name)
         try:
             module = get_module_by_name(module_name)
-        except ImportError:
+        except Exception:
             test = _create_import_error_test(module_name)
-            return self._loader.create_suite((test,))
         else:
+            # No exceptions on module import
+            # Load tests
             return self._loader.load_module(module)
+
+        # Create the test suite containing handled exception on import
+        return self._loader.create_suite((test,))
 
     def _discover_tests(self, start_directory, top_level_directory, pattern):
         for curdir, dirnames, filenames in os.walk(start_directory):

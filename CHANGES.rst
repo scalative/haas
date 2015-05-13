@@ -2,13 +2,8 @@
  ``haas`` CHANGELOG
 ====================
 
-Changes since version 0.6.0
+Changes since version 0.6.2
 ===========================
-
-Packaging
----------
-
-* Tests can be run on an installed haas tree (PR #112).
 
 Behaviour changes
 -----------------
@@ -16,11 +11,38 @@ Behaviour changes
 * Following the stdlib unittest runner behaviour, ``__init__.py`` is
   required in packages searched for tests (#98, #113).
 
-Bug fixes
+
+Version 0.6.2
+=============
+
+Packaging
 ---------
 
+* Package tests in the haas distribution so that they can actually be
+  run (#125).
+
+
+Version 0.6.1
+=============
+
+Packaging
+---------
+
+* Tests can be run on an installed haas tree (PR #112).
+
+Bugs Fixed
+----------
+
+* Fix crash if a non-ImportError occurs at the top-level of a test
+  module (#97).
 * Tests are no longer ignored if there is an import error in the
   top-level package (#98).
+
+Bugs closed
+-----------
+
+* Haas no longer crashes on temporary emac recovery filed (fixed in a
+  prior release; closed #91).
 
 
 Version 0.6.0
