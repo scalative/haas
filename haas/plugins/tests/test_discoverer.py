@@ -599,11 +599,6 @@ class TestDiscovererNonPackageImport(unittest.TestCase):
             suite = Discoverer(Loader()).discover(self.tempdir, self.tempdir)
         self.assertEqual(suite.countTestCases(), 0)
 
-    def test_discover_includes_non_packages(self):
-        with cd(self.tempdir):
-            suite = Discoverer(Loader()).discover(self.tempdir, self.tempdir)
-        self.assertEqual(suite.countTestCases(), 0)
-
 
 class TestDiscovererDotInModuleName(unittest.TestCase):
 
