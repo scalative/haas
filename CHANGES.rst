@@ -2,7 +2,7 @@
  ``haas`` CHANGELOG
 ====================
 
-Changes since version 0.6.1
+Changes since version 0.6.2
 ===========================
 
 Enhancements
@@ -10,6 +10,16 @@ Enhancements
 
 * Allow multiple result handler plugins to be enabled at the same
   time (#92).
+
+
+Version 0.6.2
+=============
+
+Packaging
+---------
+
+* Package tests in the haas distribution so that they can actually be
+  run (#125).
 
 
 Version 0.6.1
