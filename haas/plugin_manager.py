@@ -16,6 +16,8 @@ else:  # pragma: no cover
 
 from stevedore.extension import ExtensionManager
 
+from .utils import uncamelcase
+
 logger = logging.getLogger(__name__)
 
 
@@ -45,7 +47,9 @@ class PluginManager(object):
         self.hook_managers = OrderedDict()
         self.hook_managers[self.ENVIRONMENT_HOOK] = ExtensionManager(
             namespace=self.ENVIRONMENT_HOOK,
-            invoke_on_load=True,
+        )
+        self.hook_managers[self.RESULT_HANDLERS] = ExtensionManager(
+            namespace=self.RESULT_HANDLERS,
         )
 
         self.driver_managers = OrderedDict()
@@ -54,9 +58,6 @@ class PluginManager(object):
         )
         self.driver_managers[self.TEST_RUNNER] = ExtensionManager(
             namespace=self.TEST_RUNNER,
-        )
-        self.driver_managers[self.RESULT_HANDLERS] = ExtensionManager(
-            namespace=self.RESULT_HANDLERS,
         )
 
     @classmethod
@@ -69,27 +70,37 @@ class PluginManager(object):
         plugin_manager.driver_managers = OrderedDict(driver_managers)
         return plugin_manager
 
-    def _filter_enabled_plugins(self, extension):
-        if extension.obj.enabled:
-            return extension.obj
-        return None
-
-    def _add_hook_extension_arguments(self, extension, parser):
-        extension.obj.add_parser_arguments(parser)
-
-    def _configure_hook_extension(self, extension, args):
-        extension.obj.configure(args)
-
-    def _add_driver_extension_arguments(self, extension, parser, option_prefix,
-                                        dest_prefix):
-        extension.plugin.add_parser_arguments(
-            parser, option_prefix, dest_prefix)
+    def _hook_extension_option_prefix(self, extension):
+        name = uncamelcase(extension.name, sep='-').replace('_', '-')
+        option_prefix = '--{0}-'.format(name)
+        dest_prefix = name.replace('-', '_')
+        return option_prefix, dest_prefix
 
     def _namespace_to_option(self, namespace):
         parts = self._namespace_to_option_parts[namespace]
         option = '--{0}'.format('-'.join(parts))
         dest = '_'.join(parts)
         return option, dest
+
+    def _add_hook_extension_arguments(self, extension, parser):
+        option_prefix, dest_prefix = self._hook_extension_option_prefix(
+            extension)
+        extension.plugin.add_parser_arguments(
+            parser, extension.name, option_prefix, dest_prefix)
+
+    def _create_hook_plugin(self, extension, args, **kwargs):
+        option_prefix, dest_prefix = self._hook_extension_option_prefix(
+            extension)
+        plugin = extension.plugin.from_args(
+            args, extension.name, dest_prefix, **kwargs)
+        if plugin.enabled:
+            return plugin
+        return None
+
+    def _add_driver_extension_arguments(self, extension, parser, option_prefix,
+                                        dest_prefix):
+        extension.plugin.add_parser_arguments(
+            parser, option_prefix, dest_prefix)
 
     def add_plugin_arguments(self, parser):
         """Add plugin arguments to argument parser.
@@ -117,24 +128,18 @@ class PluginManager(object):
             manager.map(self._add_driver_extension_arguments,
                         parser, option_prefix, dest_prefix)
 
-    def configure_plugins(self, args):
-        """Configure enabled plugins with parsed commandline arguments.
-
-        """
-        for manager in self.hook_managers.values():
-            if len(list(manager)) == 0:
-                continue
-            manager.map(self._configure_hook_extension, args)
-
-    def get_enabled_hook_plugins(self, hook):
+    def get_enabled_hook_plugins(self, hook, args, **kwargs):
         """Get enabled plugins for specified hook name.
 
         """
         manager = self.hook_managers[hook]
         if len(list(manager)) == 0:
             return []
-        return [plugin for plugin in manager.map(self._filter_enabled_plugins)
-                if plugin is not None]
+        return [
+            plugin for plugin in manager.map(
+                self._create_hook_plugin, args, **kwargs)
+            if plugin is not None
+        ]
 
     def get_driver(self, namespace, parsed_args, **kwargs):
         """Get mutually-exlusive plugin for plugin namespace.

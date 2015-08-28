@@ -50,13 +50,19 @@ def with_patched_test_runner(fn):
                 environment_manager = ExtensionManager.make_test_instance(
                     [], namespace=PluginManager.ENVIRONMENT_HOOK,
                 )
+                result_handler = Extension(
+                    'default', None, result_cls, None)
                 env_managers = [
                     (PluginManager.ENVIRONMENT_HOOK, environment_manager),
+                    (
+                        PluginManager.RESULT_HANDLERS,
+                        ExtensionManager.make_test_instance(
+                            [result_handler],
+                            namespace=PluginManager.RESULT_HANDLERS),
+                    ),
                 ]
                 runner = Extension('default', None, runner_class, None)
                 discoverer = Extension('default', None, Discoverer, None)
-                result_handler = Extension(
-                    'default', None, result_cls, None)
                 driver_managers = [
                     (
                         PluginManager.TEST_DISCOVERY,
@@ -68,12 +74,6 @@ def with_patched_test_runner(fn):
                         PluginManager.TEST_RUNNER,
                         ExtensionManager.make_test_instance(
                             [runner], namespace=PluginManager.TEST_RUNNER),
-                    ),
-                    (
-                        PluginManager.RESULT_HANDLERS,
-                        ExtensionManager.make_test_instance(
-                            [result_handler],
-                            namespace=PluginManager.RESULT_HANDLERS),
                     ),
                 ]
                 plugin_manager = PluginManager.testing_plugin_manager(

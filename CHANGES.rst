@@ -11,6 +11,12 @@ Behaviour changes
 * Following the stdlib unittest runner behaviour, ``__init__.py`` is
   required in packages searched for tests (#98, #113).
 
+Enhancements
+------------
+
+* Allow multiple result handler plugins to be enabled at the same
+  time (#92).
+
 
 Version 0.6.2
 =============

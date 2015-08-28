@@ -10,6 +10,8 @@ import abc
 
 from six import add_metaclass
 
+from haas.utils import abstractclassmethod
+
 
 @add_metaclass(abc.ABCMeta)
 class IHookPlugin(object):
@@ -22,10 +24,10 @@ class IHookPlugin(object):
     def teardown(self):  # pragma: no cover
         pass
 
-    @abc.abstractmethod
-    def add_parser_arguments(parser):  # pragma: no cover
+    @abstractclassmethod
+    def add_parser_arguments(cls, parser, name, option_prefix, dest_prefix):
         pass
 
-    @abc.abstractmethod
-    def configure(self, args):  # pragma: no cover
+    @abstractclassmethod
+    def from_args(cls, args, dest_prefix):
         pass

@@ -21,10 +21,10 @@ class InvalidPlugin(object):
     pass
 
 
-class TestingPlugin(BaseHookPlugin):
+class BaseTestingPlugin(BaseHookPlugin):
 
     def __init__(self, *args, **kwargs):
-        super(TestingPlugin, self).__init__(*args, **kwargs)
+        super(BaseTestingPlugin, self).__init__(*args, **kwargs)
         self.setup_called = 0
         self.teardown_called = 0
         self.add_parser_arguments_called = 0
@@ -36,38 +36,30 @@ class TestingPlugin(BaseHookPlugin):
     def teardown(self):
         self.teardown_called += 1
 
-    def add_parser_arguments(self, parser):
-        self.add_parser_arguments_called += 1
-        return super(TestingPlugin, self).add_parser_arguments(parser)
-
-    def configure(self, args):
-        self.configure_called += 1
-        return super(TestingPlugin, self).configure(args)
-
-
-class TestBaseHookPlugin(unittest.TestCase):
-
-    def test_name_default(self):
-        # When
-        plugin = TestingPlugin(name='my-name')
-
-        # Then
-        self.assertEqual(plugin.name, 'my-name')
-
-        # When
-        plugin = TestingPlugin()
-
-        # Then
-        self.assertEqual(plugin.name, 'testing-plugin')
-
 
 class TestPluginManager(unittest.TestCase):
 
     def test_environment_hook_options(self):
+        class TestingPlugin(BaseTestingPlugin):
+            add_parser_arguments_called = 0
+            from_args_called = 0
+
+            @classmethod
+            def add_parser_arguments(cls, parser, name, option_prefix,
+                                     dest_prefix):
+                cls.add_parser_arguments_called += 1
+                return super(TestingPlugin, cls).add_parser_arguments(
+                    parser, name, option_prefix, dest_prefix)
+
+            @classmethod
+            def from_args(cls, args, name, dest_prefix):
+                cls.from_args_called += 1
+                return super(TestingPlugin, cls).from_args(
+                    args, name, dest_prefix)
+
         # Given
-        plugin_obj = TestingPlugin()
         extension = Extension(
-            'extension', None, TestingPlugin, plugin_obj)
+            'testing-plugin', None, TestingPlugin, None)
         environment_manager = ExtensionManager.make_test_instance(
             [extension], namespace=PluginManager.ENVIRONMENT_HOOK,
         )
@@ -80,34 +72,32 @@ class TestPluginManager(unittest.TestCase):
         plugin_manager.add_plugin_arguments(parser)
 
         # Then
-        self.assertEqual(plugin_obj.add_parser_arguments_called, 1)
+        self.assertEqual(TestingPlugin.add_parser_arguments_called, 1)
         actions = parser._actions
         self.assertEqual(len(actions), 1)
         action, = actions
         self.assertEqual(action.option_strings, ['--with-testing-plugin'])
 
         # When
+        args = parser.parse_args([])
         enabled_plugins = plugin_manager.get_enabled_hook_plugins(
-            plugin_manager.ENVIRONMENT_HOOK)
+            plugin_manager.ENVIRONMENT_HOOK, args)
 
         # Then
-        self.assertFalse(plugin_obj.enabled)
         self.assertEqual(enabled_plugins, [])
+        self.assertEqual(TestingPlugin.from_args_called, 1)
 
         # When
         args = parser.parse_args(['--with-testing-plugin'])
-        plugin_manager.configure_plugins(args)
-
-        # Then
-        self.assertEqual(plugin_obj.configure_called, 1)
-
-        # When
         enabled_plugins = plugin_manager.get_enabled_hook_plugins(
-            plugin_manager.ENVIRONMENT_HOOK)
+            plugin_manager.ENVIRONMENT_HOOK, args)
 
         # Then
+        self.assertEqual(len(enabled_plugins), 1)
+
+        plugin_obj, = enabled_plugins
+        self.assertEqual(TestingPlugin.from_args_called, 2)
         self.assertTrue(plugin_obj.enabled)
-        self.assertEqual(enabled_plugins, [plugin_obj])
 
     def test_driver_hooks_found(self):
         # Given
@@ -216,19 +206,9 @@ class TestPluginManager(unittest.TestCase):
         self.assertEqual(len(actions), 0)
 
         # When
-        enabled_plugins = plugin_manager.get_enabled_hook_plugins(
-            plugin_manager.ENVIRONMENT_HOOK)
-
-        # Then
-        self.assertEqual(enabled_plugins, [])
-
-        # When
         args = parser.parse_args([])
-        plugin_manager.configure_plugins(args)
-
-        # When
         enabled_plugins = plugin_manager.get_enabled_hook_plugins(
-            plugin_manager.ENVIRONMENT_HOOK)
+            plugin_manager.ENVIRONMENT_HOOK, args)
 
         # Then
         self.assertEqual(enabled_plugins, [])

@@ -6,7 +6,6 @@
 # of the 3-clause BSD license.  See the LICENSE.txt file for details.
 from __future__ import absolute_import, unicode_literals
 
-from haas.utils import uncamelcase
 from .i_hook_plugin import IHookPlugin
 
 
@@ -15,22 +14,29 @@ class BaseHookPlugin(IHookPlugin):
 
     """
 
-    name = None
-    enabled = False
-    enabling_option = None
-
-    def __init__(self, name=None):
-        if name is None:
-            name = uncamelcase(type(self).__name__, sep='-')
+    def __init__(self, name, enabled, enabling_option):
         self.name = name
+        self.enabled = enabled
         self.enabling_option = 'with_{0}'.format(name.replace('-', '_'))
 
-    def add_parser_arguments(self, parser):
-        parser.add_argument('--with-{0}'.format(self.name),
-                            action='store_true',
-                            help='Enable the {0} plugin'.format(self.name),
-                            dest=self.enabling_option)
+    @classmethod
+    def _get_enabling_option_string(cls, name, dest_prefix):
+        enabling_option = '--with-{0}'.format(name)
+        enabling_dest = 'with_{0}'.format(dest_prefix)
+        return enabling_option, enabling_dest
 
-    def configure(self, args):
-        if getattr(args, self.enabling_option, False):
-            self.enabled = True
+    @classmethod
+    def add_parser_arguments(cls, parser, name, option_prefix, dest_prefix):
+        enabling_option, enabling_dest = cls._get_enabling_option_string(
+            name, dest_prefix)
+        parser.add_argument(enabling_option,
+                            action='store_true',
+                            help='Enable the {0} plugin'.format(name),
+                            dest=enabling_dest)
+
+    @classmethod
+    def from_args(cls, args, name, dest_prefix):
+        enabling_option, enabling_dest = cls._get_enabling_option_string(
+            name, dest_prefix)
+        enabled = getattr(args, enabling_dest, False)
+        return cls(name=name, enabled=enabled, enabling_option=enabling_dest)

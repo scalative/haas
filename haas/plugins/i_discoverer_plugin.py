@@ -48,7 +48,7 @@ class IDiscovererPlugin(object):
         """
 
     @abstractmethod
-    def discover(self):
+    def discover(self, start, top_level_directory=None, pattern=None):
         """Do test case discovery.
 
         This is the top-level entry-point for test discovery.
