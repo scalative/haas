@@ -11,6 +11,12 @@ Behaviour changes
 * Following the stdlib unittest runner behaviour, ``__init__.py`` is
   required in packages searched for tests (#98, #113).
 
+Bugs Fixed
+----------
+
+* The parallel test runner now returns correct results in the presence
+  of a module import error (#129).
+
 Enhancements
 ------------
 

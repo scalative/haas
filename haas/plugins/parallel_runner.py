@@ -1,6 +1,7 @@
 from multiprocessing import Pool
 import time
 
+from haas.module_import_error import ModuleImportError
 from haas.suite import find_test_cases
 from haas.result import ResultCollecter
 from haas.utils import get_module_by_name
@@ -111,9 +112,18 @@ class ParallelTestRunner(BaseTestRunner):
         try:
             callback = lambda collected_result: self._handle_result(
                 result, collected_result)
+            error_tests = []
             for test_case in find_test_cases(test):
-                pool.apply_async(
-                    _run_test_in_process, args=(test_case,), callback=callback)
+                if isinstance(test_case, ModuleImportError):
+                    error_tests.append(test_case)
+                else:
+                    pool.apply_async(
+                        _run_test_in_process, args=(test_case,),
+                        callback=callback)
+
+            for test_case in error_tests:
+                collected_result = _run_test_in_process(test_case)
+                callback(collected_result)
         finally:
             pool.close()
             pool.join()

@@ -4,6 +4,7 @@ import time
 from mock import Mock, patch
 from six.moves import StringIO
 
+from ..plugins.discoverer import _create_import_error_test
 from ..plugins.parallel_runner import ChildResultHandler, ParallelTestRunner
 from ..result import ResultCollecter, TestCompletionStatus, TestResult
 from ..suite import TestSuite
@@ -229,3 +230,39 @@ class TestParallelTestRunner(unittest.TestCase):
             processes=None, initializer=subprocess_initializer)
         pool.close.assert_called_once_with()
         pool.join.assert_called_once_with()
+
+
+class TestParallelRunnerImportError(unittest.TestCase):
+
+    @patch('haas.plugins.parallel_runner.Pool')
+    def test_parallel_distribute_module_import_error(self, pool_class):
+        # Given
+        pool = Mock()
+        pool_class.return_value = pool
+
+        try:
+            import haas.i_dont_exist  # noqa
+        except ImportError:
+            test_case = _create_import_error_test('haas.i_dont_exist')
+        else:
+            self.fail('Module haas.i_dont_exist not expected to exist')
+        test_suite = TestSuite((test_case,))
+
+        opt_prefix = '--parallel-'
+        dest_prefix = 'parallel_'
+        parser = ArgumentParser()
+        ParallelTestRunner.add_parser_arguments(
+            parser, opt_prefix, dest_prefix)
+        args = parser.parse_args([])
+
+        result_handler = ChildResultHandler()
+        result_collector = ResultCollecter()
+        result_collector.add_result_handler(result_handler)
+        runner = ParallelTestRunner.from_args(args, dest_prefix)
+
+        # When
+        runner.run(result_collector, test_suite)
+
+        self.assertEqual(result_collector.testsRun, 1)
+        self.assertFalse(result_collector.wasSuccessful())
+        self.assertFalse(pool.apply_async.called)
