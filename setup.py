@@ -85,7 +85,7 @@ if not is_released:
                               "haas/_version.py and the build "
                               "directory before building.")
         import re
-        match = re.match(r'.*?\.dev(?P<dev_num>\d+)\+.*', full_v)
+        match = re.match(r'.*?\.dev(?P<dev_num>\d+)$', full_v)
         if match is None:
             dev_num = '0'
         else:
@@ -95,7 +95,7 @@ if not is_released:
         dev_num = '0'
 
     if not IS_RELEASED:
-        fullversion += '.dev{0}+'.format(dev_num) + git_rev[:7]
+        fullversion += '.dev{0}'.format(dev_num)
 
     with open(filename, "wt") as fp:
         fp.write(template.format(version=VERSION,
