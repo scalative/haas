@@ -5,6 +5,12 @@
 Changes since version 0.6.2
 ===========================
 
+Behaviour changes
+-----------------
+
+* Following the stdlib unittest runner behaviour, ``__init__.py`` is
+  required in packages searched for tests (#98, #113).
+
 Enhancements
 ------------
 
