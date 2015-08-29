@@ -16,6 +16,8 @@ Bugs Fixed
 
 * The parallel test runner now returns correct results in the presence
   of a module import error (#129).
+* Fixed a UnicodeDecodeError when a traceback contains Unicode
+  characters (e.g. Unicode filesystem paths) (#132).
 
 Enhancements
 ------------
