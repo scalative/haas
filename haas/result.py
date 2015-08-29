@@ -9,9 +9,11 @@ from __future__ import absolute_import, unicode_literals
 from datetime import datetime
 from enum import Enum
 from functools import wraps
+import locale
 import sys
 import traceback
 
+import six
 from six.moves import StringIO
 
 
@@ -59,6 +61,15 @@ def _count_relevant_tb_levels(tb):
     return length
 
 
+def _decode(line, encoding):
+    if isinstance(line, six.text_type):
+        return line
+    try:
+        return line.decode(encoding)
+    except UnicodeDecodeError:
+        return line.decode(encoding, errors='replace')
+
+
 def _format_exception(err, is_failure, stdout=None, stderr=None):
     """Converts a sys.exc_info()-style tuple of values into a string."""
     exctype, value, tb = err
@@ -72,6 +83,9 @@ def _format_exception(err, is_failure, stdout=None, stderr=None):
         msgLines = traceback.format_exception(exctype, value, tb, length)
     else:
         msgLines = traceback.format_exception(exctype, value, tb)
+
+    encoding = locale.getpreferredencoding()
+    msgLines = [_decode(line, encoding) for line in msgLines]
 
     if stdout:
         if not stdout.endswith('\n'):
