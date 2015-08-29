@@ -542,8 +542,6 @@ class TestQuietResultHandler(ExcInfoFixture, unittest.TestCase):
 
     @patch('sys.stderr', new_callable=StringIO)
     def test_no_output_with_failure_on_stop_test_run(self, stderr):
-        """Has a docstring for test.
-        """
         # Given
         handler = QuietTestResultHandler(test_count=1)
         handler.start_test_run()
@@ -731,8 +729,6 @@ class TestStandardResultHandler(ExcInfoFixture, unittest.TestCase):
 
     @patch('sys.stderr', new_callable=StringIO)
     def test_no_output_with_failure_on_stop_test_run(self, stderr):
-        """Has a docstring for test.
-        """
         # Given
         handler = StandardTestResultHandler(test_count=1)
         handler.start_test_run()
@@ -925,8 +921,6 @@ class TestVerboseResultHandler(ExcInfoFixture, unittest.TestCase):
 
     @patch('sys.stderr', new_callable=StringIO)
     def test_output_with_failure_on_stop_test_run(self, stderr):
-        """Has a docstring for test.
-        """
         # Given
         handler = VerboseTestResultHandler(test_count=1)
         handler.start_test_run()
