@@ -24,9 +24,9 @@ from ..testing import unittest
 class ExcInfoFixture(object):
 
     @contextmanager
-    def failure_exc_info(self):
+    def failure_exc_info(self, msg=None):
         try:
-            self.fail()
+            self.fail(msg)
         except self.failureException:
             yield sys.exc_info()
 
@@ -89,6 +89,28 @@ class TestTextTestResult(ExcInfoFixture, unittest.TestCase):
         self.assertFalse(handler.start_test_run.called)
         self.assertFalse(handler.stop_test_run.called)
         self.assertFalse(handler.start_test.called)
+
+    def test_unicode_traceback(self):
+        # Given
+        handler = Mock(spec=IResultHandlerPlugin)
+        collector = ResultCollecter()
+        collector.add_result_handler(handler)
+
+        # When
+        msg = '\N{GREEK SMALL LETTER PHI}'.encode('utf-8')
+        with self.failure_exc_info(msg) as exc_info:
+            # Given
+            expected_result = TestResult.from_test_case(
+                self, TestCompletionStatus.error, exception=exc_info)
+            collector.addError(self, exc_info)
+
+        # Then
+        handler.assert_called_once_with(expected_result)
+        self.assertFalse(handler.start_test_run.called)
+        self.assertFalse(handler.stop_test_run.called)
+        self.assertFalse(handler.start_test.called)
+        self.assertFalse(handler.stop_test.called)
+        self.assertFalse(collector.wasSuccessful())
 
     def test_result_collector_calls_handlers_on_error(self):
         # Given
@@ -520,8 +542,6 @@ class TestQuietResultHandler(ExcInfoFixture, unittest.TestCase):
 
     @patch('sys.stderr', new_callable=StringIO)
     def test_no_output_with_failure_on_stop_test_run(self, stderr):
-        """Has a docstring for test.
-        """
         # Given
         handler = QuietTestResultHandler(test_count=1)
         handler.start_test_run()
@@ -709,8 +729,6 @@ class TestStandardResultHandler(ExcInfoFixture, unittest.TestCase):
 
     @patch('sys.stderr', new_callable=StringIO)
     def test_no_output_with_failure_on_stop_test_run(self, stderr):
-        """Has a docstring for test.
-        """
         # Given
         handler = StandardTestResultHandler(test_count=1)
         handler.start_test_run()
@@ -903,8 +921,6 @@ class TestVerboseResultHandler(ExcInfoFixture, unittest.TestCase):
 
     @patch('sys.stderr', new_callable=StringIO)
     def test_output_with_failure_on_stop_test_run(self, stderr):
-        """Has a docstring for test.
-        """
         # Given
         handler = VerboseTestResultHandler(test_count=1)
         handler.start_test_run()
