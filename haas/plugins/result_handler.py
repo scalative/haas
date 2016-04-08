@@ -6,11 +6,20 @@
 # of the 3-clause BSD license.  See the LICENSE.txt file for details.
 from __future__ import absolute_import, unicode_literals
 
+from datetime import datetime
 import sys
 import time
 
 from haas.result import TestCompletionStatus, separator2
 from .i_result_handler_plugin import IResultHandlerPlugin
+
+
+def get_test_description(test, descriptions=True):
+    doc_first_line = test.shortDescription()
+    if descriptions and doc_first_line:
+        return '\n'.join((str(test), doc_first_line))
+    else:
+        return str(test)
 
 
 class _WritelnDecorator(object):
@@ -64,11 +73,7 @@ class QuietTestResultHandler(IResultHandlerPlugin):
         pass
 
     def get_test_description(self, test):
-        doc_first_line = test.shortDescription()
-        if self.descriptions and doc_first_line:
-            return '\n'.join((str(test), doc_first_line))
-        else:
-            return str(test)
+        return get_test_description(test, descriptions=self.descriptions)
 
     def start_test(self, test):
         self.tests_run += 1
@@ -217,3 +222,59 @@ class VerboseTestResultHandler(StandardTestResultHandler):
             self.stream.write(" '{0}'".format(result.message))
         self.stream.writeln()
         self.stream.flush()
+
+
+class SlowTestResultHandler(IResultHandlerPlugin):
+    separator1 = '=' * 70
+    separator2 = separator2
+
+    def __init__(self):
+        self.enabled = True
+        self.stream = _WritelnDecorator(sys.stderr)
+        self.descriptions = True
+        self._test_results = []
+
+    @classmethod
+    def from_args(cls, args, name, dest_prefix, test_count):
+        if args.summarize_slow_tests:
+            return cls()
+
+    @classmethod
+    def add_parser_arguments(self, parser, name, option_prefix, dest_prefix):
+        parser.add_argument('--summarize-slow-tests', action='store_true',
+                            default=False,
+                            help='Show 10 slowest tests')
+
+    def start_test(self, test):
+        pass
+
+    def stop_test(self, test):
+        pass
+
+    def start_test_run(self):
+        pass
+
+    def stop_test_run(self):
+        self.print_summary()
+
+    def print_summary(self):
+        tests_by_time = sorted(
+            self._test_results,
+            key=lambda item: item.timing,
+            reverse=True,
+        )
+
+        self.stream.writeln()
+        self.stream.writeln(self.separator2)
+
+        template = '{0} {1}'
+
+        for test_result in tests_by_time[:10]:
+            description = get_test_description(
+                test_result.test, descriptions=self.descriptions)
+            line = template.format(str(test_result.timing), description)
+            self.stream.writeln(line)
+        self.stream.writeln()
+
+    def __call__(self, result):
+        self._test_results.append(result)

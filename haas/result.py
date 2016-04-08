@@ -98,6 +98,63 @@ def _format_exception(err, is_failure, stdout=None, stderr=None):
     return ''.join(msgLines)
 
 
+class TestTiming(object):
+
+    def __init__(self, start_time, stop_time):
+        self._start_time = start_time
+        self._stop_time = stop_time
+        self._duration = stop_time - start_time
+
+    @property
+    def start_time(self):
+        return self._start_time
+
+    @property
+    def stop_time(self):
+        return self._stop_time
+
+    @property
+    def duration(self):
+        return self._duration
+
+    def __str__(self):
+        template = '{hours: >3.0f}:{minutes:0>2.0f}:{seconds:0>2.3f}'
+        minutes, seconds = divmod(self.duration.total_seconds(), 60)
+        hours, minutes = divmod(minutes, 60)
+        return template.format(
+            hours=hours,
+            minutes=minutes,
+            seconds=seconds,
+        )
+
+    def __eq__(self, other):
+        if not hasattr(other, 'duration'):
+            return NotImplemented
+        return self.duration == other.duration
+
+    def __ne__(self, other):
+        return not (self == other)
+
+    def __lt__(self, other):
+        if not hasattr(other, 'duration'):
+            return NotImplemented
+        return self.duration < other.duration
+
+    def __le__(self, other):
+        return not (self > other)
+
+    def __gt__(self, other):
+        if not hasattr(other, 'duration'):
+            return NotImplemented
+        return self.duration > other.duration
+
+    def __ge__(self, other):
+        return not (self < other)
+
+    def __hash__(self):
+        return hash((self._start_time, self._stop_time))
+
+
 class TestResult(object):
     """Container object for all information related to the run of a single
     test.  This contains the test itself, the actual status including
@@ -106,15 +163,14 @@ class TestResult(object):
 
     """
 
-    def __init__(self, test_class, test_method_name, status,  # started_time,
-                 completed_time, exception=None, message=None):
+    def __init__(self, test_class, test_method_name, status, timing,
+                 exception=None, message=None):
         self.test_class = test_class
         self.test_method_name = test_method_name
         self.status = status
         self.exception = exception
         self.message = message
-        # self.started_time = started_time
-        self.completed_time = completed_time
+        self.timing = timing
 
     def __eq__(self, other):
         if not isinstance(other, TestResult):
@@ -124,16 +180,16 @@ class TestResult(object):
             self.test_method_name == other.test_method_name and
             self.status == other.status and
             self.exception == other.exception and
-            self.message == other.message
+            self.message == other.message and
+            self.timing == other.timing
         )
 
     def __ne__(self, other):
         return not (self == other)
 
     @classmethod
-    def from_test_case(cls, test_case, status,  # started_time,
-                       exception=None,
-                       message=None, stdout=None, stderr=None):
+    def from_test_case(cls, test_case, status, started_time,
+                       exception=None, message=None, stdout=None, stderr=None):
         """Construct a :class:`~.TestResult` object from the test and a status.
 
         Parameters
@@ -160,9 +216,9 @@ class TestResult(object):
             is_failure = exctype is test_case.failureException
             exception = _format_exception(
                 exception, is_failure, stdout, stderr)
-        completed_time = datetime.utcnow()
-        return cls(test_class, test_method_name, status,  # started_time,
-                   completed_time, exception, message)
+        timing = TestTiming(started_time, datetime.utcnow())
+        return cls(test_class, test_method_name, status, timing,
+                   exception, message)
 
     def __repr__(self):
         return '<{0} class={1}, method={2}, exc={3!r}>'.format(
@@ -240,6 +296,7 @@ class ResultCollecter(object):
         self._stdout_buffer = None
         self._original_stderr = sys.stderr
         self._original_stdout = sys.stdout
+        self._test_timing = {}
 
     def _setup_stdout(self):
         """Hook stdout and stderr if buffering is enabled.
@@ -295,6 +352,7 @@ class ResultCollecter(object):
             The test that is starting.
 
         """
+        self._test_timing[test] = datetime.utcnow()
         self._mirror_output = False
         self._setup_stdout()
         self.testsRun += 1
@@ -364,9 +422,13 @@ class ResultCollecter(object):
             stdout = self._stdout_buffer.getvalue()
         else:
             stderr = stdout = None
+
+        started_time = self._test_timing.pop(test)
+
         result = TestResult.from_test_case(
             test,
             status,
+            started_time=started_time,
             exception=exception,
             message=message,
             stdout=stdout,

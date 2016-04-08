@@ -169,6 +169,7 @@ if __name__ == "__main__":
                 'default = haas.plugins.result_handler:StandardTestResultHandler',  # noqa
                 'quiet = haas.plugins.result_handler:QuietTestResultHandler',
                 'verbose = haas.plugins.result_handler:VerboseTestResultHandler',  # noqa
+                'slow = haas.plugins.result_handler:SlowTestResultHandler',
             ]
         },
         extras_require={
