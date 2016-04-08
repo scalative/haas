@@ -67,7 +67,7 @@ def _decode(line, encoding):
     try:
         return line.decode(encoding)
     except UnicodeDecodeError:
-        return line.decode(encoding, errors='replace')
+        return line.decode(encoding, 'replace')
 
 
 def _format_exception(err, is_failure, stdout=None, stderr=None):
