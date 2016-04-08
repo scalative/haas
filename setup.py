@@ -176,5 +176,6 @@ if __name__ == "__main__":
             ':python_version=="2.7"': py33_requires,
             ':python_version=="3.3"': py33_requires,
             ':python_version=="3.4"': py34_requires,
+            ':python_version=="3.5"': py34_requires,
         },
     )
