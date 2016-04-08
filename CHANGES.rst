@@ -5,6 +5,16 @@
 Changes since version 0.7.0
 ===========================
 
+Enhancements
+------------
+
+* The ParallelTestRunner now has an option to force a new process for
+  each test case, enforcing isolation between tests (#138).
+
+Bugs Fixed
+----------
+
+* Haas now correctly specifies its Python 2.6 dependencies (#137).
 
 Version 0.7.0
 =============
