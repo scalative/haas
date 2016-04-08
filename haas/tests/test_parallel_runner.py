@@ -98,7 +98,8 @@ class TestParallelTestRunner(unittest.TestCase):
         # Then
         self.assertEqual(result_handler.results, [expected_result])
         pool_class.assert_called_once_with(
-            processes=processes, initializer=None)
+            processes=processes, initializer=None,
+            maxtasksperchild=None)
         pool.close.assert_called_once_with()
         pool.join.assert_called_once_with()
 
@@ -120,7 +121,8 @@ class TestParallelTestRunner(unittest.TestCase):
 
         # Then
         pool_class.assert_called_once_with(
-            processes=None, initializer=None)
+            processes=None, initializer=None,
+            maxtasksperchild=None)
         pool.close.assert_called_once_with()
         pool.join.assert_called_once_with()
         result_collector.startTestRun.assert_called_once_with()
@@ -153,7 +155,8 @@ class TestParallelTestRunner(unittest.TestCase):
         # Then
         self.assertEqual(result_handler.results, [expected_result])
         pool_class.assert_called_once_with(
-            processes=processes, initializer=initializer)
+            processes=processes, initializer=initializer,
+            maxtasksperchild=None)
         pool.close.assert_called_once_with()
         pool.join.assert_called_once_with()
 
@@ -175,7 +178,8 @@ class TestParallelTestRunner(unittest.TestCase):
         parser = ArgumentParser()
         ParallelTestRunner.add_parser_arguments(
             parser, opt_prefix, dest_prefix)
-        args = parser.parse_args(['--processes', '4'])
+        args = parser.parse_args(['--processes', '4',
+                                  '--process-max-tasks', '1'])
 
         result_handler = ChildResultHandler()
         result_collector = ResultCollecter()
@@ -188,7 +192,7 @@ class TestParallelTestRunner(unittest.TestCase):
         # Then
         self.assertEqual(result_handler.results, [expected_result])
         pool_class.assert_called_once_with(
-            processes=4, initializer=None)
+            processes=4, initializer=None, maxtasksperchild=1)
         pool.close.assert_called_once_with()
         pool.join.assert_called_once_with()
 
@@ -227,7 +231,8 @@ class TestParallelTestRunner(unittest.TestCase):
 
         self.assertEqual(result_handler.results, [expected_result])
         pool_class.assert_called_once_with(
-            processes=None, initializer=subprocess_initializer)
+            processes=None, initializer=subprocess_initializer,
+            maxtasksperchild=None)
         pool.close.assert_called_once_with()
         pool.join.assert_called_once_with()
 
