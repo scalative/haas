@@ -105,13 +105,21 @@ if not is_released:
 
 
 if __name__ == "__main__":
-    install_requires = ['stevedore', 'six']
-    py_2_3_requires = ['enum34']
-    py26_requires = ['unittest2', 'argparse', 'ordereddict'] + py_2_3_requires
+    install_requires = ['six']
+    common_requires = ['enum34']
+    py26_requires = [
+        'stevedore >= 1.0.0, < 1.10.0',
+        'unittest2',
+        'argparse',
+        'ordereddict'] + common_requires
+    py34_requires = ['stevedore >= 1.0.0, < 1.12.0']
+    py33_requires = py34_requires + common_requires
     if sys.version_info < (2, 7):
         install_requires += py26_requires
     elif sys.version_info < (3, 4):
-        install_requires += py_2_3_requires
+        install_requires += py33_requires
+    else:
+        install_requires = py34_requires
 
     write_version_py()
     from haas import __version__
@@ -165,8 +173,8 @@ if __name__ == "__main__":
         },
         extras_require={
             ':python_version=="2.6"': py26_requires,
-            ':python_version=="2.7"': py_2_3_requires,
-            ':python_version=="3.2"': py_2_3_requires,
-            ':python_version=="3.3"': py_2_3_requires,
+            ':python_version=="2.7"': py33_requires,
+            ':python_version=="3.3"': py33_requires,
+            ':python_version=="3.4"': py34_requires,
         },
     )
