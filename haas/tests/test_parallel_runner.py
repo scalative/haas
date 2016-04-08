@@ -12,6 +12,15 @@ from ..testing import unittest
 from . import _test_cases
 
 
+class AsyncResult(object):
+
+    def ready(self):
+        return True
+
+    def wait(self, timeout):
+        pass
+
+
 def apply_async(func, args=None, kwargs=None, callback=None):
     if args is None:
         args = ()
@@ -20,6 +29,7 @@ def apply_async(func, args=None, kwargs=None, callback=None):
     result = func(*args, **kwargs)
     if callback is not None:
         callback(result)
+    return AsyncResult()
 
 
 class TestChildResultHandler(unittest.TestCase):

@@ -125,19 +125,33 @@ class ParallelTestRunner(BaseTestRunner):
             def callback(collected_result):
                 self._handle_result(result, collected_result)
             error_tests = []
+            call_results = []
             for test_case in find_test_cases(test):
                 if isinstance(test_case, ModuleImportError):
                     error_tests.append(test_case)
                 else:
-                    pool.apply_async(
+                    call_result = pool.apply_async(
                         _run_test_in_process, args=(test_case,),
                         callback=callback)
+                    call_results.append(call_result)
 
             for test_case in error_tests:
                 collected_result = _run_test_in_process(test_case)
                 callback(collected_result)
         finally:
             pool.close()
+            # In some cases (when processes > CPU_CORE_COUNT), the
+            # combination of pool.close() and pool.join() does not
+            # make the Pool terminate, one or more processes remains
+            # alive and the program hangs.
+            # To work around this, We wait for all jobs submitted to
+            # the pool to complete, and then explicitly call
+            # pool.terminate() before pool.join().
+            while len(call_results) > 0:
+                call_results[0].wait(0.25)
+                call_results = [call_result for call_result in call_results
+                                if not call_result.ready()]
+            pool.terminate()
             pool.join()
 
     def run(self, result_collector, test_to_run):
