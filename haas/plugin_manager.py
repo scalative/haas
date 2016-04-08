@@ -72,7 +72,7 @@ class PluginManager(object):
 
     def _hook_extension_option_prefix(self, extension):
         name = uncamelcase(extension.name, sep='-').replace('_', '-')
-        option_prefix = '--{0}-'.format(name)
+        option_prefix = '--with-{0}'.format(name)
         dest_prefix = name.replace('-', '_')
         return option_prefix, dest_prefix
 
