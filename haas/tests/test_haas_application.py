@@ -270,12 +270,12 @@ class TestHaasApplication(unittest.TestCase):
         run.assert_called_once_with(result, suite)
         result.wasSuccessful.assert_called_once_with()
 
-    @patch('sys.stdout')
-    @patch('sys.stderr')
-    # @patch('coverage.coverage')
-    @patch('haas.plugins.runner.BaseTestRunner')
-    def test_with_coverage_plugin(self, runner_class,  # coverage,
-                                  stdout, stderr):
+    # @patch('sys.stdout')
+    # @patch('sys.stderr')
+    # # @patch('coverage.coverage')
+    # @patch('haas.plugins.runner.BaseTestRunner')
+    def test_with_coverage_plugin(self):  # , runner_class,  # coverage,
+                                  # stdout, stderr):
         pass
         # # When
         # run, result = self._run_with_arguments(
