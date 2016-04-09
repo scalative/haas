@@ -11,8 +11,8 @@ python:
 
 before_install:
   - env
-  # There is a JIT crash with PyPy 2.5.0, the default on Travis-CI; Install v2.6.0
-  - bash ./pypyinstall.sh "2.6.0"
+  # There is a JIT crash with PyPy 2.5.0, the default on Travis-CI; Install v2.6.1
+  - bash ./pypyinstall.sh "2.6.1"
 
 install:
   - if [[ $TRAVIS_PYTHON_VERSION == '2.6' ]]; then pip install unittest2 ; fi
