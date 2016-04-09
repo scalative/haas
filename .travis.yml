@@ -1,25 +1,37 @@
 language: python
-sudo: false
-python:
-  - 3.5
-  - 3.4
-  - 3.3
-  - 2.7
-  - 2.6
-  - pypy
+
+matrix:
+  include:
+    - python: 2.6
+      sudo: false
+    - python: 2.7
+      sudo: false
+    - python: 3.3
+      sudo: false
+    - python: 3.4
+      sudo: false
+    - python: 3.5
+      sudo: false
+    - python: pypy
+      sudo: required
+      dist: trusty
+
 install:
-  - if ! [[ $TRAVIS_PYTHON_VERSION > '2.6' ]]; then pip install unittest2 ; fi
+  - if [[ $TRAVIS_PYTHON_VERSION == '2.6' ]]; then pip install unittest2 ; fi
   - pip install coverage
   - pip install coveralls
   - python setup.py develop
   - pip install -r test_requirements.txt
+
 script:
   - if [[ $TRAVIS_PYTHON_VERSION == '2.6' ]]; then coverage run --branch -m unittest2.__main__ discover -v -t . haas; fi
   - if [[ $TRAVIS_PYTHON_VERSION != '2.6' ]]; then coverage run --branch -m unittest discover -v -t . haas; fi
   - if [[ $TRAVIS_PYTHON_VERSION == '2.6' ]]; then python -m haas.__main__; fi
   - if [[ $TRAVIS_PYTHON_VERSION != '2.6' ]]; then python -m haas; fi
+
 notifications:
   email:
     - travis-ci@simonjagoe.com
+
 after_success:
   coveralls
