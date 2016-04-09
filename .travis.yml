@@ -15,6 +15,9 @@ matrix:
     - python: pypy
       sudo: required
       dist: trusty
+    - python: pypy3
+      sudo: required
+      dist: trusty
 
 install:
   - if [[ $TRAVIS_PYTHON_VERSION == '2.6' ]]; then pip install unittest2 ; fi
