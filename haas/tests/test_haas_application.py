@@ -272,9 +272,9 @@ class TestHaasApplication(unittest.TestCase):
 
     @patch('sys.stdout')
     @patch('sys.stderr')
-    @patch('coverage.coverage')
+    # @patch('coverage.coverage')
     @patch('haas.plugins.runner.BaseTestRunner')
-    def test_with_coverage_plugin(self, runner_class, coverage,
+    def test_with_coverage_plugin(self, runner_class,  # coverage,
                                   stdout, stderr):
         pass
         # # When
