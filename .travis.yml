@@ -15,7 +15,7 @@ before_install:
   - bash ./pypyinstall.sh "2.6.0"
 
 install:
-  - if ! [[ $TRAVIS_PYTHON_VERSION > '2.6' ]]; then pip install unittest2 ; fi
+  - if [[ $TRAVIS_PYTHON_VERSION == '2.6' ]]; then pip install unittest2 ; fi
   - pip install coverage
   - pip install coveralls
   - python setup.py develop
