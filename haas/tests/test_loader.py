@@ -11,6 +11,7 @@ import unittest as python_unittest
 from haas.testing import unittest
 
 from . import _test_cases
+from . import _test_case_data
 from ..loader import Loader
 from ..suite import TestSuite
 
@@ -22,26 +23,6 @@ class LoaderTestMixin(object):
 
     def tearDown(self):
         del self.loader
-
-
-class TestSuiteSubclass(TestSuite):
-
-    pass
-
-
-class TestCaseSubclass(unittest.TestCase):
-
-    def test_method(self):
-        pass
-
-
-class TestSuiteNotSubclass(object):
-
-    def __init__(self, tests=()):
-        self.tests = tests
-
-    def __iter__(self):
-        return iter(self.tests)
 
 
 class TestLoadTest(LoaderTestMixin, unittest.TestCase):
@@ -60,12 +41,12 @@ class TestLoadTest(LoaderTestMixin, unittest.TestCase):
             self.loader.load_test(_test_cases.TestSuite, 'test_method')
 
     def test_create_custom_class(self):
-        loader = Loader(test_case_class=TestCaseSubclass)
-        test = loader.load_test(TestCaseSubclass, 'test_method')
-        self.assertIsInstance(test, TestCaseSubclass)
+        loader = Loader(test_case_class=_test_case_data.TestCaseSubclass)
+        test = loader.load_test(_test_case_data.TestCaseSubclass, 'test_method')
+        self.assertIsInstance(test, _test_case_data.TestCaseSubclass)
 
     def test_create_custom_class_raises(self):
-        loader = Loader(test_case_class=TestCaseSubclass)
+        loader = Loader(test_case_class=_test_case_data.TestCaseSubclass)
         with self.assertRaises(TypeError):
             loader.load_test(unittest.TestCase, 'test_method')
 
@@ -89,16 +70,17 @@ class TestLoadCase(LoaderTestMixin, unittest.TestCase):
         self.assertIsInstance(suite, TestSuite)
 
     def test_creates_custom_testsuite_subclass(self):
-        loader = Loader(test_suite_class=TestSuiteSubclass)
+        loader = Loader(
+            test_suite_class=_test_case_data.TestSuiteSubclass)
         suite = loader.load_case(_test_cases.TestCase)
         self.assertIsInstance(suite, TestSuite)
-        self.assertIsInstance(suite, TestSuiteSubclass)
+        self.assertIsInstance(suite, _test_case_data.TestSuiteSubclass)
 
     def test_creates_custom_testsuite_not_subclass(self):
-        loader = Loader(test_suite_class=TestSuiteNotSubclass)
+        loader = Loader(test_suite_class=_test_case_data.TestSuiteNotSubclass)
         suite = loader.load_case(_test_cases.TestCase)
         self.assertNotIsInstance(suite, TestSuite)
-        self.assertIsInstance(suite, TestSuiteNotSubclass)
+        self.assertIsInstance(suite, _test_case_data.TestSuiteNotSubclass)
 
     def test_raises_for_invalid_test(self):
         with self.assertRaises(TypeError):
@@ -132,11 +114,11 @@ class TestLoadModule(LoaderTestMixin, unittest.TestCase):
         self.assertIsInstance(case, _test_cases.TestCase)
 
     def test_creates_custom_testsuite_subclass(self):
-        loader = Loader(test_suite_class=TestSuiteSubclass)
+        loader = Loader(test_suite_class=_test_case_data.TestSuiteSubclass)
         suite = loader.load_module(_test_cases)
-        self.assertSuiteClasses(suite, TestSuiteSubclass)
+        self.assertSuiteClasses(suite, _test_case_data.TestSuiteSubclass)
 
     def test_creates_custom_testsuite_not_subclass(self):
-        loader = Loader(test_suite_class=TestSuiteNotSubclass)
+        loader = Loader(test_suite_class=_test_case_data.TestSuiteNotSubclass)
         suite = loader.load_module(_test_cases)
-        self.assertSuiteClasses(suite, TestSuiteNotSubclass)
+        self.assertSuiteClasses(suite, _test_case_data.TestSuiteNotSubclass)
