@@ -65,10 +65,12 @@ class ParallelTestRunner(BaseTestRunner):
 
     """
 
-    def __init__(self, process_count=None, initializer=None, warnings=None):
+    def __init__(self, process_count=None, initializer=None,
+                 maxtasksperchild=None, warnings=None):
         super(ParallelTestRunner, self).__init__(warnings=warnings)
         self.process_count = process_count
         self.initializer = initializer
+        self.maxtasksperchild = maxtasksperchild
 
     @classmethod
     def from_args(cls, args, arg_prefix):
@@ -82,7 +84,8 @@ class ParallelTestRunner(BaseTestRunner):
             module_name, initializer_name = initializer_spec.rsplit('.', 1)
             init_module = get_module_by_name(module_name)
             initializer = getattr(init_module, initializer_name)
-        return cls(process_count=args.processes, initializer=initializer)
+        return cls(process_count=args.processes, initializer=initializer,
+                   maxtasksperchild=args.process_max_tasks)
 
     @classmethod
     def add_parser_arguments(self, parser, option_prefix, dest_prefix):
@@ -93,10 +96,18 @@ class ParallelTestRunner(BaseTestRunner):
             'The dotted module path to a subprocess initialization function. '
             'This function will be passed to the subprocess and called with '
             'zero arguments.')
+        process_maxtasksperchild_help = (
+            'The number of tasks each process is allowed to run before it is '
+            'replaced by a new process.  Defaults to no limit.'
+        )
         parser.add_argument(
             '--processes', help=process_count_help, type=int, default=None)
         parser.add_argument(
             '--process-init', help=process_init_help, default=None)
+        parser.add_argument(
+            '--process-max-tasks', help=process_maxtasksperchild_help,
+            type=int, default=None,
+        )
 
     def _handle_result(self, result, collected_result):
         for test_result in collected_result:
@@ -107,30 +118,46 @@ class ParallelTestRunner(BaseTestRunner):
 
     def _run_tests(self, result, test):
         pool = Pool(processes=self.process_count,
-                    initializer=self.initializer)
+                    initializer=self.initializer,
+                    maxtasksperchild=self.maxtasksperchild)
 
         try:
-            callback = lambda collected_result: self._handle_result(
-                result, collected_result)
+            def callback(collected_result):
+                self._handle_result(result, collected_result)
             error_tests = []
+            call_results = []
             for test_case in find_test_cases(test):
                 if isinstance(test_case, ModuleImportError):
                     error_tests.append(test_case)
                 else:
-                    pool.apply_async(
+                    call_result = pool.apply_async(
                         _run_test_in_process, args=(test_case,),
                         callback=callback)
+                    call_results.append(call_result)
 
             for test_case in error_tests:
                 collected_result = _run_test_in_process(test_case)
                 callback(collected_result)
         finally:
             pool.close()
+            # In some cases (when processes > CPU_CORE_COUNT), the
+            # combination of pool.close() and pool.join() does not
+            # make the Pool terminate, one or more processes remains
+            # alive and the program hangs.
+            # To work around this, We wait for all jobs submitted to
+            # the pool to complete, and then explicitly call
+            # pool.terminate() before pool.join().
+            while len(call_results) > 0:
+                call_results[0].wait(0.25)
+                call_results = [call_result for call_result in call_results
+                                if not call_result.ready()]
+            pool.terminate()
             pool.join()
 
     def run(self, result_collector, test_to_run):
         """Run the tests in subprocesses.
 
         """
-        test = lambda result: self._run_tests(result_collector, test_to_run)
+        def test(result):
+            self._run_tests(result_collector, test_to_run)
         return super(ParallelTestRunner, self).run(result_collector, test)
