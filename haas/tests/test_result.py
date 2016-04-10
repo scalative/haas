@@ -7,6 +7,7 @@
 from __future__ import absolute_import, unicode_literals
 
 from contextlib import contextmanager
+from datetime import datetime, timedelta
 from time import ctime
 import sys
 
@@ -19,6 +20,8 @@ from ..plugins.result_handler import (
     VerboseTestResultHandler)
 from ..result import ResultCollecter, TestResult, TestCompletionStatus
 from ..testing import unittest
+from . import _test_cases
+from .mocks import MockDateTime
 
 
 class ExcInfoFixture(object):
@@ -45,6 +48,7 @@ class TestTextTestResult(ExcInfoFixture, unittest.TestCase):
         handler = Mock(spec=IResultHandlerPlugin)
         collector = ResultCollecter()
         collector.add_result_handler(handler)
+        case = _test_cases.TestCase('test_method')
 
         # When
         handler.reset_mock()
@@ -70,10 +74,10 @@ class TestTextTestResult(ExcInfoFixture, unittest.TestCase):
 
         # When
         handler.reset_mock()
-        collector.startTest(self)
+        collector.startTest(case)
 
         # Then
-        handler.start_test.assert_called_once_with(self)
+        handler.start_test.assert_called_once_with(case)
         self.assertFalse(handler.called)
         self.assertFalse(handler.start_test_run.called)
         self.assertFalse(handler.stop_test_run.called)
@@ -81,10 +85,10 @@ class TestTextTestResult(ExcInfoFixture, unittest.TestCase):
 
         # When
         handler.reset_mock()
-        collector.stopTest(self)
+        collector.stopTest(case)
 
         # Then
-        handler.stop_test.assert_called_once_with(self)
+        handler.stop_test.assert_called_once_with(case)
         self.assertFalse(handler.called)
         self.assertFalse(handler.start_test_run.called)
         self.assertFalse(handler.stop_test_run.called)
@@ -95,14 +99,28 @@ class TestTextTestResult(ExcInfoFixture, unittest.TestCase):
         handler = Mock(spec=IResultHandlerPlugin)
         collector = ResultCollecter()
         collector.add_result_handler(handler)
+        start_time = datetime(2015, 12, 23, 8, 14, 12)
+        duration = timedelta(seconds=10)
+        end_time = start_time + duration
+        case = _test_cases.TestCase('test_method')
 
         # When
+        with patch('haas.result.datetime', new=MockDateTime(start_time)):
+            collector.startTest(case)
+
+        # Then
+        self.assertTrue(handler.start_test.called)
+        handler.start_test.reset_mock()
+
+        # Given
         msg = '\N{GREEK SMALL LETTER PHI}'.encode('utf-8')
         with self.failure_exc_info(msg) as exc_info:
-            # Given
-            expected_result = TestResult.from_test_case(
-                self, TestCompletionStatus.error, exception=exc_info)
-            collector.addError(self, exc_info)
+            with patch('haas.result.datetime', new=MockDateTime(end_time)):
+                expected_result = TestResult.from_test_case(
+                    case, TestCompletionStatus.error, start_time,
+                    exception=exc_info)
+                # When
+                collector.addError(case, exc_info)
 
         # Then
         handler.assert_called_once_with(expected_result)
@@ -117,13 +135,27 @@ class TestTextTestResult(ExcInfoFixture, unittest.TestCase):
         handler = Mock(spec=IResultHandlerPlugin)
         collector = ResultCollecter()
         collector.add_result_handler(handler)
+        start_time = datetime(2015, 12, 23, 8, 14, 12)
+        duration = timedelta(seconds=10)
+        end_time = start_time + duration
+        case = _test_cases.TestCase('test_method')
+
+        # When
+        with patch('haas.result.datetime', new=MockDateTime(start_time)):
+            collector.startTest(case)
+
+        # Then
+        self.assertTrue(handler.start_test.called)
+        handler.start_test.reset_mock()
 
         # When
         with self.exc_info(RuntimeError) as exc_info:
             # Given
-            expected_result = TestResult.from_test_case(
-                self, TestCompletionStatus.error, exception=exc_info)
-            collector.addError(self, exc_info)
+            with patch('haas.result.datetime', new=MockDateTime(end_time)):
+                expected_result = TestResult.from_test_case(
+                    case, TestCompletionStatus.error, start_time,
+                    exception=exc_info)
+                collector.addError(case, exc_info)
 
         # Then
         handler.assert_called_once_with(expected_result)
@@ -138,13 +170,27 @@ class TestTextTestResult(ExcInfoFixture, unittest.TestCase):
         handler = Mock(spec=IResultHandlerPlugin)
         collector = ResultCollecter()
         collector.add_result_handler(handler)
+        start_time = datetime(2015, 12, 23, 8, 14, 12)
+        duration = timedelta(seconds=10)
+        end_time = start_time + duration
+        case = _test_cases.TestCase('test_method')
 
         # When
+        with patch('haas.result.datetime', new=MockDateTime(start_time)):
+            collector.startTest(case)
+
+        # Then
+        self.assertTrue(handler.start_test.called)
+        handler.start_test.reset_mock()
+
+        # Given
         with self.failure_exc_info() as exc_info:
-            # Given
-            expected_result = TestResult.from_test_case(
-                self, TestCompletionStatus.failure, exception=exc_info)
-            collector.addFailure(self, exc_info)
+            with patch('haas.result.datetime', new=MockDateTime(end_time)):
+                expected_result = TestResult.from_test_case(
+                    case, TestCompletionStatus.failure, start_time,
+                    exception=exc_info)
+                # When
+                collector.addFailure(case, exc_info)
 
         # Then
         handler.assert_called_once_with(expected_result)
@@ -159,11 +205,25 @@ class TestTextTestResult(ExcInfoFixture, unittest.TestCase):
         handler = Mock(spec=IResultHandlerPlugin)
         collector = ResultCollecter()
         collector.add_result_handler(handler)
+        start_time = datetime(2015, 12, 23, 8, 14, 12)
+        duration = timedelta(seconds=10)
+        end_time = start_time + duration
+        case = _test_cases.TestCase('test_method')
 
         # When
-        expected_result = TestResult.from_test_case(
-            self, TestCompletionStatus.success)
-        collector.addSuccess(self)
+        with patch('haas.result.datetime', new=MockDateTime(start_time)):
+            collector.startTest(case)
+
+        # Then
+        self.assertTrue(handler.start_test.called)
+        handler.start_test.reset_mock()
+
+        # Given
+        with patch('haas.result.datetime', new=MockDateTime(end_time)):
+            expected_result = TestResult.from_test_case(
+                case, TestCompletionStatus.success, start_time)
+            # When
+            collector.addSuccess(case)
 
         # Then
         handler.assert_called_once_with(expected_result)
@@ -178,11 +238,26 @@ class TestTextTestResult(ExcInfoFixture, unittest.TestCase):
         handler = Mock(spec=IResultHandlerPlugin)
         collector = ResultCollecter()
         collector.add_result_handler(handler)
+        start_time = datetime(2015, 12, 23, 8, 14, 12)
+        duration = timedelta(seconds=10)
+        end_time = start_time + duration
+        case = _test_cases.TestCase('test_method')
 
         # When
-        expected_result = TestResult.from_test_case(
-            self, TestCompletionStatus.skipped, message='reason')
-        collector.addSkip(self, 'reason')
+        with patch('haas.result.datetime', new=MockDateTime(start_time)):
+            collector.startTest(case)
+
+        # Then
+        self.assertTrue(handler.start_test.called)
+        handler.start_test.reset_mock()
+
+        # Given
+        with patch('haas.result.datetime', new=MockDateTime(end_time)):
+            expected_result = TestResult.from_test_case(
+                case, TestCompletionStatus.skipped, start_time,
+                message='reason')
+            # When
+            collector.addSkip(case, 'reason')
 
         # Then
         handler.assert_called_once_with(expected_result)
@@ -197,14 +272,27 @@ class TestTextTestResult(ExcInfoFixture, unittest.TestCase):
         handler = Mock(spec=IResultHandlerPlugin)
         collector = ResultCollecter()
         collector.add_result_handler(handler)
+        start_time = datetime(2015, 12, 23, 8, 14, 12)
+        duration = timedelta(seconds=10)
+        end_time = start_time + duration
+        case = _test_cases.TestCase('test_method')
 
         # When
+        with patch('haas.result.datetime', new=MockDateTime(start_time)):
+            collector.startTest(case)
+
+        # Then
+        self.assertTrue(handler.start_test.called)
+        handler.start_test.reset_mock()
+
+        # Given
         with self.exc_info(RuntimeError) as exc_info:
-            # Given
-            expected_result = TestResult.from_test_case(
-                self, TestCompletionStatus.expected_failure,
-                exception=exc_info)
-            collector.addExpectedFailure(self, exc_info)
+            with patch('haas.result.datetime', new=MockDateTime(end_time)):
+                expected_result = TestResult.from_test_case(
+                    case, TestCompletionStatus.expected_failure, start_time,
+                    exception=exc_info)
+                # When
+                collector.addExpectedFailure(case, exc_info)
 
         # Then
         handler.assert_called_once_with(expected_result)
@@ -219,11 +307,25 @@ class TestTextTestResult(ExcInfoFixture, unittest.TestCase):
         handler = Mock(spec=IResultHandlerPlugin)
         collector = ResultCollecter()
         collector.add_result_handler(handler)
+        start_time = datetime(2015, 12, 23, 8, 14, 12)
+        duration = timedelta(seconds=10)
+        end_time = start_time + duration
+        case = _test_cases.TestCase('test_method')
 
         # When
-        expected_result = TestResult.from_test_case(
-            self, TestCompletionStatus.unexpected_success)
-        collector.addUnexpectedSuccess(self)
+        with patch('haas.result.datetime', new=MockDateTime(start_time)):
+            collector.startTest(case)
+
+        # Then
+        self.assertTrue(handler.start_test.called)
+        handler.start_test.reset_mock()
+
+        with patch('haas.result.datetime', new=MockDateTime(end_time)):
+            # Given
+            expected_result = TestResult.from_test_case(
+                case, TestCompletionStatus.unexpected_success, start_time)
+            # When
+            collector.addUnexpectedSuccess(case)
 
         # Then
         handler.assert_called_once_with(expected_result)
@@ -253,10 +355,13 @@ class TestFailfast(ExcInfoFixture, unittest.TestCase):
         # Given
         collector = ResultCollecter(failfast=True)
         self.assertFalse(collector.shouldStop)
+        case = _test_cases.TestCase('test_method')
+
+        collector.startTest(case)
 
         # When
         with self.exc_info(RuntimeError) as exc_info:
-            collector.addError(self, exc_info)
+            collector.addError(case, exc_info)
 
         # Then
         self.assertTrue(collector.shouldStop)
@@ -265,10 +370,13 @@ class TestFailfast(ExcInfoFixture, unittest.TestCase):
         # Given
         collector = ResultCollecter(failfast=True)
         self.assertFalse(collector.shouldStop)
+        case = _test_cases.TestCase('test_method')
+
+        collector.startTest(case)
 
         # When
         with self.failure_exc_info() as exc_info:
-            collector.addFailure(self, exc_info)
+            collector.addFailure(case, exc_info)
 
         # Then
         self.assertTrue(collector.shouldStop)
@@ -277,9 +385,12 @@ class TestFailfast(ExcInfoFixture, unittest.TestCase):
         # Given
         collector = ResultCollecter(failfast=False)
         self.assertFalse(collector.shouldStop)
+        case = _test_cases.TestCase('test_method')
+
+        collector.startTest(case)
 
         # When
-        collector.addUnexpectedSuccess(self)
+        collector.addUnexpectedSuccess(case)
 
         # Then
         self.assertFalse(collector.shouldStop)
@@ -288,10 +399,13 @@ class TestFailfast(ExcInfoFixture, unittest.TestCase):
         # Given
         collector = ResultCollecter(failfast=False)
         self.assertFalse(collector.shouldStop)
+        case = _test_cases.TestCase('test_method')
+
+        collector.startTest(case)
 
         # When
         with self.exc_info(RuntimeError) as exc_info:
-            collector.addError(self, exc_info)
+            collector.addError(case, exc_info)
 
         # Then
         self.assertFalse(collector.shouldStop)
@@ -300,10 +414,13 @@ class TestFailfast(ExcInfoFixture, unittest.TestCase):
         # Given
         collector = ResultCollecter(failfast=False)
         self.assertFalse(collector.shouldStop)
+        case = _test_cases.TestCase('test_method')
+
+        collector.startTest(case)
 
         # When
         with self.failure_exc_info() as exc_info:
-            collector.addFailure(self, exc_info)
+            collector.addFailure(case, exc_info)
 
         # Then
         self.assertFalse(collector.shouldStop)
@@ -312,9 +429,12 @@ class TestFailfast(ExcInfoFixture, unittest.TestCase):
         # Given
         collector = ResultCollecter(failfast=False)
         self.assertFalse(collector.shouldStop)
+        case = _test_cases.TestCase('test_method')
+
+        collector.startTest(case)
 
         # When
-        collector.addUnexpectedSuccess(self)
+        collector.addUnexpectedSuccess(case)
 
         # Then
         self.assertFalse(collector.shouldStop)
@@ -328,8 +448,19 @@ class TestBuffering(ExcInfoFixture, unittest.TestCase):
         handler = Mock(spec=IResultHandlerPlugin)
         collector = ResultCollecter(buffer=True)
         collector.add_result_handler(handler)
-        collector.startTest(self)
         test_stderr = 'My Test Output'
+        start_time = datetime(2015, 12, 23, 8, 14, 12)
+        duration = timedelta(seconds=10)
+        end_time = start_time + duration
+        case = _test_cases.TestCase('test_method')
+
+        # When
+        with patch('haas.result.datetime', new=MockDateTime(start_time)):
+            collector.startTest(case)
+
+        # Then
+        self.assertTrue(handler.start_test.called)
+        handler.start_test.reset_mock()
 
         # When
         sys.stderr.write(test_stderr)
@@ -339,11 +470,12 @@ class TestBuffering(ExcInfoFixture, unittest.TestCase):
 
         # When
         with self.exc_info(RuntimeError) as exc_info:
-            expected_result = TestResult.from_test_case(
-                self, TestCompletionStatus.error, exception=exc_info,
-                stderr=test_stderr)
-            collector.addError(self, exc_info)
-        collector.stopTest(self)
+            with patch('haas.result.datetime', new=MockDateTime(end_time)):
+                expected_result = TestResult.from_test_case(
+                    case, TestCompletionStatus.error, start_time,
+                    exception=exc_info, stderr=test_stderr)
+                collector.addError(case, exc_info)
+        collector.stopTest(case)
 
         # Then
         self.assertIn(test_stderr, expected_result.exception)
@@ -355,8 +487,19 @@ class TestBuffering(ExcInfoFixture, unittest.TestCase):
         handler = Mock(spec=IResultHandlerPlugin)
         collector = ResultCollecter(buffer=True)
         collector.add_result_handler(handler)
-        collector.startTest(self)
         test_stdout = 'My Test Output'
+        start_time = datetime(2015, 12, 23, 8, 14, 12)
+        duration = timedelta(seconds=10)
+        end_time = start_time + duration
+        case = _test_cases.TestCase('test_method')
+
+        # When
+        with patch('haas.result.datetime', new=MockDateTime(start_time)):
+            collector.startTest(case)
+
+        # Then
+        self.assertTrue(handler.start_test.called)
+        handler.start_test.reset_mock()
 
         # When
         sys.stdout.write(test_stdout)
@@ -366,11 +509,12 @@ class TestBuffering(ExcInfoFixture, unittest.TestCase):
 
         # When
         with self.exc_info(RuntimeError) as exc_info:
-            expected_result = TestResult.from_test_case(
-                self, TestCompletionStatus.error, exception=exc_info,
-                stdout=test_stdout)
-            collector.addError(self, exc_info)
-        collector.stopTest(self)
+            with patch('haas.result.datetime', new=MockDateTime(end_time)):
+                expected_result = TestResult.from_test_case(
+                    case, TestCompletionStatus.error, start_time,
+                    exception=exc_info, stdout=test_stdout)
+                collector.addError(case, exc_info)
+        collector.stopTest(case)
 
         # Then
         self.assertIn(test_stdout, expected_result.exception)
@@ -411,9 +555,10 @@ class TestQuietResultHandler(ExcInfoFixture, unittest.TestCase):
     def test_no_output_start_test(self, stderr):
         # Given
         handler = QuietTestResultHandler(test_count=1)
+        case = _test_cases.TestCase('test_method')
 
         # When
-        handler.start_test(self)
+        handler.start_test(case)
 
         # Then
         output = stderr.getvalue()
@@ -423,9 +568,10 @@ class TestQuietResultHandler(ExcInfoFixture, unittest.TestCase):
     def test_no_output_stop_test(self, stderr):
         # Given
         handler = QuietTestResultHandler(test_count=1)
+        case = _test_cases.TestCase('test_method')
 
         # When
-        handler.stop_test(self)
+        handler.stop_test(case)
 
         # Then
         output = stderr.getvalue()
@@ -434,10 +580,17 @@ class TestQuietResultHandler(ExcInfoFixture, unittest.TestCase):
     @patch('sys.stderr', new_callable=StringIO)
     def test_no_output_on_error(self, stderr):
         # Given
+        start_time = datetime(2015, 12, 23, 8, 14, 12)
+        duration = timedelta(seconds=10)
+        end_time = start_time + duration
+        case = _test_cases.TestCase('test_method')
+
         handler = QuietTestResultHandler(test_count=1)
         with self.exc_info(RuntimeError) as exc_info:
-            result = TestResult.from_test_case(
-                self, TestCompletionStatus.error, exception=exc_info)
+            with patch('haas.result.datetime', new=MockDateTime(end_time)):
+                result = TestResult.from_test_case(
+                    case, TestCompletionStatus.error, start_time,
+                    exception=exc_info)
 
         # When
         handler(result)
@@ -449,10 +602,17 @@ class TestQuietResultHandler(ExcInfoFixture, unittest.TestCase):
     @patch('sys.stderr', new_callable=StringIO)
     def test_no_output_on_failure(self, stderr):
         # Given
+        start_time = datetime(2015, 12, 23, 8, 14, 12)
+        duration = timedelta(seconds=10)
+        end_time = start_time + duration
+        case = _test_cases.TestCase('test_method')
+
         handler = QuietTestResultHandler(test_count=1)
         with self.failure_exc_info() as exc_info:
-            result = TestResult.from_test_case(
-                self, TestCompletionStatus.failure, exception=exc_info)
+            with patch('haas.result.datetime', new=MockDateTime(end_time)):
+                result = TestResult.from_test_case(
+                    case, TestCompletionStatus.failure, start_time,
+                    exception=exc_info)
 
         # When
         handler(result)
@@ -464,9 +624,15 @@ class TestQuietResultHandler(ExcInfoFixture, unittest.TestCase):
     @patch('sys.stderr', new_callable=StringIO)
     def test_no_output_on_success(self, stderr):
         # Given
+        start_time = datetime(2015, 12, 23, 8, 14, 12)
+        duration = timedelta(seconds=10)
+        end_time = start_time + duration
+        case = _test_cases.TestCase('test_method')
+
         handler = QuietTestResultHandler(test_count=1)
-        result = TestResult.from_test_case(
-            self, TestCompletionStatus.success)
+        with patch('haas.result.datetime', new=MockDateTime(end_time)):
+            result = TestResult.from_test_case(
+                case, TestCompletionStatus.success, start_time)
 
         # When
         handler(result)
@@ -478,9 +644,16 @@ class TestQuietResultHandler(ExcInfoFixture, unittest.TestCase):
     @patch('sys.stderr', new_callable=StringIO)
     def test_no_output_on_skip(self, stderr):
         # Given
+        start_time = datetime(2015, 12, 23, 8, 14, 12)
+        duration = timedelta(seconds=10)
+        end_time = start_time + duration
+        case = _test_cases.TestCase('test_method')
+
         handler = QuietTestResultHandler(test_count=1)
-        result = TestResult.from_test_case(
-            self, TestCompletionStatus.skipped, message='reason')
+        with patch('haas.result.datetime', new=MockDateTime(end_time)):
+            result = TestResult.from_test_case(
+                case, TestCompletionStatus.skipped, start_time,
+                message='reason')
 
         # When
         handler(result)
@@ -492,11 +665,17 @@ class TestQuietResultHandler(ExcInfoFixture, unittest.TestCase):
     @patch('sys.stderr', new_callable=StringIO)
     def test_no_output_on_expected_fail(self, stderr):
         # Given
+        start_time = datetime(2015, 12, 23, 8, 14, 12)
+        duration = timedelta(seconds=10)
+        end_time = start_time + duration
+        case = _test_cases.TestCase('test_method')
+
         handler = QuietTestResultHandler(test_count=1)
         with self.exc_info(RuntimeError) as exc_info:
-            result = TestResult.from_test_case(
-                self, TestCompletionStatus.expected_failure,
-                exception=exc_info)
+            with patch('haas.result.datetime', new=MockDateTime(end_time)):
+                result = TestResult.from_test_case(
+                    case, TestCompletionStatus.expected_failure, start_time,
+                    exception=exc_info)
 
         # When
         handler(result)
@@ -508,9 +687,15 @@ class TestQuietResultHandler(ExcInfoFixture, unittest.TestCase):
     @patch('sys.stderr', new_callable=StringIO)
     def test_no_output_on_unexpected_success(self, stderr):
         # Given
+        start_time = datetime(2015, 12, 23, 8, 14, 12)
+        duration = timedelta(seconds=10)
+        end_time = start_time + duration
+        case = _test_cases.TestCase('test_method')
+
         handler = QuietTestResultHandler(test_count=1)
-        result = TestResult.from_test_case(
-            self, TestCompletionStatus.unexpected_success)
+        with patch('haas.result.datetime', new=MockDateTime(end_time)):
+            result = TestResult.from_test_case(
+                case, TestCompletionStatus.unexpected_success, start_time)
 
         # When
         handler(result)
@@ -522,11 +707,18 @@ class TestQuietResultHandler(ExcInfoFixture, unittest.TestCase):
     @patch('sys.stderr', new_callable=StringIO)
     def test_no_output_with_error_on_stop_test_run(self, stderr):
         # Given
+        start_time = datetime(2015, 12, 23, 8, 14, 12)
+        duration = timedelta(seconds=10)
+        end_time = start_time + duration
+        case = _test_cases.TestCase('test_method')
+
         handler = QuietTestResultHandler(test_count=1)
         handler.start_test_run()
         with self.exc_info(RuntimeError) as exc_info:
-            result = TestResult.from_test_case(
-                self, TestCompletionStatus.error, exception=exc_info)
+            with patch('haas.result.datetime', new=MockDateTime(end_time)):
+                result = TestResult.from_test_case(
+                    case, TestCompletionStatus.error, start_time,
+                    exception=exc_info)
 
         # When
         handler(result)
@@ -535,7 +727,7 @@ class TestQuietResultHandler(ExcInfoFixture, unittest.TestCase):
         # Then
         output = stderr.getvalue().replace('\n', '')
         description = handler.get_test_description(
-            self,).replace('(', r'\(').replace(')', r'\)')
+            case,).replace('(', r'\(').replace(')', r'\)')
         self.assertRegexpMatches(
             output, '{0}.*?Traceback.*?RuntimeError'.format(
                 description))
@@ -543,11 +735,18 @@ class TestQuietResultHandler(ExcInfoFixture, unittest.TestCase):
     @patch('sys.stderr', new_callable=StringIO)
     def test_no_output_with_failure_on_stop_test_run(self, stderr):
         # Given
+        start_time = datetime(2015, 12, 23, 8, 14, 12)
+        duration = timedelta(seconds=10)
+        end_time = start_time + duration
+        case = _test_cases.TestCase('test_method')
+
         handler = QuietTestResultHandler(test_count=1)
         handler.start_test_run()
         with self.failure_exc_info() as exc_info:
-            result = TestResult.from_test_case(
-                self, TestCompletionStatus.failure, exception=exc_info)
+            with patch('haas.result.datetime', new=MockDateTime(end_time)):
+                result = TestResult.from_test_case(
+                    case, TestCompletionStatus.failure, start_time,
+                    exception=exc_info)
 
         # When
         handler(result)
@@ -556,7 +755,7 @@ class TestQuietResultHandler(ExcInfoFixture, unittest.TestCase):
         # Then
         output = stderr.getvalue().replace('\n', '')
         description = handler.get_test_description(
-            self,).replace('(', r'\(').replace(')', r'\)').replace('\n', '')
+            case,).replace('(', r'\(').replace(')', r'\)').replace('\n', '')
         self.assertRegexpMatches(
             output, '{0}.*?Traceback.*?AssertionError'.format(
                 description))
@@ -598,9 +797,10 @@ class TestStandardResultHandler(ExcInfoFixture, unittest.TestCase):
     def test_no_output_start_test(self, stderr):
         # Given
         handler = StandardTestResultHandler(test_count=1)
+        case = _test_cases.TestCase('test_method')
 
         # When
-        handler.start_test(self)
+        handler.start_test(case)
 
         # Then
         output = stderr.getvalue()
@@ -610,9 +810,10 @@ class TestStandardResultHandler(ExcInfoFixture, unittest.TestCase):
     def test_no_output_stop_test(self, stderr):
         # Given
         handler = StandardTestResultHandler(test_count=1)
+        case = _test_cases.TestCase('test_method')
 
         # When
-        handler.stop_test(self)
+        handler.stop_test(case)
 
         # Then
         output = stderr.getvalue()
@@ -621,10 +822,17 @@ class TestStandardResultHandler(ExcInfoFixture, unittest.TestCase):
     @patch('sys.stderr', new_callable=StringIO)
     def test_no_output_on_error(self, stderr):
         # Given
+        start_time = datetime(2015, 12, 23, 8, 14, 12)
+        duration = timedelta(seconds=10)
+        end_time = start_time + duration
+        case = _test_cases.TestCase('test_method')
+
         handler = StandardTestResultHandler(test_count=1)
         with self.exc_info(RuntimeError) as exc_info:
-            result = TestResult.from_test_case(
-                self, TestCompletionStatus.error, exception=exc_info)
+            with patch('haas.result.datetime', new=MockDateTime(end_time)):
+                result = TestResult.from_test_case(
+                    case, TestCompletionStatus.error, start_time,
+                    exception=exc_info)
 
         # When
         handler(result)
@@ -636,10 +844,17 @@ class TestStandardResultHandler(ExcInfoFixture, unittest.TestCase):
     @patch('sys.stderr', new_callable=StringIO)
     def test_no_output_on_failure(self, stderr):
         # Given
+        start_time = datetime(2015, 12, 23, 8, 14, 12)
+        duration = timedelta(seconds=10)
+        end_time = start_time + duration
+        case = _test_cases.TestCase('test_method')
+
         handler = StandardTestResultHandler(test_count=1)
         with self.failure_exc_info() as exc_info:
-            result = TestResult.from_test_case(
-                self, TestCompletionStatus.failure, exception=exc_info)
+            with patch('haas.result.datetime', new=MockDateTime(end_time)):
+                result = TestResult.from_test_case(
+                    case, TestCompletionStatus.failure, start_time,
+                    exception=exc_info)
 
         # When
         handler(result)
@@ -651,9 +866,15 @@ class TestStandardResultHandler(ExcInfoFixture, unittest.TestCase):
     @patch('sys.stderr', new_callable=StringIO)
     def test_no_output_on_success(self, stderr):
         # Given
+        start_time = datetime(2015, 12, 23, 8, 14, 12)
+        duration = timedelta(seconds=10)
+        end_time = start_time + duration
+        case = _test_cases.TestCase('test_method')
+
         handler = StandardTestResultHandler(test_count=1)
-        result = TestResult.from_test_case(
-            self, TestCompletionStatus.success)
+        with patch('haas.result.datetime', new=MockDateTime(end_time)):
+            result = TestResult.from_test_case(
+                case, TestCompletionStatus.success, start_time)
 
         # When
         handler(result)
@@ -665,9 +886,16 @@ class TestStandardResultHandler(ExcInfoFixture, unittest.TestCase):
     @patch('sys.stderr', new_callable=StringIO)
     def test_no_output_on_skip(self, stderr):
         # Given
+        start_time = datetime(2015, 12, 23, 8, 14, 12)
+        duration = timedelta(seconds=10)
+        end_time = start_time + duration
+        case = _test_cases.TestCase('test_method')
+
         handler = StandardTestResultHandler(test_count=1)
-        result = TestResult.from_test_case(
-            self, TestCompletionStatus.skipped, message='reason')
+        with patch('haas.result.datetime', new=MockDateTime(end_time)):
+            result = TestResult.from_test_case(
+                case, TestCompletionStatus.skipped, start_time,
+                message='reason')
 
         # When
         handler(result)
@@ -679,11 +907,17 @@ class TestStandardResultHandler(ExcInfoFixture, unittest.TestCase):
     @patch('sys.stderr', new_callable=StringIO)
     def test_no_output_on_expected_fail(self, stderr):
         # Given
+        start_time = datetime(2015, 12, 23, 8, 14, 12)
+        duration = timedelta(seconds=10)
+        end_time = start_time + duration
+        case = _test_cases.TestCase('test_method')
+
         handler = StandardTestResultHandler(test_count=1)
         with self.exc_info(RuntimeError) as exc_info:
-            result = TestResult.from_test_case(
-                self, TestCompletionStatus.expected_failure,
-                exception=exc_info)
+            with patch('haas.result.datetime', new=MockDateTime(end_time)):
+                result = TestResult.from_test_case(
+                    case, TestCompletionStatus.expected_failure, start_time,
+                    exception=exc_info)
 
         # When
         handler(result)
@@ -695,9 +929,15 @@ class TestStandardResultHandler(ExcInfoFixture, unittest.TestCase):
     @patch('sys.stderr', new_callable=StringIO)
     def test_no_output_on_unexpected_success(self, stderr):
         # Given
+        start_time = datetime(2015, 12, 23, 8, 14, 12)
+        duration = timedelta(seconds=10)
+        end_time = start_time + duration
+        case = _test_cases.TestCase('test_method')
+
         handler = StandardTestResultHandler(test_count=1)
-        result = TestResult.from_test_case(
-            self, TestCompletionStatus.unexpected_success)
+        with patch('haas.result.datetime', new=MockDateTime(end_time)):
+            result = TestResult.from_test_case(
+                case, TestCompletionStatus.unexpected_success, start_time)
 
         # When
         handler(result)
@@ -709,11 +949,18 @@ class TestStandardResultHandler(ExcInfoFixture, unittest.TestCase):
     @patch('sys.stderr', new_callable=StringIO)
     def test_no_output_with_error_on_stop_test_run(self, stderr):
         # Given
+        start_time = datetime(2015, 12, 23, 8, 14, 12)
+        duration = timedelta(seconds=10)
+        end_time = start_time + duration
+        case = _test_cases.TestCase('test_method')
+
         handler = StandardTestResultHandler(test_count=1)
         handler.start_test_run()
         with self.exc_info(RuntimeError) as exc_info:
-            result = TestResult.from_test_case(
-                self, TestCompletionStatus.error, exception=exc_info)
+            with patch('haas.result.datetime', new=MockDateTime(end_time)):
+                result = TestResult.from_test_case(
+                    case, TestCompletionStatus.error, start_time,
+                    exception=exc_info)
 
         # When
         handler(result)
@@ -722,7 +969,7 @@ class TestStandardResultHandler(ExcInfoFixture, unittest.TestCase):
         # Then
         output = stderr.getvalue().replace('\n', '')
         description = handler.get_test_description(
-            self,).replace('(', r'\(').replace(')', r'\)')
+            case).replace('(', r'\(').replace(')', r'\)')
         self.assertRegexpMatches(
             output, '{0}.*?Traceback.*?RuntimeError'.format(
                 description))
@@ -730,11 +977,18 @@ class TestStandardResultHandler(ExcInfoFixture, unittest.TestCase):
     @patch('sys.stderr', new_callable=StringIO)
     def test_no_output_with_failure_on_stop_test_run(self, stderr):
         # Given
+        start_time = datetime(2015, 12, 23, 8, 14, 12)
+        duration = timedelta(seconds=10)
+        end_time = start_time + duration
+        case = _test_cases.TestCase('test_method')
+
         handler = StandardTestResultHandler(test_count=1)
         handler.start_test_run()
         with self.failure_exc_info() as exc_info:
-            result = TestResult.from_test_case(
-                self, TestCompletionStatus.failure, exception=exc_info)
+            with patch('haas.result.datetime', new=MockDateTime(end_time)):
+                result = TestResult.from_test_case(
+                    case, TestCompletionStatus.failure, start_time,
+                    exception=exc_info)
 
         # When
         handler(result)
@@ -743,7 +997,7 @@ class TestStandardResultHandler(ExcInfoFixture, unittest.TestCase):
         # Then
         output = stderr.getvalue().replace('\n', '')
         description = handler.get_test_description(
-            self,).replace('(', r'\(').replace(')', r'\)').replace('\n', '')
+            case).replace('(', r'\(').replace(')', r'\)').replace('\n', '')
         self.assertRegexpMatches(
             output, '{0}.*?Traceback.*?AssertionError'.format(
                 description))
@@ -785,12 +1039,13 @@ class TestVerboseResultHandler(ExcInfoFixture, unittest.TestCase):
     @patch('sys.stderr', new_callable=StringIO)
     def test_output_start_test(self, stderr, mock_ctime):
         # Given
+        case = _test_cases.TestCase('test_method')
         handler = VerboseTestResultHandler(test_count=1)
         mock_ctime.return_value = expected_time = ctime()
-        expected_description = handler.get_test_description(self)
+        expected_description = handler.get_test_description(case)
 
         # When
-        handler.start_test(self)
+        handler.start_test(case)
 
         # Then
         output = stderr.getvalue()
@@ -802,9 +1057,10 @@ class TestVerboseResultHandler(ExcInfoFixture, unittest.TestCase):
     def test_no_output_stop_test(self, stderr):
         # Given
         handler = VerboseTestResultHandler(test_count=1)
+        case = _test_cases.TestCase('test_method')
 
         # When
-        handler.stop_test(self)
+        handler.stop_test(case)
 
         # Then
         output = stderr.getvalue()
@@ -813,10 +1069,17 @@ class TestVerboseResultHandler(ExcInfoFixture, unittest.TestCase):
     @patch('sys.stderr', new_callable=StringIO)
     def test_output_on_error(self, stderr):
         # Given
+        start_time = datetime(2015, 12, 23, 8, 14, 12)
+        duration = timedelta(seconds=10)
+        end_time = start_time + duration
+        case = _test_cases.TestCase('test_method')
+
         handler = VerboseTestResultHandler(test_count=1)
         with self.exc_info(RuntimeError) as exc_info:
-            result = TestResult.from_test_case(
-                self, TestCompletionStatus.error, exception=exc_info)
+            with patch('haas.result.datetime', new=MockDateTime(end_time)):
+                result = TestResult.from_test_case(
+                    case, TestCompletionStatus.error, start_time,
+                    exception=exc_info)
 
         # When
         handler(result)
@@ -828,10 +1091,17 @@ class TestVerboseResultHandler(ExcInfoFixture, unittest.TestCase):
     @patch('sys.stderr', new_callable=StringIO)
     def test_output_on_failure(self, stderr):
         # Given
+        start_time = datetime(2015, 12, 23, 8, 14, 12)
+        duration = timedelta(seconds=10)
+        end_time = start_time + duration
+        case = _test_cases.TestCase('test_method')
+
         handler = VerboseTestResultHandler(test_count=1)
         with self.failure_exc_info() as exc_info:
-            result = TestResult.from_test_case(
-                self, TestCompletionStatus.failure, exception=exc_info)
+            with patch('haas.result.datetime', new=MockDateTime(end_time)):
+                result = TestResult.from_test_case(
+                    case, TestCompletionStatus.failure, start_time,
+                    exception=exc_info)
 
         # When
         handler(result)
@@ -843,9 +1113,15 @@ class TestVerboseResultHandler(ExcInfoFixture, unittest.TestCase):
     @patch('sys.stderr', new_callable=StringIO)
     def test_output_on_success(self, stderr):
         # Given
+        start_time = datetime(2015, 12, 23, 8, 14, 12)
+        duration = timedelta(seconds=10)
+        end_time = start_time + duration
+        case = _test_cases.TestCase('test_method')
+
         handler = VerboseTestResultHandler(test_count=1)
-        result = TestResult.from_test_case(
-            self, TestCompletionStatus.success)
+        with patch('haas.result.datetime', new=MockDateTime(end_time)):
+            result = TestResult.from_test_case(
+                case, TestCompletionStatus.success, start_time)
 
         # When
         handler(result)
@@ -857,9 +1133,16 @@ class TestVerboseResultHandler(ExcInfoFixture, unittest.TestCase):
     @patch('sys.stderr', new_callable=StringIO)
     def test_output_on_skip(self, stderr):
         # Given
+        start_time = datetime(2015, 12, 23, 8, 14, 12)
+        duration = timedelta(seconds=10)
+        end_time = start_time + duration
+        case = _test_cases.TestCase('test_method')
+
         handler = VerboseTestResultHandler(test_count=1)
-        result = TestResult.from_test_case(
-            self, TestCompletionStatus.skipped, message='reason')
+        with patch('haas.result.datetime', new=MockDateTime(end_time)):
+            result = TestResult.from_test_case(
+                case, TestCompletionStatus.skipped, start_time,
+                message='reason')
 
         # When
         handler(result)
@@ -871,11 +1154,17 @@ class TestVerboseResultHandler(ExcInfoFixture, unittest.TestCase):
     @patch('sys.stderr', new_callable=StringIO)
     def test_output_on_expected_fail(self, stderr):
         # Given
+        start_time = datetime(2015, 12, 23, 8, 14, 12)
+        duration = timedelta(seconds=10)
+        end_time = start_time + duration
+        case = _test_cases.TestCase('test_method')
+
         handler = VerboseTestResultHandler(test_count=1)
         with self.exc_info(RuntimeError) as exc_info:
-            result = TestResult.from_test_case(
-                self, TestCompletionStatus.expected_failure,
-                exception=exc_info)
+            with patch('haas.result.datetime', new=MockDateTime(end_time)):
+                result = TestResult.from_test_case(
+                    case, TestCompletionStatus.expected_failure, start_time,
+                    exception=exc_info)
 
         # When
         handler(result)
@@ -887,9 +1176,15 @@ class TestVerboseResultHandler(ExcInfoFixture, unittest.TestCase):
     @patch('sys.stderr', new_callable=StringIO)
     def test_output_on_unexpected_success(self, stderr):
         # Given
+        start_time = datetime(2015, 12, 23, 8, 14, 12)
+        duration = timedelta(seconds=10)
+        end_time = start_time + duration
+        case = _test_cases.TestCase('test_method')
+
         handler = VerboseTestResultHandler(test_count=1)
-        result = TestResult.from_test_case(
-            self, TestCompletionStatus.unexpected_success)
+        with patch('haas.result.datetime', new=MockDateTime(end_time)):
+            result = TestResult.from_test_case(
+                case, TestCompletionStatus.unexpected_success, start_time)
 
         # When
         handler(result)
@@ -901,11 +1196,18 @@ class TestVerboseResultHandler(ExcInfoFixture, unittest.TestCase):
     @patch('sys.stderr', new_callable=StringIO)
     def test_output_with_error_on_stop_test_run(self, stderr):
         # Given
+        start_time = datetime(2015, 12, 23, 8, 14, 12)
+        duration = timedelta(seconds=10)
+        end_time = start_time + duration
+        case = _test_cases.TestCase('test_method')
+
         handler = VerboseTestResultHandler(test_count=1)
         handler.start_test_run()
         with self.exc_info(RuntimeError) as exc_info:
-            result = TestResult.from_test_case(
-                self, TestCompletionStatus.error, exception=exc_info)
+            with patch('haas.result.datetime', new=MockDateTime(end_time)):
+                result = TestResult.from_test_case(
+                    case, TestCompletionStatus.error, start_time,
+                    exception=exc_info)
 
         # When
         handler(result)
@@ -914,7 +1216,7 @@ class TestVerboseResultHandler(ExcInfoFixture, unittest.TestCase):
         # Then
         output = stderr.getvalue().replace('\n', '')
         description = handler.get_test_description(
-            self,).replace('(', r'\(').replace(')', r'\)')
+            case).replace('(', r'\(').replace(')', r'\)')
         self.assertRegexpMatches(
             output, '{0}.*?Traceback.*?RuntimeError'.format(
                 description))
@@ -922,11 +1224,18 @@ class TestVerboseResultHandler(ExcInfoFixture, unittest.TestCase):
     @patch('sys.stderr', new_callable=StringIO)
     def test_output_with_failure_on_stop_test_run(self, stderr):
         # Given
+        start_time = datetime(2015, 12, 23, 8, 14, 12)
+        duration = timedelta(seconds=10)
+        end_time = start_time + duration
+        case = _test_cases.TestCase('test_method')
+
         handler = VerboseTestResultHandler(test_count=1)
         handler.start_test_run()
         with self.failure_exc_info() as exc_info:
-            result = TestResult.from_test_case(
-                self, TestCompletionStatus.failure, exception=exc_info)
+            with patch('haas.result.datetime', new=MockDateTime(end_time)):
+                result = TestResult.from_test_case(
+                    case, TestCompletionStatus.failure, start_time,
+                    exception=exc_info)
 
         # When
         handler(result)
@@ -935,7 +1244,7 @@ class TestVerboseResultHandler(ExcInfoFixture, unittest.TestCase):
         # Then
         output = stderr.getvalue().replace('\n', '')
         description = handler.get_test_description(
-            self,).replace('(', r'\(').replace(')', r'\)').replace('\n', '')
+            case).replace('(', r'\(').replace(')', r'\)').replace('\n', '')
         self.assertRegexpMatches(
             output, '{0}.*?Traceback.*?AssertionError'.format(
                 description))
