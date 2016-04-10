@@ -6,7 +6,6 @@
 # of the 3-clause BSD license.  See the LICENSE.txt file for details.
 from __future__ import absolute_import, unicode_literals
 
-from datetime import datetime
 import sys
 import time
 

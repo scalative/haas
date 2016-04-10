@@ -112,7 +112,7 @@ class ParallelTestRunner(BaseTestRunner):
     def _handle_result(self, result, collected_result):
         for test_result in collected_result:
             test = test_result.test
-            result.startTest(test)
+            result.startTest(test, test_result.timing.start_time)
             result.add_result(test_result)
             result.stopTest(test)
 

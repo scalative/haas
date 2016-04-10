@@ -172,6 +172,14 @@ class TestResult(object):
         self.message = message
         self.timing = timing
 
+    def __repr__(self):
+        template = ('<{0} class={1}, method={2}, exc={3!r}, status={4!r}, '
+                    'start_time={5!r}, end_time={6!r}>')
+        return template.format(
+            type(self).__name__, self.test_class.__name__,
+            self.test_method_name, self.exception, self.status,
+            self.timing.start_time, self.timing.stop_time)
+
     def __eq__(self, other):
         if not isinstance(other, TestResult):
             return NotImplemented
@@ -219,11 +227,6 @@ class TestResult(object):
         timing = TestTiming(started_time, datetime.utcnow())
         return cls(test_class, test_method_name, status, timing,
                    exception, message)
-
-    def __repr__(self):
-        return '<{0} class={1}, method={2}, exc={3!r}>'.format(
-            type(self).__name__, self.test_class.__name__,
-            self.test_method_name, self.exception)
 
     @property
     def test(self):
@@ -343,16 +346,21 @@ class ResultCollecter(object):
         """
         self._handlers.append(handler)
 
-    def startTest(self, test):
+    def startTest(self, test, start_time=None):
         """Indicate that an individual test is starting.
 
         Parameters
         ----------
         test : unittest.TestCase
             The test that is starting.
+        start_time : datetime
+            An internal parameter to allow the parallel test runner to
+            set the actual start time of a test run in a subprocess.
 
         """
-        self._test_timing[test] = datetime.utcnow()
+        if start_time is None:
+            start_time = datetime.utcnow()
+        self._test_timing[test] = start_time
         self._mirror_output = False
         self._setup_stdout()
         self.testsRun += 1
