@@ -15,6 +15,9 @@ Bugs Fixed
 ----------
 
 * Haas now correctly specifies its Python 2.6 dependencies (#137).
+* Haas no longer passes the test name to TestCase using a keyword
+  argument, allowing it to create test cases from subclasses that
+  rename arguments (#135).
 
 Version 0.7.0
 =============
