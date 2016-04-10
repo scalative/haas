@@ -77,7 +77,7 @@ class Loader(object):
             raise TypeError(
                 'Test case must be a subclass of '
                 '{0.__module__}.{0.__name__}'.format(self._test_case_class))
-        return testcase(methodName=method_name)
+        return testcase(method_name)
 
     def load_case(self, testcase):
         """Load a TestSuite containing all TestCase instances for all tests in

@@ -50,6 +50,12 @@ class TestLoadTest(LoaderTestMixin, unittest.TestCase):
         with self.assertRaises(TypeError):
             loader.load_test(unittest.TestCase, 'test_method')
 
+    def test_load_test_overridden_init(self):
+        test = self.loader.load_test(
+            _test_case_data.BadlySubclassedTestCase, 'test_method')
+        self.assertIsInstance(test, python_unittest.TestCase)
+        self.assertIsInstance(test, unittest.TestCase)
+
 
 class TestFindTestMethodNames(LoaderTestMixin, unittest.TestCase):
 
