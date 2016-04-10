@@ -59,8 +59,8 @@ class Loader(object):
         """
         prefix = self._test_method_prefix
         names = [name for name in dir(testcase)
-                 if name.startswith(prefix)
-                 and hasattr(getattr(testcase, name), '__call__')]
+                 if name.startswith(prefix) and
+                 hasattr(getattr(testcase, name), '__call__')]
         return names
 
     def load_test(self, testcase, method_name):
