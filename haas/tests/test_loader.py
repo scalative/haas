@@ -114,22 +114,27 @@ class TestLoadModule(LoaderTestMixin, unittest.TestCase):
     def assertSuiteClasses(self, suite, klass):
         self.assertIsInstance(suite, klass)
         sub_suites = list(suite)
-        self.assertEqual(len(sub_suites), 1)
-        self.assertIsInstance(sub_suites[0], klass)
+        self.assertEqual(len(sub_suites), 2)
+        for sub_suite in sub_suites:
+            self.assertIsInstance(sub_suite, klass)
 
     def test_find_all_cases_in_module(self):
         cases = self.loader.get_test_cases_from_module(_test_cases)
-        self.assertEqual(cases, [_test_cases.TestCase])
+        self.assertItemsEqual(
+            cases, [_test_cases.TestCase, _test_cases.PythonTestCase])
 
     def test_load_all_cases_in_module(self):
         suite = self.loader.load_module(_test_cases)
         self.assertSuiteClasses(suite, TestSuite)
         sub_suites = list(suite)
-        self.assertEqual(len(sub_suites), 1)
-        cases = list(sub_suites[0])
-        self.assertEqual(len(cases), 1)
-        case = cases[0]
-        self.assertIsInstance(case, _test_cases.TestCase)
+        self.assertEqual(len(sub_suites), 2)
+        cases = []
+        for sub_suite in sub_suites:
+            self.assertEqual(len(list(sub_suite)), 1)
+            for case in sub_suite:
+                self.assertIsInstance(case, python_unittest.TestCase)
+                cases.append(case)
+        self.assertEqual(len(cases), 2)
 
     def test_creates_custom_testsuite_subclass(self):
         loader = Loader(test_suite_class=TestSuiteSubclass)
