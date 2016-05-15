@@ -7,7 +7,8 @@ from six.moves import StringIO
 
 from ..plugins.discoverer import _create_import_error_test
 from ..plugins.parallel_runner import ChildResultHandler, ParallelTestRunner
-from ..result import ResultCollecter, TestCompletionStatus, TestResult
+from ..result import (
+    ResultCollecter, TestCompletionStatus, TestResult, TestTiming)
 from ..suite import TestSuite
 from ..testing import unittest
 from . import _test_cases
@@ -98,9 +99,9 @@ class TestParallelTestRunner(unittest.TestCase):
         duration = timedelta(seconds=10)
         end_time = start_time + duration
 
-        with patch('haas.result.datetime', new=MockDateTime([end_time])):
-            expected_result = TestResult.from_test_case(
-                test_case, TestCompletionStatus.success, start_time)
+        timing = TestTiming(start_time, end_time)
+        expected_result = TestResult.from_test_case(
+            test_case, TestCompletionStatus.success, timing)
 
         processes = 5
 
@@ -162,9 +163,9 @@ class TestParallelTestRunner(unittest.TestCase):
         duration = timedelta(seconds=10)
         end_time = start_time + duration
 
-        with patch('haas.result.datetime', new=MockDateTime([end_time])):
-            expected_result = TestResult.from_test_case(
-                test_case, TestCompletionStatus.success, start_time)
+        timing = TestTiming(start_time, end_time)
+        expected_result = TestResult.from_test_case(
+            test_case, TestCompletionStatus.success, timing)
 
         processes = 5
 
@@ -200,9 +201,9 @@ class TestParallelTestRunner(unittest.TestCase):
         duration = timedelta(seconds=10)
         end_time = start_time + duration
 
-        with patch('haas.result.datetime', new=MockDateTime([end_time])):
-            expected_result = TestResult.from_test_case(
-                test_case, TestCompletionStatus.success, start_time)
+        timing = TestTiming(start_time, end_time)
+        expected_result = TestResult.from_test_case(
+            test_case, TestCompletionStatus.success, timing)
 
         opt_prefix = '--parallel-'
         dest_prefix = 'parallel_'
@@ -243,9 +244,9 @@ class TestParallelTestRunner(unittest.TestCase):
         duration = timedelta(seconds=10)
         end_time = start_time + duration
 
-        with patch('haas.result.datetime', new=MockDateTime([end_time])):
-            expected_result = TestResult.from_test_case(
-                test_case, TestCompletionStatus.success, start_time)
+        timing = TestTiming(start_time, end_time)
+        expected_result = TestResult.from_test_case(
+            test_case, TestCompletionStatus.success, timing)
 
         opt_prefix = '--parallel-'
         dest_prefix = 'parallel_'

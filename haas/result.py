@@ -196,7 +196,7 @@ class TestResult(object):
         return not (self == other)
 
     @classmethod
-    def from_test_case(cls, test_case, status, started_time,
+    def from_test_case(cls, test_case, status, timing,
                        exception=None, message=None, stdout=None, stderr=None):
         """Construct a :class:`~.TestResult` object from the test and a status.
 
@@ -224,7 +224,6 @@ class TestResult(object):
             is_failure = exctype is test_case.failureException
             exception = _format_exception(
                 exception, is_failure, stdout, stderr)
-        timing = TestTiming(started_time, datetime.utcnow())
         return cls(test_class, test_method_name, status, timing,
                    exception, message)
 
@@ -437,10 +436,12 @@ class ResultCollecter(object):
 
         started_time = self._test_timing[self._testcase_to_key(test)]
 
+        completion_time = datetime.utcnow()
+        timing = TestTiming(started_time, completion_time)
         result = TestResult.from_test_case(
             test,
             status,
-            started_time=started_time,
+            timing=timing,
             exception=exception,
             message=message,
             stdout=stdout,
