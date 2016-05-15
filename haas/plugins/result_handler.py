@@ -227,22 +227,26 @@ class SlowTestResultHandler(IResultHandlerPlugin):
     separator1 = '=' * 70
     separator2 = separator2
 
-    def __init__(self):
+    OPTION_DEFAULT = object()
+
+    def __init__(self, number_to_summarize):
         self.enabled = True
         self.stream = _WritelnDecorator(sys.stderr)
         self.descriptions = True
+        self.number_to_summarize = number_to_summarize
         self._test_results = []
 
     @classmethod
     def from_args(cls, args, name, dest_prefix, test_count):
-        if args.summarize_slow_tests:
-            return cls()
+        if args.summarize_slow_tests is not cls.OPTION_DEFAULT:
+            number_to_summarize = args.summarize_slow_tests or 10
+            return cls(number_to_summarize)
 
     @classmethod
-    def add_parser_arguments(self, parser, name, option_prefix, dest_prefix):
-        parser.add_argument('--summarize-slow-tests', action='store_true',
-                            default=False,
-                            help='Show 10 slowest tests')
+    def add_parser_arguments(cls, parser, name, option_prefix, dest_prefix):
+        parser.add_argument('--summarize-slow-tests', action='store', type=int,
+                            nargs='?', default=cls.OPTION_DEFAULT,
+                            help='Show N slowest tests (default 10)')
 
     def start_test(self, test):
         pass
@@ -268,7 +272,7 @@ class SlowTestResultHandler(IResultHandlerPlugin):
 
         template = '{0} {1}'
 
-        for test_result in tests_by_time[:10]:
+        for test_result in tests_by_time[:self.number_to_summarize]:
             description = get_test_description(
                 test_result.test, descriptions=self.descriptions)
             line = template.format(str(test_result.timing), description)
