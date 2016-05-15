@@ -29,3 +29,12 @@ class TestSuiteNotSubclass(object):
 
     def __iter__(self):
         return iter(self.tests)
+
+
+class TestWithTwoErrors(unittest.TestCase):
+
+    def test_with_two_errors(self):
+        raise RuntimeError('An error in a test case')
+
+    def tearDown(self):
+        raise RuntimeError('An error in tearDown')

@@ -348,6 +348,24 @@ class TestTextTestResult(ExcInfoFixture, unittest.TestCase):
         # Then
         self.assertTrue(collector.shouldStop)
 
+    def test_multiple_errors_from_one_test(self):
+        # Given
+        collector = ResultCollecter()
+        case = _test_case_data.TestWithTwoErrors('test_with_two_errors')
+
+        start_time = datetime(2016, 4, 12, 8, 17, 32)
+        test_end_time = datetime(2016, 4, 12, 8, 17, 38)
+        tear_down_end_time = datetime(2016, 4, 12, 8, 17, 39)
+
+        # When
+        with patch('haas.result.datetime',
+                   new=MockDateTime([start_time, test_end_time,
+                                     tear_down_end_time])):
+            case.run(collector)
+
+        # Then
+        self.assertEqual(len(collector.errors), 2)
+
 
 class TestFailfast(ExcInfoFixture, unittest.TestCase):
 

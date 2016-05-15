@@ -301,6 +301,10 @@ class ResultCollecter(object):
         self._original_stdout = sys.stdout
         self._test_timing = {}
 
+    @staticmethod
+    def _testcase_to_key(test):
+        return (type(test), test._testMethodName)
+
     def _setup_stdout(self):
         """Hook stdout and stderr if buffering is enabled.
 
@@ -360,7 +364,7 @@ class ResultCollecter(object):
         """
         if start_time is None:
             start_time = datetime.utcnow()
-        self._test_timing[test] = start_time
+        self._test_timing[self._testcase_to_key(test)] = start_time
         self._mirror_output = False
         self._setup_stdout()
         self.testsRun += 1
@@ -431,7 +435,7 @@ class ResultCollecter(object):
         else:
             stderr = stdout = None
 
-        started_time = self._test_timing.pop(test)
+        started_time = self._test_timing[self._testcase_to_key(test)]
 
         result = TestResult.from_test_case(
             test,
