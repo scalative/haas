@@ -6,7 +6,8 @@
 # of the 3-clause BSD license.  See the LICENSE.txt file for details.
 from __future__ import absolute_import, unicode_literals
 
-from .testing import unittest
+import unittest
+
 from .suite import TestSuite
 
 

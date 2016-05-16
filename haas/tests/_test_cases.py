@@ -6,6 +6,8 @@
 # of the 3-clause BSD license.  See the LICENSE.txt file for details.
 from __future__ import absolute_import, unicode_literals
 
+import unittest as python_unittest
+
 from haas.testing import unittest
 
 
@@ -22,6 +24,11 @@ class NotTestCase(object):
 
 
 class TestCase(NotTestCase, unittest.TestCase):
+
+    pass
+
+
+class PythonTestCase(NotTestCase, python_unittest.TestCase):
 
     pass
 
