@@ -6,7 +6,6 @@
 # of the 3-clause BSD license.  See the LICENSE.txt file for details.
 from __future__ import absolute_import, unicode_literals
 
-from contextlib import contextmanager
 from datetime import datetime, timedelta
 from time import ctime
 import sys
@@ -22,24 +21,7 @@ from ..result import (
     ResultCollecter, TestResult, TestCompletionStatus, TestDuration)
 from ..testing import unittest
 from . import _test_cases, _test_case_data
-from .mocks import MockDateTime
-
-
-class ExcInfoFixture(object):
-
-    @contextmanager
-    def failure_exc_info(self, msg=None):
-        try:
-            self.fail(msg)
-        except self.failureException:
-            yield sys.exc_info()
-
-    @contextmanager
-    def exc_info(self, cls):
-        try:
-            raise cls()
-        except cls:
-            yield sys.exc_info()
+from .fixtures import ExcInfoFixture, MockDateTime
 
 
 class TestTextTestResult(ExcInfoFixture, unittest.TestCase):

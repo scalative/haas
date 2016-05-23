@@ -12,7 +12,7 @@ from ..result import (
 from ..suite import TestSuite
 from ..testing import unittest
 from . import _test_cases
-from .mocks import MockDateTime
+from .fixtures import MockDateTime
 
 
 class AsyncResult(object):
