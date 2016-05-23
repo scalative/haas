@@ -12,6 +12,7 @@ import sys
 
 from mock import Mock, patch
 from six.moves import StringIO
+import six
 
 from ..plugins.i_result_handler_plugin import IResultHandlerPlugin
 from ..plugins.result_handler import (
@@ -1316,11 +1317,11 @@ class TestTestDurationOrdering(unittest.TestCase):
         self.assertEqual(duration1, duration2)
         self.assertLessEqual(duration1, duration2)
         self.assertGreaterEqual(duration1, duration2)
-        with self.assertRaisesRegex(
-                self.failureException, 'not less than'):
+        with six.assertRaisesRegex(
+                self, self.failureException, 'not less than'):
             self.assertLess(duration1, duration2)
-        with self.assertRaisesRegex(
-                self.failureException, 'not greater than'):
+        with six.assertRaisesRegex(
+                self, self.failureException, 'not greater than'):
             self.assertGreater(duration1, duration2)
 
         self.assertNotEqual(duration1, object())
@@ -1339,11 +1340,11 @@ class TestTestDurationOrdering(unittest.TestCase):
         self.assertEqual(duration1, duration2)
         self.assertLessEqual(duration1, duration2)
         self.assertGreaterEqual(duration1, duration2)
-        with self.assertRaisesRegex(
-                self.failureException, 'not less than'):
+        with six.assertRaisesRegex(
+                self, self.failureException, 'not less than'):
             self.assertLess(duration1, duration2)
-        with self.assertRaisesRegex(
-                self.failureException, 'not greater than'):
+        with six.assertRaisesRegex(
+                self, self.failureException, 'not greater than'):
             self.assertGreater(duration1, duration2)
 
         self.assertNotEqual(duration1, object())
@@ -1364,11 +1365,11 @@ class TestTestDurationOrdering(unittest.TestCase):
         self.assertNotEqual(duration1, duration2)
         self.assertLess(duration1, duration2)
         self.assertLessEqual(duration1, duration2)
-        with self.assertRaisesRegex(
-                self.failureException, 'not greater than or equal to'):
+        with six.assertRaisesRegex(
+                self, self.failureException, 'not greater than or equal to'):
             self.assertGreaterEqual(duration1, duration2)
-        with self.assertRaisesRegex(
-                self.failureException, 'not greater than'):
+        with six.assertRaisesRegex(
+                self, self.failureException, 'not greater than'):
             self.assertGreater(duration1, duration2)
 
         with self.assertRaises(TypeError):
@@ -1390,11 +1391,11 @@ class TestTestDurationOrdering(unittest.TestCase):
         self.assertNotEqual(duration1, duration2)
         self.assertGreater(duration1, duration2)
         self.assertGreaterEqual(duration1, duration2)
-        with self.assertRaisesRegex(
-                self.failureException, 'not less than or equal to'):
+        with six.assertRaisesRegex(
+                self, self.failureException, 'not less than or equal to'):
             self.assertLessEqual(duration1, duration2)
-        with self.assertRaisesRegex(
-                self.failureException, 'not less than'):
+        with six.assertRaisesRegex(
+                self, self.failureException, 'not less than'):
             self.assertLess(duration1, duration2)
 
         with self.assertRaises(TypeError):
