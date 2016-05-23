@@ -263,7 +263,7 @@ class SlowTestResultHandler(IResultHandlerPlugin):
     def print_summary(self):
         tests_by_time = sorted(
             self._test_results,
-            key=lambda item: item.timing,
+            key=lambda item: item.duration,
             reverse=True,
         )
 
@@ -275,7 +275,7 @@ class SlowTestResultHandler(IResultHandlerPlugin):
         for test_result in tests_by_time[:self.number_to_summarize]:
             description = get_test_description(
                 test_result.test, descriptions=self.descriptions)
-            line = template.format(str(test_result.timing), description)
+            line = template.format(str(test_result.duration), description)
             self.stream.writeln(line)
         self.stream.writeln()
 

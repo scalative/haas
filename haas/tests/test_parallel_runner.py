@@ -8,7 +8,7 @@ from six.moves import StringIO
 from ..plugins.discoverer import _create_import_error_test
 from ..plugins.parallel_runner import ChildResultHandler, ParallelTestRunner
 from ..result import (
-    ResultCollecter, TestCompletionStatus, TestResult, TestTiming)
+    ResultCollecter, TestCompletionStatus, TestResult, TestDuration)
 from ..suite import TestSuite
 from ..testing import unittest
 from . import _test_cases
@@ -99,9 +99,9 @@ class TestParallelTestRunner(unittest.TestCase):
         duration = timedelta(seconds=10)
         end_time = start_time + duration
 
-        timing = TestTiming(start_time, end_time)
+        duration = TestDuration(start_time, end_time)
         expected_result = TestResult.from_test_case(
-            test_case, TestCompletionStatus.success, timing)
+            test_case, TestCompletionStatus.success, duration)
 
         processes = 5
 
@@ -163,9 +163,9 @@ class TestParallelTestRunner(unittest.TestCase):
         duration = timedelta(seconds=10)
         end_time = start_time + duration
 
-        timing = TestTiming(start_time, end_time)
+        duration = TestDuration(start_time, end_time)
         expected_result = TestResult.from_test_case(
-            test_case, TestCompletionStatus.success, timing)
+            test_case, TestCompletionStatus.success, duration)
 
         processes = 5
 
@@ -201,9 +201,9 @@ class TestParallelTestRunner(unittest.TestCase):
         duration = timedelta(seconds=10)
         end_time = start_time + duration
 
-        timing = TestTiming(start_time, end_time)
+        duration = TestDuration(start_time, end_time)
         expected_result = TestResult.from_test_case(
-            test_case, TestCompletionStatus.success, timing)
+            test_case, TestCompletionStatus.success, duration)
 
         opt_prefix = '--parallel-'
         dest_prefix = 'parallel_'
@@ -244,9 +244,9 @@ class TestParallelTestRunner(unittest.TestCase):
         duration = timedelta(seconds=10)
         end_time = start_time + duration
 
-        timing = TestTiming(start_time, end_time)
+        duration = TestDuration(start_time, end_time)
         expected_result = TestResult.from_test_case(
-            test_case, TestCompletionStatus.success, timing)
+            test_case, TestCompletionStatus.success, duration)
 
         opt_prefix = '--parallel-'
         dest_prefix = 'parallel_'

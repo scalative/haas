@@ -98,7 +98,10 @@ def _format_exception(err, is_failure, stdout=None, stderr=None):
     return ''.join(msgLines)
 
 
-class TestTiming(object):
+class TestDuration(object):
+    """An orderable representation of the duration of an individual test.
+
+    """
 
     def __init__(self, start_time, stop_time):
         self._start_time = start_time
@@ -116,6 +119,9 @@ class TestTiming(object):
     @property
     def duration(self):
         return self._duration
+
+    def __repr__(self):
+        return '<TestDuration {0}>'.format(str(self))
 
     def __str__(self):
         template = '{hours: >3.0f}:{minutes:0>2.0f}:{seconds:0>2.3f}'
@@ -163,22 +169,22 @@ class TestResult(object):
 
     """
 
-    def __init__(self, test_class, test_method_name, status, timing,
+    def __init__(self, test_class, test_method_name, status, duration,
                  exception=None, message=None):
         self.test_class = test_class
         self.test_method_name = test_method_name
         self.status = status
         self.exception = exception
         self.message = message
-        self.timing = timing
+        self.duration = duration
 
     def __repr__(self):
         template = ('<{0} class={1}, method={2}, exc={3!r}, status={4!r}, '
-                    'start_time={5!r}, end_time={6!r}>')
+                    'duration={5!r}>')
         return template.format(
             type(self).__name__, self.test_class.__name__,
             self.test_method_name, self.exception, self.status,
-            self.timing.start_time, self.timing.stop_time)
+            self.duration)
 
     def __eq__(self, other):
         if not isinstance(other, TestResult):
@@ -189,14 +195,14 @@ class TestResult(object):
             self.status == other.status and
             self.exception == other.exception and
             self.message == other.message and
-            self.timing == other.timing
+            self.duration == other.duration
         )
 
     def __ne__(self, other):
         return not (self == other)
 
     @classmethod
-    def from_test_case(cls, test_case, status, timing,
+    def from_test_case(cls, test_case, status, duration,
                        exception=None, message=None, stdout=None, stderr=None):
         """Construct a :class:`~.TestResult` object from the test and a status.
 
@@ -224,7 +230,7 @@ class TestResult(object):
             is_failure = exctype is test_case.failureException
             exception = _format_exception(
                 exception, is_failure, stdout, stderr)
-        return cls(test_class, test_method_name, status, timing,
+        return cls(test_class, test_method_name, status, duration,
                    exception, message)
 
     @property
@@ -437,11 +443,11 @@ class ResultCollecter(object):
         started_time = self._test_timing[self._testcase_to_key(test)]
 
         completion_time = datetime.utcnow()
-        timing = TestTiming(started_time, completion_time)
+        duration = TestDuration(started_time, completion_time)
         result = TestResult.from_test_case(
             test,
             status,
-            timing=timing,
+            duration=duration,
             exception=exception,
             message=message,
             stdout=stdout,

@@ -19,7 +19,7 @@ from ..plugins.result_handler import (
     QuietTestResultHandler, StandardTestResultHandler,
     VerboseTestResultHandler)
 from ..result import (
-    ResultCollecter, TestResult, TestCompletionStatus, TestTiming)
+    ResultCollecter, TestResult, TestCompletionStatus, TestDuration)
 from ..testing import unittest
 from . import _test_cases, _test_case_data
 from .mocks import MockDateTime
@@ -103,7 +103,7 @@ class TestTextTestResult(ExcInfoFixture, unittest.TestCase):
         start_time = datetime(2015, 12, 23, 8, 14, 12)
         duration = timedelta(seconds=10)
         end_time = start_time + duration
-        expected_timing = TestTiming(start_time, end_time)
+        expected_duration = TestDuration(start_time, end_time)
         case = _test_cases.TestCase('test_method')
 
         # When
@@ -118,7 +118,7 @@ class TestTextTestResult(ExcInfoFixture, unittest.TestCase):
         msg = '\N{GREEK SMALL LETTER PHI}'.encode('utf-8')
         with self.failure_exc_info(msg) as exc_info:
             expected_result = TestResult.from_test_case(
-                case, TestCompletionStatus.error, expected_timing,
+                case, TestCompletionStatus.error, expected_duration,
                 exception=exc_info)
             # When
             with patch('haas.result.datetime', new=MockDateTime(end_time)):
@@ -140,7 +140,7 @@ class TestTextTestResult(ExcInfoFixture, unittest.TestCase):
         start_time = datetime(2015, 12, 23, 8, 14, 12)
         duration = timedelta(seconds=10)
         end_time = start_time + duration
-        expected_timing = TestTiming(start_time, end_time)
+        expected_duration = TestDuration(start_time, end_time)
         case = _test_cases.TestCase('test_method')
 
         # When
@@ -155,7 +155,7 @@ class TestTextTestResult(ExcInfoFixture, unittest.TestCase):
         with self.exc_info(RuntimeError) as exc_info:
             # Given
             expected_result = TestResult.from_test_case(
-                case, TestCompletionStatus.error, expected_timing,
+                case, TestCompletionStatus.error, expected_duration,
                 exception=exc_info)
 
             # When
@@ -178,7 +178,7 @@ class TestTextTestResult(ExcInfoFixture, unittest.TestCase):
         start_time = datetime(2015, 12, 23, 8, 14, 12)
         duration = timedelta(seconds=10)
         end_time = start_time + duration
-        expected_timing = TestTiming(start_time, end_time)
+        expected_duration = TestDuration(start_time, end_time)
         case = _test_cases.TestCase('test_method')
 
         # When
@@ -192,7 +192,7 @@ class TestTextTestResult(ExcInfoFixture, unittest.TestCase):
         # Given
         with self.failure_exc_info() as exc_info:
             expected_result = TestResult.from_test_case(
-                case, TestCompletionStatus.failure, expected_timing,
+                case, TestCompletionStatus.failure, expected_duration,
                 exception=exc_info)
 
             # When
@@ -215,7 +215,7 @@ class TestTextTestResult(ExcInfoFixture, unittest.TestCase):
         start_time = datetime(2015, 12, 23, 8, 14, 12)
         duration = timedelta(seconds=10)
         end_time = start_time + duration
-        expected_timing = TestTiming(start_time, end_time)
+        expected_duration = TestDuration(start_time, end_time)
         case = _test_cases.TestCase('test_method')
 
         # When
@@ -228,7 +228,7 @@ class TestTextTestResult(ExcInfoFixture, unittest.TestCase):
 
         # Given
         expected_result = TestResult.from_test_case(
-            case, TestCompletionStatus.success, expected_timing)
+            case, TestCompletionStatus.success, expected_duration)
 
         # When
         with patch('haas.result.datetime', new=MockDateTime(end_time)):
@@ -250,7 +250,7 @@ class TestTextTestResult(ExcInfoFixture, unittest.TestCase):
         start_time = datetime(2015, 12, 23, 8, 14, 12)
         duration = timedelta(seconds=10)
         end_time = start_time + duration
-        expected_timing = TestTiming(start_time, end_time)
+        expected_duration = TestDuration(start_time, end_time)
         case = _test_cases.TestCase('test_method')
 
         # When
@@ -263,7 +263,7 @@ class TestTextTestResult(ExcInfoFixture, unittest.TestCase):
 
         # Given
         expected_result = TestResult.from_test_case(
-            case, TestCompletionStatus.skipped, expected_timing,
+            case, TestCompletionStatus.skipped, expected_duration,
             message='reason')
 
         # When
@@ -286,7 +286,7 @@ class TestTextTestResult(ExcInfoFixture, unittest.TestCase):
         start_time = datetime(2015, 12, 23, 8, 14, 12)
         duration = timedelta(seconds=10)
         end_time = start_time + duration
-        expected_timing = TestTiming(start_time, end_time)
+        expected_duration = TestDuration(start_time, end_time)
         case = _test_cases.TestCase('test_method')
 
         # When
@@ -300,7 +300,7 @@ class TestTextTestResult(ExcInfoFixture, unittest.TestCase):
         # Given
         with self.exc_info(RuntimeError) as exc_info:
             expected_result = TestResult.from_test_case(
-                case, TestCompletionStatus.expected_failure, expected_timing,
+                case, TestCompletionStatus.expected_failure, expected_duration,
                 exception=exc_info)
 
             # When
@@ -323,7 +323,7 @@ class TestTextTestResult(ExcInfoFixture, unittest.TestCase):
         start_time = datetime(2015, 12, 23, 8, 14, 12)
         duration = timedelta(seconds=10)
         end_time = start_time + duration
-        expected_timing = TestTiming(start_time, end_time)
+        expected_duration = TestDuration(start_time, end_time)
         case = _test_cases.TestCase('test_method')
 
         # When
@@ -336,7 +336,7 @@ class TestTextTestResult(ExcInfoFixture, unittest.TestCase):
 
         # Given
         expected_result = TestResult.from_test_case(
-            case, TestCompletionStatus.unexpected_success, expected_timing)
+            case, TestCompletionStatus.unexpected_success, expected_duration)
 
         # When
         with patch('haas.result.datetime', new=MockDateTime(end_time)):
@@ -485,7 +485,7 @@ class TestBuffering(ExcInfoFixture, unittest.TestCase):
         start_time = datetime(2015, 12, 23, 8, 14, 12)
         duration = timedelta(seconds=10)
         end_time = start_time + duration
-        expected_timing = TestTiming(start_time, end_time)
+        expected_duration = TestDuration(start_time, end_time)
         case = _test_cases.TestCase('test_method')
 
         # When
@@ -505,7 +505,7 @@ class TestBuffering(ExcInfoFixture, unittest.TestCase):
         # Given
         with self.exc_info(RuntimeError) as exc_info:
             expected_result = TestResult.from_test_case(
-                case, TestCompletionStatus.error, expected_timing,
+                case, TestCompletionStatus.error, expected_duration,
                 exception=exc_info, stderr=test_stderr)
             # When
             with patch('haas.result.datetime', new=MockDateTime(end_time)):
@@ -526,7 +526,7 @@ class TestBuffering(ExcInfoFixture, unittest.TestCase):
         start_time = datetime(2015, 12, 23, 8, 14, 12)
         duration = timedelta(seconds=10)
         end_time = start_time + duration
-        expected_timing = TestTiming(start_time, end_time)
+        expected_duration = TestDuration(start_time, end_time)
         case = _test_cases.TestCase('test_method')
 
         # When
@@ -546,7 +546,7 @@ class TestBuffering(ExcInfoFixture, unittest.TestCase):
         # Given
         with self.exc_info(RuntimeError) as exc_info:
             expected_result = TestResult.from_test_case(
-                case, TestCompletionStatus.error, expected_timing,
+                case, TestCompletionStatus.error, expected_duration,
                 exception=exc_info, stdout=test_stdout)
 
             # When
@@ -621,13 +621,13 @@ class TestQuietResultHandler(ExcInfoFixture, unittest.TestCase):
         start_time = datetime(2015, 12, 23, 8, 14, 12)
         duration = timedelta(seconds=10)
         end_time = start_time + duration
-        expected_timing = TestTiming(start_time, end_time)
+        expected_duration = TestDuration(start_time, end_time)
         case = _test_cases.TestCase('test_method')
 
         handler = QuietTestResultHandler(test_count=1)
         with self.exc_info(RuntimeError) as exc_info:
             result = TestResult.from_test_case(
-                case, TestCompletionStatus.error, expected_timing,
+                case, TestCompletionStatus.error, expected_duration,
                 exception=exc_info)
 
         # When
@@ -643,13 +643,13 @@ class TestQuietResultHandler(ExcInfoFixture, unittest.TestCase):
         start_time = datetime(2015, 12, 23, 8, 14, 12)
         duration = timedelta(seconds=10)
         end_time = start_time + duration
-        expected_timing = TestTiming(start_time, end_time)
+        expected_duration = TestDuration(start_time, end_time)
         case = _test_cases.TestCase('test_method')
 
         handler = QuietTestResultHandler(test_count=1)
         with self.failure_exc_info() as exc_info:
             result = TestResult.from_test_case(
-                case, TestCompletionStatus.failure, expected_timing,
+                case, TestCompletionStatus.failure, expected_duration,
                 exception=exc_info)
 
         # When
@@ -665,12 +665,12 @@ class TestQuietResultHandler(ExcInfoFixture, unittest.TestCase):
         start_time = datetime(2015, 12, 23, 8, 14, 12)
         duration = timedelta(seconds=10)
         end_time = start_time + duration
-        expected_timing = TestTiming(start_time, end_time)
+        expected_duration = TestDuration(start_time, end_time)
         case = _test_cases.TestCase('test_method')
 
         handler = QuietTestResultHandler(test_count=1)
         result = TestResult.from_test_case(
-            case, TestCompletionStatus.success, expected_timing)
+            case, TestCompletionStatus.success, expected_duration)
 
         # When
         handler(result)
@@ -685,12 +685,12 @@ class TestQuietResultHandler(ExcInfoFixture, unittest.TestCase):
         start_time = datetime(2015, 12, 23, 8, 14, 12)
         duration = timedelta(seconds=10)
         end_time = start_time + duration
-        expected_timing = TestTiming(start_time, end_time)
+        expected_duration = TestDuration(start_time, end_time)
         case = _test_cases.TestCase('test_method')
 
         handler = QuietTestResultHandler(test_count=1)
         result = TestResult.from_test_case(
-            case, TestCompletionStatus.skipped, expected_timing,
+            case, TestCompletionStatus.skipped, expected_duration,
             message='reason')
 
         # When
@@ -706,13 +706,13 @@ class TestQuietResultHandler(ExcInfoFixture, unittest.TestCase):
         start_time = datetime(2015, 12, 23, 8, 14, 12)
         duration = timedelta(seconds=10)
         end_time = start_time + duration
-        expected_timing = TestTiming(start_time, end_time)
+        expected_duration = TestDuration(start_time, end_time)
         case = _test_cases.TestCase('test_method')
 
         handler = QuietTestResultHandler(test_count=1)
         with self.exc_info(RuntimeError) as exc_info:
             result = TestResult.from_test_case(
-                case, TestCompletionStatus.expected_failure, expected_timing,
+                case, TestCompletionStatus.expected_failure, expected_duration,
                 exception=exc_info)
 
         # When
@@ -728,12 +728,12 @@ class TestQuietResultHandler(ExcInfoFixture, unittest.TestCase):
         start_time = datetime(2015, 12, 23, 8, 14, 12)
         duration = timedelta(seconds=10)
         end_time = start_time + duration
-        expected_timing = TestTiming(start_time, end_time)
+        expected_duration = TestDuration(start_time, end_time)
         case = _test_cases.TestCase('test_method')
 
         handler = QuietTestResultHandler(test_count=1)
         result = TestResult.from_test_case(
-            case, TestCompletionStatus.unexpected_success, expected_timing)
+            case, TestCompletionStatus.unexpected_success, expected_duration)
 
         # When
         handler(result)
@@ -748,14 +748,14 @@ class TestQuietResultHandler(ExcInfoFixture, unittest.TestCase):
         start_time = datetime(2015, 12, 23, 8, 14, 12)
         duration = timedelta(seconds=10)
         end_time = start_time + duration
-        expected_timing = TestTiming(start_time, end_time)
+        expected_duration = TestDuration(start_time, end_time)
         case = _test_cases.TestCase('test_method')
 
         handler = QuietTestResultHandler(test_count=1)
         handler.start_test_run()
         with self.exc_info(RuntimeError) as exc_info:
             result = TestResult.from_test_case(
-                case, TestCompletionStatus.error, expected_timing,
+                case, TestCompletionStatus.error, expected_duration,
                 exception=exc_info)
 
         # When
@@ -776,14 +776,14 @@ class TestQuietResultHandler(ExcInfoFixture, unittest.TestCase):
         start_time = datetime(2015, 12, 23, 8, 14, 12)
         duration = timedelta(seconds=10)
         end_time = start_time + duration
-        expected_timing = TestTiming(start_time, end_time)
+        expected_duration = TestDuration(start_time, end_time)
         case = _test_cases.TestCase('test_method')
 
         handler = QuietTestResultHandler(test_count=1)
         handler.start_test_run()
         with self.failure_exc_info() as exc_info:
             result = TestResult.from_test_case(
-                case, TestCompletionStatus.failure, expected_timing,
+                case, TestCompletionStatus.failure, expected_duration,
                 exception=exc_info)
 
         # When
@@ -863,13 +863,13 @@ class TestStandardResultHandler(ExcInfoFixture, unittest.TestCase):
         start_time = datetime(2015, 12, 23, 8, 14, 12)
         duration = timedelta(seconds=10)
         end_time = start_time + duration
-        expected_timing = TestTiming(start_time, end_time)
+        expected_duration = TestDuration(start_time, end_time)
         case = _test_cases.TestCase('test_method')
 
         handler = StandardTestResultHandler(test_count=1)
         with self.exc_info(RuntimeError) as exc_info:
             result = TestResult.from_test_case(
-                case, TestCompletionStatus.error, expected_timing,
+                case, TestCompletionStatus.error, expected_duration,
                 exception=exc_info)
 
         # When
@@ -885,13 +885,13 @@ class TestStandardResultHandler(ExcInfoFixture, unittest.TestCase):
         start_time = datetime(2015, 12, 23, 8, 14, 12)
         duration = timedelta(seconds=10)
         end_time = start_time + duration
-        expected_timing = TestTiming(start_time, end_time)
+        expected_duration = TestDuration(start_time, end_time)
         case = _test_cases.TestCase('test_method')
 
         handler = StandardTestResultHandler(test_count=1)
         with self.failure_exc_info() as exc_info:
             result = TestResult.from_test_case(
-                case, TestCompletionStatus.failure, expected_timing,
+                case, TestCompletionStatus.failure, expected_duration,
                 exception=exc_info)
 
         # When
@@ -907,12 +907,12 @@ class TestStandardResultHandler(ExcInfoFixture, unittest.TestCase):
         start_time = datetime(2015, 12, 23, 8, 14, 12)
         duration = timedelta(seconds=10)
         end_time = start_time + duration
-        expected_timing = TestTiming(start_time, end_time)
+        expected_duration = TestDuration(start_time, end_time)
         case = _test_cases.TestCase('test_method')
 
         handler = StandardTestResultHandler(test_count=1)
         result = TestResult.from_test_case(
-            case, TestCompletionStatus.success, expected_timing)
+            case, TestCompletionStatus.success, expected_duration)
 
         # When
         handler(result)
@@ -927,12 +927,12 @@ class TestStandardResultHandler(ExcInfoFixture, unittest.TestCase):
         start_time = datetime(2015, 12, 23, 8, 14, 12)
         duration = timedelta(seconds=10)
         end_time = start_time + duration
-        expected_timing = TestTiming(start_time, end_time)
+        expected_duration = TestDuration(start_time, end_time)
         case = _test_cases.TestCase('test_method')
 
         handler = StandardTestResultHandler(test_count=1)
         result = TestResult.from_test_case(
-            case, TestCompletionStatus.skipped, expected_timing,
+            case, TestCompletionStatus.skipped, expected_duration,
             message='reason')
 
         # When
@@ -948,13 +948,13 @@ class TestStandardResultHandler(ExcInfoFixture, unittest.TestCase):
         start_time = datetime(2015, 12, 23, 8, 14, 12)
         duration = timedelta(seconds=10)
         end_time = start_time + duration
-        expected_timing = TestTiming(start_time, end_time)
+        expected_duration = TestDuration(start_time, end_time)
         case = _test_cases.TestCase('test_method')
 
         handler = StandardTestResultHandler(test_count=1)
         with self.exc_info(RuntimeError) as exc_info:
             result = TestResult.from_test_case(
-                case, TestCompletionStatus.expected_failure, expected_timing,
+                case, TestCompletionStatus.expected_failure, expected_duration,
                 exception=exc_info)
 
         # When
@@ -970,12 +970,12 @@ class TestStandardResultHandler(ExcInfoFixture, unittest.TestCase):
         start_time = datetime(2015, 12, 23, 8, 14, 12)
         duration = timedelta(seconds=10)
         end_time = start_time + duration
-        expected_timing = TestTiming(start_time, end_time)
+        expected_duration = TestDuration(start_time, end_time)
         case = _test_cases.TestCase('test_method')
 
         handler = StandardTestResultHandler(test_count=1)
         result = TestResult.from_test_case(
-            case, TestCompletionStatus.unexpected_success, expected_timing)
+            case, TestCompletionStatus.unexpected_success, expected_duration)
 
         # When
         handler(result)
@@ -990,14 +990,14 @@ class TestStandardResultHandler(ExcInfoFixture, unittest.TestCase):
         start_time = datetime(2015, 12, 23, 8, 14, 12)
         duration = timedelta(seconds=10)
         end_time = start_time + duration
-        expected_timing = TestTiming(start_time, end_time)
+        expected_duration = TestDuration(start_time, end_time)
         case = _test_cases.TestCase('test_method')
 
         handler = StandardTestResultHandler(test_count=1)
         handler.start_test_run()
         with self.exc_info(RuntimeError) as exc_info:
             result = TestResult.from_test_case(
-                case, TestCompletionStatus.error, expected_timing,
+                case, TestCompletionStatus.error, expected_duration,
                 exception=exc_info)
 
         # When
@@ -1018,14 +1018,14 @@ class TestStandardResultHandler(ExcInfoFixture, unittest.TestCase):
         start_time = datetime(2015, 12, 23, 8, 14, 12)
         duration = timedelta(seconds=10)
         end_time = start_time + duration
-        expected_timing = TestTiming(start_time, end_time)
+        expected_duration = TestDuration(start_time, end_time)
         case = _test_cases.TestCase('test_method')
 
         handler = StandardTestResultHandler(test_count=1)
         handler.start_test_run()
         with self.failure_exc_info() as exc_info:
             result = TestResult.from_test_case(
-                case, TestCompletionStatus.failure, expected_timing,
+                case, TestCompletionStatus.failure, expected_duration,
                 exception=exc_info)
 
         # When
@@ -1110,13 +1110,13 @@ class TestVerboseResultHandler(ExcInfoFixture, unittest.TestCase):
         start_time = datetime(2015, 12, 23, 8, 14, 12)
         duration = timedelta(seconds=10)
         end_time = start_time + duration
-        expected_timing = TestTiming(start_time, end_time)
+        expected_duration = TestDuration(start_time, end_time)
         case = _test_cases.TestCase('test_method')
 
         handler = VerboseTestResultHandler(test_count=1)
         with self.exc_info(RuntimeError) as exc_info:
             result = TestResult.from_test_case(
-                case, TestCompletionStatus.error, expected_timing,
+                case, TestCompletionStatus.error, expected_duration,
                 exception=exc_info)
 
         # When
@@ -1132,13 +1132,13 @@ class TestVerboseResultHandler(ExcInfoFixture, unittest.TestCase):
         start_time = datetime(2015, 12, 23, 8, 14, 12)
         duration = timedelta(seconds=10)
         end_time = start_time + duration
-        expected_timing = TestTiming(start_time, end_time)
+        expected_duration = TestDuration(start_time, end_time)
         case = _test_cases.TestCase('test_method')
 
         handler = VerboseTestResultHandler(test_count=1)
         with self.failure_exc_info() as exc_info:
             result = TestResult.from_test_case(
-                case, TestCompletionStatus.failure, expected_timing,
+                case, TestCompletionStatus.failure, expected_duration,
                 exception=exc_info)
 
         # When
@@ -1154,12 +1154,12 @@ class TestVerboseResultHandler(ExcInfoFixture, unittest.TestCase):
         start_time = datetime(2015, 12, 23, 8, 14, 12)
         duration = timedelta(seconds=10)
         end_time = start_time + duration
-        expected_timing = TestTiming(start_time, end_time)
+        expected_duration = TestDuration(start_time, end_time)
         case = _test_cases.TestCase('test_method')
 
         handler = VerboseTestResultHandler(test_count=1)
         result = TestResult.from_test_case(
-            case, TestCompletionStatus.success, expected_timing)
+            case, TestCompletionStatus.success, expected_duration)
 
         # When
         handler(result)
@@ -1174,12 +1174,12 @@ class TestVerboseResultHandler(ExcInfoFixture, unittest.TestCase):
         start_time = datetime(2015, 12, 23, 8, 14, 12)
         duration = timedelta(seconds=10)
         end_time = start_time + duration
-        expected_timing = TestTiming(start_time, end_time)
+        expected_duration = TestDuration(start_time, end_time)
         case = _test_cases.TestCase('test_method')
 
         handler = VerboseTestResultHandler(test_count=1)
         result = TestResult.from_test_case(
-            case, TestCompletionStatus.skipped, expected_timing,
+            case, TestCompletionStatus.skipped, expected_duration,
             message='reason')
 
         # When
@@ -1195,13 +1195,13 @@ class TestVerboseResultHandler(ExcInfoFixture, unittest.TestCase):
         start_time = datetime(2015, 12, 23, 8, 14, 12)
         duration = timedelta(seconds=10)
         end_time = start_time + duration
-        expected_timing = TestTiming(start_time, end_time)
+        expected_duration = TestDuration(start_time, end_time)
         case = _test_cases.TestCase('test_method')
 
         handler = VerboseTestResultHandler(test_count=1)
         with self.exc_info(RuntimeError) as exc_info:
             result = TestResult.from_test_case(
-                case, TestCompletionStatus.expected_failure, expected_timing,
+                case, TestCompletionStatus.expected_failure, expected_duration,
                 exception=exc_info)
 
         # When
@@ -1217,12 +1217,12 @@ class TestVerboseResultHandler(ExcInfoFixture, unittest.TestCase):
         start_time = datetime(2015, 12, 23, 8, 14, 12)
         duration = timedelta(seconds=10)
         end_time = start_time + duration
-        expected_timing = TestTiming(start_time, end_time)
+        expected_duration = TestDuration(start_time, end_time)
         case = _test_cases.TestCase('test_method')
 
         handler = VerboseTestResultHandler(test_count=1)
         result = TestResult.from_test_case(
-            case, TestCompletionStatus.unexpected_success, expected_timing)
+            case, TestCompletionStatus.unexpected_success, expected_duration)
 
         # When
         handler(result)
@@ -1237,14 +1237,14 @@ class TestVerboseResultHandler(ExcInfoFixture, unittest.TestCase):
         start_time = datetime(2015, 12, 23, 8, 14, 12)
         duration = timedelta(seconds=10)
         end_time = start_time + duration
-        expected_timing = TestTiming(start_time, end_time)
+        expected_duration = TestDuration(start_time, end_time)
         case = _test_cases.TestCase('test_method')
 
         handler = VerboseTestResultHandler(test_count=1)
         handler.start_test_run()
         with self.exc_info(RuntimeError) as exc_info:
             result = TestResult.from_test_case(
-                case, TestCompletionStatus.error, expected_timing,
+                case, TestCompletionStatus.error, expected_duration,
                 exception=exc_info)
 
         # When
@@ -1265,14 +1265,14 @@ class TestVerboseResultHandler(ExcInfoFixture, unittest.TestCase):
         start_time = datetime(2015, 12, 23, 8, 14, 12)
         duration = timedelta(seconds=10)
         end_time = start_time + duration
-        expected_timing = TestTiming(start_time, end_time)
+        expected_duration = TestDuration(start_time, end_time)
         case = _test_cases.TestCase('test_method')
 
         handler = VerboseTestResultHandler(test_count=1)
         handler.start_test_run()
         with self.failure_exc_info() as exc_info:
             result = TestResult.from_test_case(
-                case, TestCompletionStatus.failure, expected_timing,
+                case, TestCompletionStatus.failure, expected_duration,
                 exception=exc_info)
 
         # When
