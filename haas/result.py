@@ -123,9 +123,18 @@ class TestDuration(object):
     def __repr__(self):
         return '<TestDuration {0}>'.format(str(self))
 
+    if sys.version_info < (2, 7):
+        def _total_seconds(self, delta):
+            seconds = delta.microseconds / 1000000.0 + delta.seconds
+            seconds += delta.days * 24 * 60 * 60
+            return seconds
+    else:
+        def _total_seconds(self, delta):
+            return delta.total_seconds()
+
     def __str__(self):
         template = '{hours: >3.0f}:{minutes:0>2.0f}:{seconds:0>2.3f}'
-        minutes, seconds = divmod(self.duration.total_seconds(), 60)
+        minutes, seconds = divmod(self._total_seconds(self.duration), 60)
         hours, minutes = divmod(minutes, 60)
         return template.format(
             hours=hours,
