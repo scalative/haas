@@ -223,7 +223,7 @@ class VerboseTestResultHandler(StandardTestResultHandler):
         self.stream.flush()
 
 
-class SlowTestResultHandler(IResultHandlerPlugin):
+class SlowTestsResultHandler(IResultHandlerPlugin):
     separator1 = '=' * 70
     separator2 = separator2
 
