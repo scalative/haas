@@ -1292,26 +1292,6 @@ class TestTestDurationOrdering(unittest.TestCase):
         with self.assertRaises(TypeError):
             duration > object()
 
-    @unittest.skipIf(sys.version_info >= (3,),
-                     'Python 3 raises on unorderable types')
-    def test_ordering_other_types(self):
-        start_time = datetime(2015, 12, 23, 8, 14, 12)
-        duration = timedelta(seconds=10)
-        end_time = start_time + duration
-        duration = TestDuration(start_time, end_time)
-        comparable = object()
-
-        # Then
-        self.assertNotEqual(duration, object())
-
-        result = duration < comparable
-        expected_result = id(duration) < id(comparable)
-        self.assertEqual(result, expected_result)
-
-        result = duration > comparable
-        expected_result = id(duration) > id(comparable)
-        self.assertEqual(result, expected_result)
-
     def test_hash_equal(self):
         # Given
         start_time1 = datetime(2015, 12, 23, 8, 14, 12)
