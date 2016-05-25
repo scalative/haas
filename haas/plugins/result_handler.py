@@ -240,7 +240,8 @@ class SlowTestsResultHandler(IResultHandlerPlugin):
     def from_args(cls, args, name, dest_prefix, test_count):
         if args.summarize_slow_tests is not cls.OPTION_DEFAULT:
             number_to_summarize = args.summarize_slow_tests or 10
-            return cls(number_to_summarize)
+            if number_to_summarize > 0:
+                return cls(number_to_summarize)
 
     @classmethod
     def add_parser_arguments(cls, parser, name, option_prefix, dest_prefix):
