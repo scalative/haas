@@ -269,6 +269,9 @@ class SlowTestsResultHandler(IResultHandlerPlugin):
         )
 
         self.stream.writeln()
+        plural = 's' if self.number_to_summarize > 1 else ''
+        self.stream.writeln(
+            '{0} slowest test{1}'.format(self.number_to_summarize, plural))
         self.stream.writeln(self.separator2)
 
         template = '{0} {1}'

@@ -45,7 +45,8 @@ class TestSlowTestsResultHandler(ExcInfoFixture, unittest.TestCase):
 
         # Then
         output = stderr.getvalue()
-        self.assertTrue(output.startswith('\n' + handler.separator2))
+        output_start = '\n5 slowest tests\n' + handler.separator2
+        self.assertTrue(output.startswith(output_start))
         self.assertRegexpMatches(
             output.replace('\n', ''), r'--+.*?0:00:10\.123 test_method \(')
 
@@ -225,7 +226,8 @@ class TestSlowTestsResultHandler(ExcInfoFixture, unittest.TestCase):
 
         # Then
         output = stderr.getvalue()
-        self.assertTrue(output.startswith('\n' + handler.separator2))
+        output_start = '\n5 slowest tests\n' + handler.separator2
+        self.assertTrue(output.startswith(output_start))
         self.assertRegexpMatches(
             output.replace('\n', ''), r'--+.*?1543:00:12\.234 test_method \(')
 
@@ -251,6 +253,7 @@ class TestSlowTestsResultHandler(ExcInfoFixture, unittest.TestCase):
 
         # Then
         output = stderr.getvalue()
-        self.assertTrue(output.startswith('\n' + handler.separator2))
+        output_start = '\n5 slowest tests\n' + handler.separator2
+        self.assertTrue(output.startswith(output_start))
         self.assertRegexpMatches(
             output.replace('\n', ''), r'--+.*?1:01:14\.567 test_method \(')
