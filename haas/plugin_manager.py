@@ -93,7 +93,7 @@ class PluginManager(object):
             extension)
         plugin = extension.plugin.from_args(
             args, extension.name, dest_prefix, **kwargs)
-        if plugin.enabled:
+        if plugin is not None and plugin.enabled:
             return plugin
         return None
 
