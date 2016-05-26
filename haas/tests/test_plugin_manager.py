@@ -212,3 +212,28 @@ class TestPluginManager(unittest.TestCase):
 
         # Then
         self.assertEqual(enabled_plugins, [])
+
+    def test_hook_plugin_none(self):
+        class TestingPlugin(BaseTestingPlugin):
+
+            @classmethod
+            def from_args(cls, args, name, dest_prefix):
+                return None
+
+        # Given
+        extension = Extension(
+            'testing-plugin', None, TestingPlugin, None)
+        environment_manager = ExtensionManager.make_test_instance(
+            [extension], namespace=PluginManager.ENVIRONMENT_HOOK,
+        )
+        hook_managers = [(PluginManager.ENVIRONMENT_HOOK, environment_manager)]
+        plugin_manager = PluginManager.testing_plugin_manager(
+            hook_managers=hook_managers, driver_managers=())
+        parser = ArgumentParser(add_help=False)
+        args = parser.parse_args([])
+
+        # When
+        plugin = plugin_manager._create_hook_plugin(extension, args)
+
+        # Then
+        self.assertIsNone(plugin)
