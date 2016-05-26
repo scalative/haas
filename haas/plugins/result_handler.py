@@ -13,6 +13,14 @@ from haas.result import TestCompletionStatus, separator2
 from .i_result_handler_plugin import IResultHandlerPlugin
 
 
+def get_test_description(test, descriptions=True):
+    doc_first_line = test.shortDescription()
+    if descriptions and doc_first_line:
+        return '\n'.join((str(test), doc_first_line))
+    else:
+        return str(test)
+
+
 class _WritelnDecorator(object):
     """Used to decorate file-like objects with a handy 'writeln' method"""
     def __init__(self, stream):
@@ -64,11 +72,7 @@ class QuietTestResultHandler(IResultHandlerPlugin):
         pass
 
     def get_test_description(self, test):
-        doc_first_line = test.shortDescription()
-        if self.descriptions and doc_first_line:
-            return '\n'.join((str(test), doc_first_line))
-        else:
-            return str(test)
+        return get_test_description(test, descriptions=self.descriptions)
 
     def start_test(self, test):
         self.tests_run += 1
@@ -217,3 +221,67 @@ class VerboseTestResultHandler(StandardTestResultHandler):
             self.stream.write(" '{0}'".format(result.message))
         self.stream.writeln()
         self.stream.flush()
+
+
+class SlowTestsResultHandler(IResultHandlerPlugin):
+    separator1 = '=' * 70
+    separator2 = separator2
+
+    OPTION_DEFAULT = object()
+
+    def __init__(self, number_to_summarize):
+        self.enabled = True
+        self.stream = _WritelnDecorator(sys.stderr)
+        self.descriptions = True
+        self.number_to_summarize = number_to_summarize
+        self._test_results = []
+
+    @classmethod
+    def from_args(cls, args, name, dest_prefix, test_count):
+        if args.summarize_slow_tests is not cls.OPTION_DEFAULT:
+            number_to_summarize = args.summarize_slow_tests or 10
+            if number_to_summarize > 0:
+                return cls(number_to_summarize)
+
+    @classmethod
+    def add_parser_arguments(cls, parser, name, option_prefix, dest_prefix):
+        parser.add_argument('--summarize-slow-tests', action='store', type=int,
+                            nargs='?', default=cls.OPTION_DEFAULT,
+                            help='Show N slowest tests (default 10)')
+
+    def start_test(self, test):
+        pass
+
+    def stop_test(self, test):
+        pass
+
+    def start_test_run(self):
+        pass
+
+    def stop_test_run(self):
+        self.print_summary()
+
+    def print_summary(self):
+        tests_by_time = sorted(
+            self._test_results,
+            key=lambda item: item.duration,
+            reverse=True,
+        )
+
+        self.stream.writeln()
+        plural = 's' if self.number_to_summarize > 1 else ''
+        self.stream.writeln(
+            '{0} slowest test{1}'.format(self.number_to_summarize, plural))
+        self.stream.writeln(self.separator2)
+
+        template = '{0} {1}'
+
+        for test_result in tests_by_time[:self.number_to_summarize]:
+            description = get_test_description(
+                test_result.test, descriptions=self.descriptions)
+            line = template.format(str(test_result.duration), description)
+            self.stream.writeln(line)
+        self.stream.writeln()
+
+    def __call__(self, result):
+        self._test_results.append(result)

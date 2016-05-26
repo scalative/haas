@@ -98,6 +98,78 @@ def _format_exception(err, is_failure, stdout=None, stderr=None):
     return ''.join(msgLines)
 
 
+class TestDuration(object):
+    """An orderable representation of the duration of an individual test.
+
+    """
+
+    def __init__(self, start_time, stop_time):
+        self._start_time = start_time
+        self._stop_time = stop_time
+        self._duration = stop_time - start_time
+
+    @property
+    def start_time(self):
+        return self._start_time
+
+    @property
+    def stop_time(self):
+        return self._stop_time
+
+    @property
+    def duration(self):
+        return self._duration
+
+    def __repr__(self):
+        return '<TestDuration {0}>'.format(str(self))
+
+    if sys.version_info < (2, 7):
+        def _total_seconds(self, delta):
+            seconds = delta.microseconds / 1000000.0 + delta.seconds
+            seconds += delta.days * 24 * 60 * 60
+            return seconds
+    else:
+        def _total_seconds(self, delta):
+            return delta.total_seconds()
+
+    def __str__(self):
+        template = '{hours: >3.0f}:{minutes:0>2.0f}:{seconds:0>2.3f}'
+        minutes, seconds = divmod(self._total_seconds(self.duration), 60)
+        hours, minutes = divmod(minutes, 60)
+        return template.format(
+            hours=hours,
+            minutes=minutes,
+            seconds=seconds,
+        )
+
+    def __eq__(self, other):
+        if not hasattr(other, 'duration'):
+            return NotImplemented
+        return self.duration == other.duration
+
+    def __ne__(self, other):
+        return not (self == other)
+
+    def __lt__(self, other):
+        if not hasattr(other, 'duration'):
+            return NotImplemented
+        return self.duration < other.duration
+
+    def __le__(self, other):
+        return not (self > other)
+
+    def __gt__(self, other):
+        if not hasattr(other, 'duration'):
+            return NotImplemented
+        return self.duration > other.duration
+
+    def __ge__(self, other):
+        return not (self < other)
+
+    def __hash__(self):
+        return hash((self._start_time, self._stop_time))
+
+
 class TestResult(object):
     """Container object for all information related to the run of a single
     test.  This contains the test itself, the actual status including
@@ -106,15 +178,22 @@ class TestResult(object):
 
     """
 
-    def __init__(self, test_class, test_method_name, status,  # started_time,
-                 completed_time, exception=None, message=None):
+    def __init__(self, test_class, test_method_name, status, duration,
+                 exception=None, message=None):
         self.test_class = test_class
         self.test_method_name = test_method_name
         self.status = status
         self.exception = exception
         self.message = message
-        # self.started_time = started_time
-        self.completed_time = completed_time
+        self.duration = duration
+
+    def __repr__(self):
+        template = ('<{0} class={1}, method={2}, exc={3!r}, status={4!r}, '
+                    'duration={5!r}>')
+        return template.format(
+            type(self).__name__, self.test_class.__name__,
+            self.test_method_name, self.exception, self.status,
+            self.duration)
 
     def __eq__(self, other):
         if not isinstance(other, TestResult):
@@ -124,16 +203,16 @@ class TestResult(object):
             self.test_method_name == other.test_method_name and
             self.status == other.status and
             self.exception == other.exception and
-            self.message == other.message
+            self.message == other.message and
+            self.duration == other.duration
         )
 
     def __ne__(self, other):
         return not (self == other)
 
     @classmethod
-    def from_test_case(cls, test_case, status,  # started_time,
-                       exception=None,
-                       message=None, stdout=None, stderr=None):
+    def from_test_case(cls, test_case, status, duration,
+                       exception=None, message=None, stdout=None, stderr=None):
         """Construct a :class:`~.TestResult` object from the test and a status.
 
         Parameters
@@ -160,14 +239,8 @@ class TestResult(object):
             is_failure = exctype is test_case.failureException
             exception = _format_exception(
                 exception, is_failure, stdout, stderr)
-        completed_time = datetime.utcnow()
-        return cls(test_class, test_method_name, status,  # started_time,
-                   completed_time, exception, message)
-
-    def __repr__(self):
-        return '<{0} class={1}, method={2}, exc={3!r}>'.format(
-            type(self).__name__, self.test_class.__name__,
-            self.test_method_name, self.exception)
+        return cls(test_class, test_method_name, status, duration,
+                   exception, message)
 
     @property
     def test(self):
@@ -240,6 +313,11 @@ class ResultCollecter(object):
         self._stdout_buffer = None
         self._original_stderr = sys.stderr
         self._original_stdout = sys.stdout
+        self._test_timing = {}
+
+    @staticmethod
+    def _testcase_to_key(test):
+        return (type(test), test._testMethodName)
 
     def _setup_stdout(self):
         """Hook stdout and stderr if buffering is enabled.
@@ -286,15 +364,21 @@ class ResultCollecter(object):
         """
         self._handlers.append(handler)
 
-    def startTest(self, test):
+    def startTest(self, test, start_time=None):
         """Indicate that an individual test is starting.
 
         Parameters
         ----------
         test : unittest.TestCase
             The test that is starting.
+        start_time : datetime
+            An internal parameter to allow the parallel test runner to
+            set the actual start time of a test run in a subprocess.
 
         """
+        if start_time is None:
+            start_time = datetime.utcnow()
+        self._test_timing[self._testcase_to_key(test)] = start_time
         self._mirror_output = False
         self._setup_stdout()
         self.testsRun += 1
@@ -364,9 +448,15 @@ class ResultCollecter(object):
             stdout = self._stdout_buffer.getvalue()
         else:
             stderr = stdout = None
+
+        started_time = self._test_timing[self._testcase_to_key(test)]
+
+        completion_time = datetime.utcnow()
+        duration = TestDuration(started_time, completion_time)
         result = TestResult.from_test_case(
             test,
             status,
+            duration=duration,
             exception=exception,
             message=message,
             stdout=stdout,
