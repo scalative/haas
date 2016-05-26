@@ -20,4 +20,5 @@ class NullHandler(logging.Handler):  # pragma: no cover
 
 
 logger = logging.getLogger(__name__)
+logger.propagate = False
 logger.addHandler(NullHandler())

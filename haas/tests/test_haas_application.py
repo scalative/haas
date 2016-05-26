@@ -9,12 +9,14 @@ from __future__ import absolute_import, unicode_literals
 from argparse import Namespace
 from contextlib import contextmanager
 from functools import wraps
+import logging
 import os
 import shutil
 import tempfile
 import types
 
 from mock import Mock, patch
+from testfixtures import LogCapture
 
 from stevedore.extension import ExtensionManager, Extension
 
@@ -404,3 +406,20 @@ class TestHaasApplication(unittest.TestCase):
 
         finally:
             shutil.rmtree(tempdir)
+
+    @with_patched_test_runner
+    def test_logging_propagate(self, runner_class, result_class,
+                               plugin_manager):
+        # Given
+        logger = haas.logger
+        message = 'test log message'
+
+        # When
+        with LogCapture() as root_logging:
+            with LogCapture(haas.__name__) as haas_logging:
+                logger.info(message)
+
+        # Then
+        root_logging.check()
+        haas_logging.check(
+            (haas.__name__, logging.getLevelName(logging.INFO), message))
