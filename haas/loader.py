@@ -6,6 +6,7 @@
 # of the 3-clause BSD license.  See the LICENSE.txt file for details.
 from __future__ import absolute_import, unicode_literals
 
+import types
 import unittest
 
 from .suite import TestSuite
@@ -47,6 +48,12 @@ class Loader(object):
 
         """
         return issubclass(klass, self._test_case_class)
+
+    def is_test_function(self, function):
+        """Check if a class is a TestCase.
+
+        """
+        return function.__name__.startswith('test_')
 
     def find_test_method_names(self, testcase):
         """Return a list of test method names in the provided ``TestCase``
@@ -94,6 +101,21 @@ class Loader(object):
                  for name in self.find_test_method_names(testcase)]
         return self.create_suite(tests)
 
+    def get_function_based_test_cases(self, module):
+        """Return a list of FunctionTestCase instances, one for each
+        function-based test in ``module``.
+
+        Parameters
+        ----------
+        module : module
+            A module object containing functions to load as test cases.
+
+        """
+        module_items = (getattr(module, name) for name in dir(module))
+        return [unittest.FunctionTestCase(item) for item in module_items
+                if isinstance(item, types.FunctionType) and
+                self.is_test_function(item)]
+
     def get_test_cases_from_module(self, module):
         """Return a list of TestCase subclasses contained in the provided
         module object.
@@ -101,13 +123,12 @@ class Loader(object):
         Parameters
         ----------
         module : module
-            A module object containing ``TestCases``
+            A module object containing ``TestCases``.
 
         """
         module_items = (getattr(module, name) for name in dir(module))
         return [item for item in module_items
-                if isinstance(item, type)
-                and self.is_test_case(item)]
+                if isinstance(item, type) and self.is_test_case(item)]
 
     def load_module(self, module):
         """Create and return a test suite containing all cases loaded from the
@@ -116,9 +137,13 @@ class Loader(object):
         Parameters
         ----------
         module : module
-            A module object containing ``TestCases``
+            A module object containing ``TestCases`` and functions to
+            load as test cases.
 
         """
         cases = self.get_test_cases_from_module(module)
         suites = [self.load_case(case) for case in cases]
+        function_based_test_cases = self.get_function_based_test_cases(module)
+        if len(function_based_test_cases) > 0:
+            suites.append(self.create_suite(function_based_test_cases))
         return self.create_suite(suites)

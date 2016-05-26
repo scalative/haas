@@ -104,7 +104,7 @@ class TestLoadModule(LoaderTestMixin, unittest.TestCase):
     def assertSuiteClasses(self, suite, klass):
         self.assertIsInstance(suite, klass)
         sub_suites = list(suite)
-        self.assertEqual(len(sub_suites), 2)
+        self.assertEqual(len(sub_suites), 3)
         for sub_suite in sub_suites:
             self.assertIsInstance(sub_suite, klass)
 
@@ -118,14 +118,14 @@ class TestLoadModule(LoaderTestMixin, unittest.TestCase):
         suite = self.loader.load_module(_test_cases)
         self.assertSuiteClasses(suite, TestSuite)
         sub_suites = list(suite)
-        self.assertEqual(len(sub_suites), 2)
+        self.assertEqual(len(sub_suites), 3)
         cases = []
         for sub_suite in sub_suites:
             self.assertEqual(len(list(sub_suite)), 1)
             for case in sub_suite:
                 self.assertIsInstance(case, python_unittest.TestCase)
                 cases.append(case)
-        self.assertEqual(len(cases), 2)
+        self.assertEqual(len(cases), 3)
 
     def test_creates_custom_testsuite_subclass(self):
         loader = Loader(test_suite_class=_test_case_data.TestSuiteSubclass)

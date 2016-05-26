@@ -40,3 +40,7 @@ class TestSuite(NotTestCase, unittest.TestSuite):
 
 def subprocess_initializer():
     pass
+
+
+def test_as_function():
+    pass

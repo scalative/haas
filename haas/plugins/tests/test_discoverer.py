@@ -259,10 +259,20 @@ class TestDiscoveryByPath(TestDiscoveryMixin, unittest.TestCase):
     def assertSuite(self, suite):
         self.assertIsInstance(suite, TestSuite)
         tests = list(self.get_test_cases(suite))
-        self.assertEqual(len(tests), 2)
-        for test in tests:
+        self.assertEqual(len(tests), 3)
+        function_test_cases = [test for test in tests
+                               if isinstance(test, unittest.FunctionTestCase)]
+        class_test_cases = [test for test in tests
+                            if test not in function_test_cases]
+
+        self.assertEqual(len(function_test_cases), 1)
+        self.assertEqual(len(class_test_cases), 2)
+
+        for test in class_test_cases:
             self.assertIsInstance(test, python_unittest.TestCase)
             self.assertEqual(test._testMethodName, 'test_method')
+        for test in function_test_cases:
+            self.assertEqual(test._testMethodName, 'runTest')
 
     def test_from_top_level_directory(self):
         suite = self.discoverer.discover(self.tmpdir)
@@ -344,10 +354,20 @@ class TestDiscoveryByModule(TestDiscoveryMixin, unittest.TestCase):
             top_level_directory=self.tmpdir,
         )
         tests = list(self.get_test_cases(suite))
-        self.assertEqual(len(tests), 2)
-        for test in tests:
+        self.assertEqual(len(tests), 3)
+        function_test_cases = [test for test in tests
+                               if isinstance(test, unittest.FunctionTestCase)]
+        class_test_cases = [test for test in tests
+                            if test not in function_test_cases]
+
+        self.assertEqual(len(function_test_cases), 1)
+        self.assertEqual(len(class_test_cases), 2)
+
+        for test in class_test_cases:
             self.assertIsInstance(test, python_unittest.TestCase)
             self.assertEqual(test._testMethodName, 'test_method')
+        for test in function_test_cases:
+            self.assertEqual(test._testMethodName, 'runTest')
 
     def test_discover_package_no_top_level(self):
         suite = self.discoverer.discover('haas.tests')
@@ -359,10 +379,20 @@ class TestDiscoveryByModule(TestDiscoveryMixin, unittest.TestCase):
         suite = self.discoverer.discover(
             module, top_level_directory=self.tmpdir)
         tests = list(self.get_test_cases(suite))
-        self.assertEqual(len(tests), 2)
-        for test in tests:
+        self.assertEqual(len(tests), 3)
+        function_test_cases = [test for test in tests
+                               if isinstance(test, unittest.FunctionTestCase)]
+        class_test_cases = [test for test in tests
+                            if test not in function_test_cases]
+
+        self.assertEqual(len(function_test_cases), 1)
+        self.assertEqual(len(class_test_cases), 2)
+
+        for test in class_test_cases:
             self.assertIsInstance(test, python_unittest.TestCase)
             self.assertEqual(test._testMethodName, 'test_method')
+        for test in function_test_cases:
+            self.assertEqual(test._testMethodName, 'runTest')
 
     def test_discover_case(self):
         module = '{0}.test_cases.TestCase'.format('.'.join(self.dirs))
