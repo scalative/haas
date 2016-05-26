@@ -101,7 +101,7 @@ class Loader(object):
                  for name in self.find_test_method_names(testcase)]
         return self.create_suite(tests)
 
-    def get_function_based_test_cases(self, module):
+    def get_function_test_cases_from_module(self, module):
         """Return a list of FunctionTestCase instances, one for each
         function-based test in ``module``.
 
@@ -143,7 +143,7 @@ class Loader(object):
         """
         cases = self.get_test_cases_from_module(module)
         suites = [self.load_case(case) for case in cases]
-        function_based_test_cases = self.get_function_based_test_cases(module)
-        if len(function_based_test_cases) > 0:
-            suites.append(self.create_suite(function_based_test_cases))
+        function_test_cases = self.get_function_test_cases_from_module(module)
+        if len(function_test_cases) > 0:
+            suites.append(self.create_suite(function_test_cases))
         return self.create_suite(suites)

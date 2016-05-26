@@ -114,6 +114,12 @@ class TestLoadModule(LoaderTestMixin, unittest.TestCase):
             self,
             cases, [_test_cases.TestCase, _test_cases.PythonTestCase])
 
+    def test_find_all_function_cases_in_module(self):
+        cases = self.loader.get_function_test_cases_from_module(_test_cases)
+        six.assertCountEqual(
+            self,
+            cases, [unittest.FunctionTestCase(_test_cases.test_as_function)])
+
     def test_load_all_cases_in_module(self):
         suite = self.loader.load_module(_test_cases)
         self.assertSuiteClasses(suite, TestSuite)
@@ -126,6 +132,14 @@ class TestLoadModule(LoaderTestMixin, unittest.TestCase):
                 self.assertIsInstance(case, python_unittest.TestCase)
                 cases.append(case)
         self.assertEqual(len(cases), 3)
+        six.assertCountEqual(
+            self, cases,
+            [
+                _test_cases.TestCase('test_method'),
+                _test_cases.PythonTestCase('test_method'),
+                unittest.FunctionTestCase(_test_cases.test_as_function)
+            ],
+        )
 
     def test_creates_custom_testsuite_subclass(self):
         loader = Loader(test_suite_class=_test_case_data.TestSuiteSubclass)
