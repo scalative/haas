@@ -157,6 +157,7 @@ if __name__ == "__main__":
             ],
             'haas.hooks.environment': [
                 'coverage = haas.plugins.coverage:Coverage',
+                'suppress-logging = haas.plugins.suppress_logging:SuppressLogging',  # noqa
             ],
             'haas.discovery': [
                 'default = haas.plugins.discoverer:Discoverer',

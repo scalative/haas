@@ -17,7 +17,7 @@ class BaseHookPlugin(IHookPlugin):
     def __init__(self, name, enabled, enabling_option):
         self.name = name
         self.enabled = enabled
-        self.enabling_option = 'with_{0}'.format(name.replace('-', '_'))
+        self.enabling_option = enabling_option
 
     @classmethod
     def _get_enabling_option_string(cls, name, dest_prefix):
