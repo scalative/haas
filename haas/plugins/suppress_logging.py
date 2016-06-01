@@ -46,6 +46,6 @@ class SuppressLogging(BaseHookPlugin):
                 self._suppress_logger(logger)
 
     def teardown(self):
-        for logger, old_handlers in self._loggers.values():
+        for logger, old_handlers in self._loggers.items():
             self._restore_logger(logger, old_handlers)
         self._loggers.clear()
