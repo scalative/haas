@@ -40,7 +40,7 @@ class SuppressLogging(BaseHookPlugin):
         root_logger = logging.getLogger()
         self._suppress_logger(root_logger)
         for logger in logging.Logger.manager.loggerDict.values():
-            if isinstance(logger, logging.Placeholder):
+            if isinstance(logger, logging.PlaceHolder):
                 continue
             if len(logger.handlers) > 0 and logger not in self._loggers:
                 self._suppress_logger(logger)
