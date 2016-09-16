@@ -13,7 +13,7 @@ import haas
 from .loader import Loader
 from .plugin_context import PluginContext
 from .plugin_manager import PluginManager
-from .result import ResultCollecter
+from .result import ResultCollector
 from .utils import configure_logging
 
 
@@ -122,7 +122,7 @@ class HaasApplication(object):
             result_handlers = plugin_manager.get_enabled_hook_plugins(
                 plugin_manager.RESULT_HANDLERS, args, test_count=test_count)
 
-            result_collector = ResultCollecter(
+            result_collector = ResultCollector(
                 buffer=args.buffer, failfast=args.failfast)
 
             for result_handler in result_handlers:

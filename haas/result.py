@@ -286,7 +286,7 @@ def failfast(method):
     return inner
 
 
-class ResultCollecter(object):
+class ResultCollector(object):
     """Collecter for test results.  This handles creating
     :class:`~.TestResult` instances and handing them off the registered
     result output handlers.
@@ -415,10 +415,10 @@ class ResultCollecter(object):
 
     def add_result(self, result):
         """Add an already-constructed :class:`~.TestResult` to this
-        :class:`~.ResultCollecter`.
+        :class:`~.ResultCollector`.
 
         This may be used when collecting results created by other
-        ResultCollecters (e.g. in subprocesses).
+        ResultCollectors (e.g. in subprocesses).
 
         """
         for handler in self._handlers:
@@ -428,7 +428,7 @@ class ResultCollecter(object):
 
     def _handle_result(self, test, status, exception=None, message=None):
         """Create a :class:`~.TestResult` and add it to this
-        :class:`~ResultCollecter`.
+        :class:`~ResultCollector`.
 
         Parameters
         ----------

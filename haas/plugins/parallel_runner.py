@@ -3,7 +3,7 @@ import time
 
 from haas.module_import_error import ModuleImportError
 from haas.suite import find_test_cases
-from haas.result import ResultCollecter
+from haas.result import ResultCollector
 from haas.utils import get_module_by_name
 from .i_result_handler_plugin import IResultHandlerPlugin
 from .runner import BaseTestRunner
@@ -48,7 +48,7 @@ class ChildResultHandler(IResultHandlerPlugin):
 
 def _run_test_in_process(test_case):
     result_handler = ChildResultHandler()
-    result_collector = ResultCollecter(buffer=True)
+    result_collector = ResultCollector(buffer=True)
     result_collector.add_result_handler(result_handler)
     runner = BaseTestRunner()
     runner.run(result_collector, test_case)

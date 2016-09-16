@@ -19,7 +19,7 @@ from ..plugins.result_handler import (
     QuietTestResultHandler, StandardTestResultHandler,
     VerboseTestResultHandler)
 from ..result import (
-    ResultCollecter, TestResult, TestCompletionStatus, TestDuration)
+    ResultCollector, TestResult, TestCompletionStatus, TestDuration)
 from ..testing import unittest
 from . import _test_cases, _test_case_data
 from .fixtures import ExcInfoFixture, MockDateTime
@@ -30,7 +30,7 @@ class TestTextTestResult(ExcInfoFixture, unittest.TestCase):
     def test_result_collector_calls_handlers_start_stop_methods(self):
         # Given
         handler = Mock(spec=IResultHandlerPlugin)
-        collector = ResultCollecter()
+        collector = ResultCollector()
         collector.add_result_handler(handler)
         case = _test_cases.TestCase('test_method')
 
@@ -81,7 +81,7 @@ class TestTextTestResult(ExcInfoFixture, unittest.TestCase):
     def test_unicode_traceback(self):
         # Given
         handler = Mock(spec=IResultHandlerPlugin)
-        collector = ResultCollecter()
+        collector = ResultCollector()
         collector.add_result_handler(handler)
         start_time = datetime(2015, 12, 23, 8, 14, 12)
         duration = timedelta(seconds=10)
@@ -118,7 +118,7 @@ class TestTextTestResult(ExcInfoFixture, unittest.TestCase):
     def test_result_collector_calls_handlers_on_error(self):
         # Given
         handler = Mock(spec=IResultHandlerPlugin)
-        collector = ResultCollecter()
+        collector = ResultCollector()
         collector.add_result_handler(handler)
         start_time = datetime(2015, 12, 23, 8, 14, 12)
         duration = timedelta(seconds=10)
@@ -156,7 +156,7 @@ class TestTextTestResult(ExcInfoFixture, unittest.TestCase):
     def test_result_collector_calls_handlers_on_failure(self):
         # Given
         handler = Mock(spec=IResultHandlerPlugin)
-        collector = ResultCollecter()
+        collector = ResultCollector()
         collector.add_result_handler(handler)
         start_time = datetime(2015, 12, 23, 8, 14, 12)
         duration = timedelta(seconds=10)
@@ -193,7 +193,7 @@ class TestTextTestResult(ExcInfoFixture, unittest.TestCase):
     def test_result_collector_calls_handlers_on_success(self):
         # Given
         handler = Mock(spec=IResultHandlerPlugin)
-        collector = ResultCollecter()
+        collector = ResultCollector()
         collector.add_result_handler(handler)
         start_time = datetime(2015, 12, 23, 8, 14, 12)
         duration = timedelta(seconds=10)
@@ -228,7 +228,7 @@ class TestTextTestResult(ExcInfoFixture, unittest.TestCase):
     def test_result_collector_calls_handlers_on_skip(self):
         # Given
         handler = Mock(spec=IResultHandlerPlugin)
-        collector = ResultCollecter()
+        collector = ResultCollector()
         collector.add_result_handler(handler)
         start_time = datetime(2015, 12, 23, 8, 14, 12)
         duration = timedelta(seconds=10)
@@ -264,7 +264,7 @@ class TestTextTestResult(ExcInfoFixture, unittest.TestCase):
     def test_result_collector_calls_handlers_on_expected_fail(self):
         # Given
         handler = Mock(spec=IResultHandlerPlugin)
-        collector = ResultCollecter()
+        collector = ResultCollector()
         collector.add_result_handler(handler)
         start_time = datetime(2015, 12, 23, 8, 14, 12)
         duration = timedelta(seconds=10)
@@ -301,7 +301,7 @@ class TestTextTestResult(ExcInfoFixture, unittest.TestCase):
     def test_result_collector_calls_handlers_on_unexpected_success(self):
         # Given
         handler = Mock(spec=IResultHandlerPlugin)
-        collector = ResultCollecter()
+        collector = ResultCollector()
         collector.add_result_handler(handler)
         start_time = datetime(2015, 12, 23, 8, 14, 12)
         duration = timedelta(seconds=10)
@@ -335,7 +335,7 @@ class TestTextTestResult(ExcInfoFixture, unittest.TestCase):
 
     def test_result_collector_should_stop(self):
         # Given
-        collector = ResultCollecter()
+        collector = ResultCollector()
 
         # Then
         self.assertFalse(collector.shouldStop)
@@ -348,7 +348,7 @@ class TestTextTestResult(ExcInfoFixture, unittest.TestCase):
 
     def test_multiple_errors_from_one_test(self):
         # Given
-        collector = ResultCollecter()
+        collector = ResultCollector()
         case = _test_case_data.TestWithTwoErrors('test_with_two_errors')
 
         start_time = datetime(2016, 4, 12, 8, 17, 32)
@@ -369,7 +369,7 @@ class TestFailfast(ExcInfoFixture, unittest.TestCase):
 
     def test_failfast_enabled_on_error(self):
         # Given
-        collector = ResultCollecter(failfast=True)
+        collector = ResultCollector(failfast=True)
         self.assertFalse(collector.shouldStop)
         case = _test_cases.TestCase('test_method')
 
@@ -384,7 +384,7 @@ class TestFailfast(ExcInfoFixture, unittest.TestCase):
 
     def test_failfast_enabled_on_failure(self):
         # Given
-        collector = ResultCollecter(failfast=True)
+        collector = ResultCollector(failfast=True)
         self.assertFalse(collector.shouldStop)
         case = _test_cases.TestCase('test_method')
 
@@ -399,7 +399,7 @@ class TestFailfast(ExcInfoFixture, unittest.TestCase):
 
     def test_failfast_enabled_on_unexpected_success(self):
         # Given
-        collector = ResultCollecter(failfast=False)
+        collector = ResultCollector(failfast=False)
         self.assertFalse(collector.shouldStop)
         case = _test_cases.TestCase('test_method')
 
@@ -413,7 +413,7 @@ class TestFailfast(ExcInfoFixture, unittest.TestCase):
 
     def test_failfast_disabled_on_error(self):
         # Given
-        collector = ResultCollecter(failfast=False)
+        collector = ResultCollector(failfast=False)
         self.assertFalse(collector.shouldStop)
         case = _test_cases.TestCase('test_method')
 
@@ -428,7 +428,7 @@ class TestFailfast(ExcInfoFixture, unittest.TestCase):
 
     def test_failfast_disabled_on_failure(self):
         # Given
-        collector = ResultCollecter(failfast=False)
+        collector = ResultCollector(failfast=False)
         self.assertFalse(collector.shouldStop)
         case = _test_cases.TestCase('test_method')
 
@@ -443,7 +443,7 @@ class TestFailfast(ExcInfoFixture, unittest.TestCase):
 
     def test_failfast_disabled_on_unexpected_success(self):
         # Given
-        collector = ResultCollecter(failfast=False)
+        collector = ResultCollector(failfast=False)
         self.assertFalse(collector.shouldStop)
         case = _test_cases.TestCase('test_method')
 
@@ -462,7 +462,7 @@ class TestBuffering(ExcInfoFixture, unittest.TestCase):
     def test_buffering_stderr(self, stderr):
         # Given
         handler = Mock(spec=IResultHandlerPlugin)
-        collector = ResultCollecter(buffer=True)
+        collector = ResultCollector(buffer=True)
         collector.add_result_handler(handler)
         test_stderr = 'My Test Output'
         start_time = datetime(2015, 12, 23, 8, 14, 12)
@@ -503,7 +503,7 @@ class TestBuffering(ExcInfoFixture, unittest.TestCase):
     def test_buffering_stdout(self, stdout):
         # Given
         handler = Mock(spec=IResultHandlerPlugin)
-        collector = ResultCollecter(buffer=True)
+        collector = ResultCollector(buffer=True)
         collector.add_result_handler(handler)
         test_stdout = 'My Test Output'
         start_time = datetime(2015, 12, 23, 8, 14, 12)
