@@ -9,18 +9,18 @@ from haas.tests import _test_cases
 from haas.tests.fixtures import ExcInfoFixture
 from ..result_handler import (
     QuietTestResultHandler,
-    SlowTestsResultHandler,
+    TimingResultHandler,
     VerboseTestResultHandler,
     sort_result_handlers,
 )
 
 
-class TestSlowTestsResultHandler(ExcInfoFixture, unittest.TestCase):
+class TestTimingResultHandler(ExcInfoFixture, unittest.TestCase):
 
     @patch('sys.stderr', new_callable=StringIO)
     def test_output_start_test_run(self, stderr):
         # Given
-        handler = SlowTestsResultHandler(number_to_summarize=5)
+        handler = TimingResultHandler(number_to_summarize=5)
 
         # When
         handler.start_test_run()
@@ -37,7 +37,7 @@ class TestSlowTestsResultHandler(ExcInfoFixture, unittest.TestCase):
         end_time = start_time + duration
         expected_duration = TestDuration(start_time, end_time)
         case = _test_cases.TestCase('test_method')
-        handler = SlowTestsResultHandler(number_to_summarize=5)
+        handler = TimingResultHandler(number_to_summarize=5)
         handler.start_test_run()
 
         result = TestResult.from_test_case(
@@ -49,7 +49,7 @@ class TestSlowTestsResultHandler(ExcInfoFixture, unittest.TestCase):
 
         # Then
         output = stderr.getvalue()
-        output_start = '\n5 slowest tests\n' + handler.separator2
+        output_start = '\n\nTest timing report\n' + handler.separator2
         self.assertTrue(output.startswith(output_start))
         self.assertRegexpMatches(
             output.replace('\n', ''), r'--+.*?0:00:10\.123 test_method \(')
@@ -59,7 +59,7 @@ class TestSlowTestsResultHandler(ExcInfoFixture, unittest.TestCase):
     def test_output_start_test(self, stderr, mock_ctime):
         # Given
         case = _test_cases.TestCase('test_method')
-        handler = SlowTestsResultHandler(number_to_summarize=5)
+        handler = TimingResultHandler(number_to_summarize=5)
 
         # When
         handler.start_test(case)
@@ -71,7 +71,7 @@ class TestSlowTestsResultHandler(ExcInfoFixture, unittest.TestCase):
     @patch('sys.stderr', new_callable=StringIO)
     def test_no_output_stop_test(self, stderr):
         # Given
-        handler = SlowTestsResultHandler(number_to_summarize=5)
+        handler = TimingResultHandler(number_to_summarize=5)
         case = _test_cases.TestCase('test_method')
 
         # When
@@ -90,7 +90,7 @@ class TestSlowTestsResultHandler(ExcInfoFixture, unittest.TestCase):
         expected_duration = TestDuration(start_time, end_time)
         case = _test_cases.TestCase('test_method')
 
-        handler = SlowTestsResultHandler(number_to_summarize=5)
+        handler = TimingResultHandler(number_to_summarize=5)
         with self.exc_info(RuntimeError) as exc_info:
             result = TestResult.from_test_case(
                 case, TestCompletionStatus.error, expected_duration,
@@ -112,7 +112,7 @@ class TestSlowTestsResultHandler(ExcInfoFixture, unittest.TestCase):
         expected_duration = TestDuration(start_time, end_time)
         case = _test_cases.TestCase('test_method')
 
-        handler = SlowTestsResultHandler(number_to_summarize=5)
+        handler = TimingResultHandler(number_to_summarize=5)
         with self.failure_exc_info() as exc_info:
             result = TestResult.from_test_case(
                 case, TestCompletionStatus.failure, expected_duration,
@@ -134,7 +134,7 @@ class TestSlowTestsResultHandler(ExcInfoFixture, unittest.TestCase):
         expected_duration = TestDuration(start_time, end_time)
         case = _test_cases.TestCase('test_method')
 
-        handler = SlowTestsResultHandler(number_to_summarize=5)
+        handler = TimingResultHandler(number_to_summarize=5)
         result = TestResult.from_test_case(
             case, TestCompletionStatus.success, expected_duration)
 
@@ -154,7 +154,7 @@ class TestSlowTestsResultHandler(ExcInfoFixture, unittest.TestCase):
         expected_duration = TestDuration(start_time, end_time)
         case = _test_cases.TestCase('test_method')
 
-        handler = SlowTestsResultHandler(number_to_summarize=5)
+        handler = TimingResultHandler(number_to_summarize=5)
         result = TestResult.from_test_case(
             case, TestCompletionStatus.skipped, expected_duration,
             message='reason')
@@ -175,7 +175,7 @@ class TestSlowTestsResultHandler(ExcInfoFixture, unittest.TestCase):
         expected_duration = TestDuration(start_time, end_time)
         case = _test_cases.TestCase('test_method')
 
-        handler = SlowTestsResultHandler(number_to_summarize=5)
+        handler = TimingResultHandler(number_to_summarize=5)
         with self.exc_info(RuntimeError) as exc_info:
             result = TestResult.from_test_case(
                 case, TestCompletionStatus.expected_failure, expected_duration,
@@ -197,7 +197,7 @@ class TestSlowTestsResultHandler(ExcInfoFixture, unittest.TestCase):
         expected_duration = TestDuration(start_time, end_time)
         case = _test_cases.TestCase('test_method')
 
-        handler = SlowTestsResultHandler(number_to_summarize=5)
+        handler = TimingResultHandler(number_to_summarize=5)
         result = TestResult.from_test_case(
             case, TestCompletionStatus.unexpected_success, expected_duration)
 
@@ -217,7 +217,7 @@ class TestSlowTestsResultHandler(ExcInfoFixture, unittest.TestCase):
         expected_duration = TestDuration(start_time, end_time)
         case = _test_cases.TestCase('test_method')
 
-        handler = SlowTestsResultHandler(number_to_summarize=5)
+        handler = TimingResultHandler(number_to_summarize=5)
         handler.start_test_run()
         with self.exc_info(RuntimeError) as exc_info:
             result = TestResult.from_test_case(
@@ -230,7 +230,7 @@ class TestSlowTestsResultHandler(ExcInfoFixture, unittest.TestCase):
 
         # Then
         output = stderr.getvalue()
-        output_start = '\n5 slowest tests\n' + handler.separator2
+        output_start = '\n\nTest timing report\n' + handler.separator2
         self.assertTrue(output.startswith(output_start))
         self.assertRegexpMatches(
             output.replace('\n', ''), r'--+.*?1543:00:12\.234 test_method \(')
@@ -244,7 +244,7 @@ class TestSlowTestsResultHandler(ExcInfoFixture, unittest.TestCase):
         expected_duration = TestDuration(start_time, end_time)
         case = _test_cases.TestCase('test_method')
 
-        handler = SlowTestsResultHandler(number_to_summarize=5)
+        handler = TimingResultHandler(number_to_summarize=5)
         handler.start_test_run()
         with self.failure_exc_info() as exc_info:
             result = TestResult.from_test_case(
@@ -257,7 +257,7 @@ class TestSlowTestsResultHandler(ExcInfoFixture, unittest.TestCase):
 
         # Then
         output = stderr.getvalue()
-        output_start = '\n5 slowest tests\n' + handler.separator2
+        output_start = '\n\nTest timing report\n' + handler.separator2
         self.assertTrue(output.startswith(output_start))
         self.assertRegexpMatches(
             output.replace('\n', ''), r'--+.*?1:01:14\.567 test_method \(')
@@ -267,7 +267,7 @@ class TestSortResultHandlers(unittest.TestCase):
 
     def test_sort_result_handlers(self):
         # Given
-        handlers = [QuietTestResultHandler(5), SlowTestsResultHandler(5)]
+        handlers = [QuietTestResultHandler(5), TimingResultHandler(5)]
         expected = handlers[::-1]
 
         # When
@@ -279,7 +279,7 @@ class TestSortResultHandlers(unittest.TestCase):
     def test_sort_result_handlers_multiple_core(self):
         # Given
         handlers = [VerboseTestResultHandler(5), QuietTestResultHandler(5),
-                    SlowTestsResultHandler(5)]
+                    TimingResultHandler(5)]
         expected = handlers[::-1]
 
         # When
@@ -290,7 +290,7 @@ class TestSortResultHandlers(unittest.TestCase):
 
         # Given
         handlers = [QuietTestResultHandler(5), VerboseTestResultHandler(5),
-                    SlowTestsResultHandler(5)]
+                    TimingResultHandler(5)]
         expected = [handlers[2], handlers[0], handlers[1]]
 
         # When

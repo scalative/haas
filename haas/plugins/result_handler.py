@@ -248,7 +248,7 @@ class VerboseTestResultHandler(StandardTestResultHandler):
         self.stream.flush()
 
 
-class SlowTestsResultHandler(IResultHandlerPlugin):
+class TimingResultHandler(IResultHandlerPlugin):
     separator1 = '=' * 70
     separator2 = separator2
 
@@ -263,16 +263,17 @@ class SlowTestsResultHandler(IResultHandlerPlugin):
 
     @classmethod
     def from_args(cls, args, name, dest_prefix, test_count):
-        if args.summarize_slow_tests is not cls.OPTION_DEFAULT:
-            number_to_summarize = args.summarize_slow_tests or 10
+        if args.summarize_test_time is not cls.OPTION_DEFAULT:
+            number_to_summarize = args.summarize_test_time or 10
             if number_to_summarize > 0:
                 return cls(number_to_summarize)
 
     @classmethod
     def add_parser_arguments(cls, parser, name, option_prefix, dest_prefix):
-        parser.add_argument('--summarize-slow-tests', action='store', type=int,
+        parser.add_argument('--summarize-test-time', action='store', type=int,
                             nargs='?', default=cls.OPTION_DEFAULT,
-                            help='Show N slowest tests (default 10)')
+                            help=('Show test time summary and N slowest tests '
+                                  '(default 10)'))
 
     def start_test(self, test):
         pass
@@ -293,10 +294,7 @@ class SlowTestsResultHandler(IResultHandlerPlugin):
             reverse=True,
         )
 
-        self.stream.writeln()
-        plural = 's' if self.number_to_summarize > 1 else ''
-        self.stream.writeln(
-            '{0} slowest test{1}'.format(self.number_to_summarize, plural))
+        self.stream.writeln('\n\nTest timing report')
         self.stream.writeln(self.separator2)
 
         template = '{0} {1}'
