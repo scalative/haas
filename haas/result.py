@@ -300,7 +300,8 @@ class ResultCollector(object):
     def __init__(self, buffer=False, failfast=False):
         self.buffer = buffer
         self.failfast = failfast
-        self._handlers = []
+        self._result_handlers = []
+        self._sorted_handlers = None
         self.testsRun = 0
         self.expectedFailures = []
         self.unexpectedSuccesses = []
@@ -315,6 +316,13 @@ class ResultCollector(object):
         self._original_stderr = sys.stderr
         self._original_stdout = sys.stdout
         self._test_timing = {}
+
+    @property
+    def _handlers(self):
+        if self._sorted_handlers is None:
+            from .plugins.result_handler import sort_result_handlers
+            self._sorted_handlers = sort_result_handlers(self._result_handlers)
+        return self._sorted_handlers
 
     @staticmethod
     def _testcase_to_key(test):
@@ -363,7 +371,10 @@ class ResultCollector(object):
         """Register a new result handler.
 
         """
-        self._handlers.append(handler)
+        self._result_handlers.append(handler)
+        # Reset sorted handlers
+        if self._sorted_handlers:
+            self._sorted_handlers = None
 
     def startTest(self, test, start_time=None):
         """Indicate that an individual test is starting.

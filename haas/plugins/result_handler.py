@@ -37,6 +37,31 @@ class _WritelnDecorator(object):
         self.write('\n')  # text-mode streams translate to \r\n if needed
 
 
+def sort_result_handlers(handlers):
+    core_result_handlers = {
+        QuietTestResultHandler,
+        StandardTestResultHandler,
+        VerboseTestResultHandler,
+    }
+
+    def key(obj):
+        typ = type(obj)
+        return (typ.__module__, typ.__name__)
+
+    def sort(items):
+        core_handlers = []
+        for item in sorted(items, key=key):
+            if type(item) in core_result_handlers:
+                core_handlers.append(item)
+            else:
+                yield item
+        if len(core_handlers) > 0:
+            for item in sorted(core_handlers, key=key):
+                yield item
+
+    return list(sort(handlers))
+
+
 class QuietTestResultHandler(IResultHandlerPlugin):
     separator1 = '=' * 70
     separator2 = separator2

@@ -1,5 +1,4 @@
 from datetime import datetime, timedelta
-from time import ctime
 
 from mock import patch
 from six.moves import StringIO
@@ -8,7 +7,12 @@ from haas.result import TestResult, TestCompletionStatus, TestDuration
 from haas.testing import unittest
 from haas.tests import _test_cases
 from haas.tests.fixtures import ExcInfoFixture
-from ..result_handler import SlowTestsResultHandler
+from ..result_handler import (
+    QuietTestResultHandler,
+    SlowTestsResultHandler,
+    VerboseTestResultHandler,
+    sort_result_handlers,
+)
 
 
 class TestSlowTestsResultHandler(ExcInfoFixture, unittest.TestCase):
@@ -257,3 +261,40 @@ class TestSlowTestsResultHandler(ExcInfoFixture, unittest.TestCase):
         self.assertTrue(output.startswith(output_start))
         self.assertRegexpMatches(
             output.replace('\n', ''), r'--+.*?1:01:14\.567 test_method \(')
+
+
+class TestSortResultHandlers(unittest.TestCase):
+
+    def test_sort_result_handlers(self):
+        # Given
+        handlers = [QuietTestResultHandler(5), SlowTestsResultHandler(5)]
+        expected = handlers[::-1]
+
+        # When
+        sorted_handlers = sort_result_handlers(handlers)
+
+        # Then
+        self.assertEqual(sorted_handlers, expected)
+
+    def test_sort_result_handlers_multiple_core(self):
+        # Given
+        handlers = [VerboseTestResultHandler(5), QuietTestResultHandler(5),
+                    SlowTestsResultHandler(5)]
+        expected = handlers[::-1]
+
+        # When
+        sorted_handlers = sort_result_handlers(handlers)
+
+        # Then
+        self.assertEqual(sorted_handlers, expected)
+
+        # Given
+        handlers = [QuietTestResultHandler(5), VerboseTestResultHandler(5),
+                    SlowTestsResultHandler(5)]
+        expected = [handlers[2], handlers[0], handlers[1]]
+
+        # When
+        sorted_handlers = sort_result_handlers(handlers)
+
+        # Then
+        self.assertEqual(sorted_handlers, expected)
