@@ -6,10 +6,11 @@
 # of the 3-clause BSD license.  See the LICENSE.txt file for details.
 from __future__ import absolute_import, unicode_literals
 
+import statistics
 import sys
 import time
 
-from haas.result import TestCompletionStatus, separator2
+from haas.result import TestCompletionStatus, TestDuration, separator2
 from .i_result_handler_plugin import IResultHandlerPlugin
 
 
@@ -293,9 +294,26 @@ class TimingResultHandler(IResultHandlerPlugin):
             key=lambda item: item.duration,
             reverse=True,
         )
+        tests_count = len(tests_by_time)
 
-        self.stream.writeln('\n\nTest timing report')
-        self.stream.writeln(self.separator2)
+        durations = [t.duration for t in tests_by_time]
+        median = statistics.median(t.duration for t in tests_by_time)
+        mean = statistics.median(durations)
+        if len(durations) > 1:
+            stdev = statistics.stdev(
+                t.duration.total_seconds for t in tests_by_time)
+            stdev = TestDuration(stdev)
+        else:
+            stdev = '-'
+
+        percentile_99_index = int(tests_count * 0.01)
+        percentile_95_index = int(tests_count * 0.05)
+        percentile_90_index = int(tests_count * 0.10)
+        percentile_80_index = int(tests_count * 0.20)
+
+        stream = self.stream
+        stream.writeln('\n\nTest timing report')
+        stream.writeln(self.separator2)
 
         template = '{0} {1}'
 
@@ -303,8 +321,31 @@ class TimingResultHandler(IResultHandlerPlugin):
             description = get_test_description(
                 test_result.test, descriptions=self.descriptions)
             line = template.format(str(test_result.duration), description)
-            self.stream.writeln(line)
-        self.stream.writeln()
+            stream.writeln(line)
+
+        stream.writeln()
+
+        pairs = [
+            ['Mean', str(mean).strip()],
+            ['Std Dev', str(stdev).strip()],
+            ['Median', str(median).strip()],
+            ['80%', str(tests_by_time[percentile_99_index].duration).strip()],
+            ['90%', str(tests_by_time[percentile_95_index].duration).strip()],
+            ['95%', str(tests_by_time[percentile_90_index].duration).strip()],
+            ['99%', str(tests_by_time[percentile_80_index].duration).strip()],
+        ]
+        column_lengths = [max(len(item) for item in pair) for pair in pairs]
+        headers, columns = zip(*pairs)
+        header_template = '{item: <{len}}'
+        column_template = '{item: >{len}}'
+        header = ' | '.join(header_template.format(item=h, len=l)
+                            for h, l in zip(headers, column_lengths))
+        separator = '-+-'.join('-' * l for l in column_lengths)
+        row = ' | '.join(column_template.format(item=i, len=l)
+                         for i, l in zip(columns, column_lengths))
+        stream.writeln(' {0}'.format(header))
+        stream.writeln('-{0}-'.format(separator))
+        stream.writeln(' {0}'.format(row))
 
     def __call__(self, result):
         self._test_results.append(result)
