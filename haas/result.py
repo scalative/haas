@@ -12,6 +12,7 @@ from functools import wraps
 import locale
 import sys
 import traceback
+import warnings
 
 import six
 from six.moves import StringIO
@@ -566,3 +567,13 @@ class ResultCollector(object):
 
         """
         self.shouldStop = True
+
+
+class ResultCollecter(ResultCollector):
+    def __init__(self, *args, **kwargs):
+        super(ResultCollecter, self).__init__(*args, **kwargs)
+        warnings.warn(
+            'ResultCollecter is deprecated in favour of ResultCollector and '
+            'will be removed in the next release.',
+            DeprecationWarning,
+        )

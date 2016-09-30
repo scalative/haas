@@ -12,6 +12,7 @@ import sys
 
 from mock import Mock, patch
 from six.moves import StringIO
+from testfixtures import ShouldWarn
 import six
 
 from ..plugins.i_result_handler_plugin import IResultHandlerPlugin
@@ -19,7 +20,9 @@ from ..plugins.result_handler import (
     QuietTestResultHandler, StandardTestResultHandler,
     VerboseTestResultHandler)
 from ..result import (
-    ResultCollector, TestResult, TestCompletionStatus, TestDuration)
+    ResultCollector, TestResult, TestCompletionStatus, TestDuration,
+    ResultCollecter,
+)
 from ..testing import unittest
 from . import _test_cases, _test_case_data
 from .fixtures import ExcInfoFixture, MockDateTime
@@ -1409,3 +1412,17 @@ class TestTestDurationOrdering(unittest.TestCase):
         with six.assertRaisesRegex(
                 self, self.failureException, 'not less than'):
             self.assertLess(duration1, duration2)
+
+
+class TestResultCollecterDepricated(unittest.TestCase):
+
+    def test_deprecation_warning(self):
+        # Given
+        expected_warning = DeprecationWarning(
+            'ResultCollecter is deprecated in favour of ResultCollector and '
+            'will be removed in the next release.',
+        )
+
+        # When/Then
+        with ShouldWarn(expected_warning):
+            ResultCollecter()
