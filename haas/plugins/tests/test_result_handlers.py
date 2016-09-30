@@ -54,7 +54,7 @@ class TestTimingResultHandler(ExcInfoFixture, unittest.TestCase):
         output_start = '\n\nTest timing report\n' + handler.separator2
         self.assertTrue(output.startswith(output_start))
         self.assertRegexpMatches(
-            output.replace('\n', ''), r'--+.*?0:00:10\.123 test_method \(')
+            output.replace('\n', ''), r'--+.*?00:10\.123 test_method \(')
 
     @patch('time.ctime')
     @patch('sys.stderr', new_callable=StringIO)
@@ -342,7 +342,7 @@ class TestTimingResultHandler(ExcInfoFixture, unittest.TestCase):
         output_start = '\n\nTest timing report\n' + handler.separator2
         self.assertTrue(output.startswith(output_start))
         self.assertRegexpMatches(
-            output.replace('\n', ''), r'--+.*?0:00:09\.123 test_method \(')
+            output.replace('\n', ''), r'--+.*?00:09\.123 test_method \(')
         self.assertIn(expected_stats, output)
 
 
