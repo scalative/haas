@@ -149,7 +149,7 @@ class TestDuration(object):
         return '<TestDuration {0}>'.format(str(self))
 
     def __str__(self):
-        template = '{hours: >3.0f}:{minutes:0>2.0f}:{seconds:0>2.3f}'
+        template = '{hours: >3.0f}:{minutes:0>2.0f}:{seconds:0>6.3f}'
         minutes, seconds = divmod(self.total_seconds, 60)
         hours, minutes = divmod(minutes, 60)
         return template.format(
