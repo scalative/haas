@@ -297,11 +297,11 @@ class TimingResultHandler(IResultHandlerPlugin):
         tests_count = len(tests_by_time)
 
         durations = [t.duration for t in tests_by_time]
-        median = statistics.median(t.duration for t in tests_by_time)
-        mean = statistics.median(durations)
+        median = statistics.median(durations)
+        mean = statistics.mean(durations)
         if len(durations) > 1:
             stdev = statistics.stdev(
-                t.duration.total_seconds for t in tests_by_time)
+                duration.total_seconds for duration in durations)
             stdev = TestDuration(stdev)
         else:
             stdev = '-'

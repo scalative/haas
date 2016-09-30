@@ -158,16 +158,6 @@ class TestDuration(object):
             seconds=seconds,
         )
 
-    def __add__(self, other):
-        if not isinstance(other, TestDuration):
-            return NotImplemented
-        return TestDuration(self.duration + other.duration)
-
-    def __truediv__(self, divisor):
-        if not isinstance(self, TestDuration) and isinstance(divisor, int):
-            return NotImplemented
-        return TestDuration(self.duration / divisor)
-
     def __eq__(self, other):
         if not hasattr(other, 'duration'):
             return NotImplemented
@@ -194,6 +184,10 @@ class TestDuration(object):
 
     def __hash__(self):
         return hash((self._start_time, self._stop_time))
+
+    # To support statistics.mean() on TestDuration objects
+    def as_integer_ratio(self):
+        return self.total_seconds.as_integer_ratio()
 
 
 class TestResult(object):
