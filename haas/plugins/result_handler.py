@@ -272,6 +272,7 @@ class TimingResultHandler(IResultHandlerPlugin):
     @classmethod
     def add_parser_arguments(cls, parser, name, option_prefix, dest_prefix):
         parser.add_argument('--summarize-test-time', action='store', type=int,
+                            metavar='SHOW_N_SLOW_TESTS',
                             nargs='?', default=cls.OPTION_DEFAULT,
                             help=('Show test time summary and N slowest tests '
                                   '(default 10)'))
