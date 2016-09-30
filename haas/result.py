@@ -189,6 +189,16 @@ class TestDuration(object):
     def as_integer_ratio(self):
         return self.total_seconds.as_integer_ratio()
 
+    def __add__(self, other):
+        if not isinstance(other, TestDuration):
+            return NotImplemented
+        return TestDuration(self.duration + other.duration)
+
+    def __truediv__(self, divisor):
+        if not isinstance(self, TestDuration) and isinstance(divisor, int):
+            return NotImplemented
+        return TestDuration(self.duration / divisor)
+
 
 class TestResult(object):
     """Container object for all information related to the run of a single
