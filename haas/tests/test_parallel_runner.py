@@ -8,7 +8,7 @@ from six.moves import StringIO
 from ..plugins.discoverer import _create_import_error_test
 from ..plugins.parallel_runner import ChildResultHandler, ParallelTestRunner
 from ..result import (
-    ResultCollecter, TestCompletionStatus, TestResult, TestDuration)
+    ResultCollector, TestCompletionStatus, TestResult, TestDuration)
 from ..suite import TestSuite
 from ..testing import unittest
 from . import _test_cases
@@ -106,7 +106,7 @@ class TestParallelTestRunner(unittest.TestCase):
         processes = 5
 
         result_handler = ChildResultHandler()
-        result_collector = ResultCollecter()
+        result_collector = ResultCollector()
         result_collector.add_result_handler(result_handler)
         runner = ParallelTestRunner(processes)
 
@@ -170,7 +170,7 @@ class TestParallelTestRunner(unittest.TestCase):
         processes = 5
 
         result_handler = ChildResultHandler()
-        result_collector = ResultCollecter()
+        result_collector = ResultCollector()
         result_collector.add_result_handler(result_handler)
         runner = ParallelTestRunner(processes, initializer=initializer)
 
@@ -214,7 +214,7 @@ class TestParallelTestRunner(unittest.TestCase):
                                   '--process-max-tasks', '1'])
 
         result_handler = ChildResultHandler()
-        result_collector = ResultCollecter()
+        result_collector = ResultCollector()
         result_collector.add_result_handler(result_handler)
         runner = ParallelTestRunner.from_args(args, dest_prefix)
 
@@ -258,7 +258,7 @@ class TestParallelTestRunner(unittest.TestCase):
              'haas.tests._test_cases.subprocess_initializer'])
 
         result_handler = ChildResultHandler()
-        result_collector = ResultCollecter()
+        result_collector = ResultCollector()
         result_collector.add_result_handler(result_handler)
         runner = ParallelTestRunner.from_args(args, dest_prefix)
 
@@ -302,7 +302,7 @@ class TestParallelRunnerImportError(unittest.TestCase):
         args = parser.parse_args([])
 
         result_handler = ChildResultHandler()
-        result_collector = ResultCollecter()
+        result_collector = ResultCollector()
         result_collector.add_result_handler(result_handler)
         runner = ParallelTestRunner.from_args(args, dest_prefix)
 

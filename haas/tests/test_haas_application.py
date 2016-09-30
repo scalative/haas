@@ -47,7 +47,7 @@ class MockLambda(object):
 def with_patched_test_runner(fn):
     @wraps(fn)
     def wrapper(*args):
-        with patch('haas.haas_application.ResultCollecter') as result_cls:
+        with patch('haas.haas_application.ResultCollector') as result_cls:
             with patch('haas.plugins.runner.BaseTestRunner') as runner_class:
                 environment_manager = ExtensionManager.make_test_instance(
                     [], namespace=PluginManager.ENVIRONMENT_HOOK,
