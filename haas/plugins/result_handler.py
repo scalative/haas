@@ -38,11 +38,11 @@ class _WritelnDecorator(object):
 
 
 def sort_result_handlers(handlers):
-    core_result_handlers = {
+    core_result_handlers = set([
         QuietTestResultHandler,
         StandardTestResultHandler,
         VerboseTestResultHandler,
-    }
+    ])
 
     def key(obj):
         typ = type(obj)
