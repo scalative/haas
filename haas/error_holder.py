@@ -21,6 +21,10 @@ class ErrorHolder(object):
     def id(self):
         return self.description
 
+    @property
+    def _testMethodName(self):
+        return self.description
+
     def shortDescription(self):
         return None
 
