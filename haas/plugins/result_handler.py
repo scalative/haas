@@ -316,7 +316,7 @@ class TimingResultHandler(IResultHandlerPlugin):
         stream.writeln('\n\nTest timing report')
         stream.writeln(self.separator2)
 
-        template = '{0} {1}'
+        template = '  {0} {1}'
 
         for test_result in tests_by_time[:self.number_to_summarize]:
             description = get_test_description(
