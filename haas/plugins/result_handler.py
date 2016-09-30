@@ -334,18 +334,21 @@ class TimingResultHandler(IResultHandlerPlugin):
             ['95%', str(tests_by_time[percentile_90_index].duration).strip()],
             ['99%', str(tests_by_time[percentile_80_index].duration).strip()],
         ]
-        column_lengths = [max(len(item) for item in pair) for pair in pairs]
-        headers, columns = zip(*pairs)
-        header_template = '{item: <{len}}'
-        column_template = '{item: >{len}}'
-        header = ' | '.join(header_template.format(item=h, len=l)
-                            for h, l in zip(headers, column_lengths))
-        separator = '-+-'.join('-' * l for l in column_lengths)
-        row = ' | '.join(column_template.format(item=i, len=l)
-                         for i, l in zip(columns, column_lengths))
-        stream.writeln(' {0}'.format(header))
-        stream.writeln('-{0}-'.format(separator))
-        stream.writeln(' {0}'.format(row))
+        stat_table = _format_stat_table(pairs)
+        stream.writeln(stat_table)
 
     def __call__(self, result):
         self._test_results.append(result)
+
+
+def _format_stat_table(pairs):
+    column_lengths = [max(len(item) for item in pair) for pair in pairs]
+    headers, columns = zip(*pairs)
+    header_template = '{item: <{len}}'
+    column_template = '{item: >{len}}'
+    header = ' | '.join(header_template.format(item=h, len=l)
+                        for h, l in zip(headers, column_lengths))
+    separator = '-+-'.join('-' * l for l in column_lengths)
+    row = ' | '.join(column_template.format(item=i, len=l)
+                     for i, l in zip(columns, column_lengths))
+    return ' {0}\n-{1}-\n {2}'.format(header, separator, row)
