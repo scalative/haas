@@ -17,6 +17,8 @@ import warnings
 import six
 from six.moves import StringIO
 
+from .error_holder import ErrorHolder
+
 
 class TestCompletionStatus(Enum):
     """Enumeration to represent the status of a single test.
@@ -461,7 +463,13 @@ class ResultCollector(object):
         else:
             stderr = stdout = None
 
-        started_time = self._test_timing[self._testcase_to_key(test)]
+        started_time = self._test_timing.get(self._testcase_to_key(test))
+        if started_time is None and isinstance(test, ErrorHolder):
+            started_time = datetime.utcnow()
+        elif started_time is None:
+            raise RuntimeError(
+                'Missing test start! Please report this error as a bug in '
+                'haas.')
 
         completion_time = datetime.utcnow()
         duration = TestDuration(started_time, completion_time)

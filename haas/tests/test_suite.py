@@ -11,6 +11,7 @@ from itertools import count
 import sys
 
 from ._test_cases import TestCase
+from ..result import ResultCollector
 from ..suite import TestSuite, _TestSuiteState
 from ..testing import unittest
 
@@ -126,7 +127,7 @@ class ResetClassStateMixin(object):
 class TestTestSuiteState(ResetClassStateMixin, unittest.TestCase):
 
     def setUp(self):
-        self.state = _TestSuiteState(unittest.TestResult())
+        self.state = _TestSuiteState(ResultCollector())
         self._name_count = count(0)
         ResetClassStateMixin.setUp(self)
 
@@ -546,14 +547,14 @@ class TestRunningTestSuite(ResetClassStateMixin, unittest.TestCase):
         ResetClassStateMixin.tearDown(self)
 
     def test_run_suite_run(self):
-        result = unittest.TestResult()
+        result = ResultCollector()
         returned_result = self.suite.run(result)
         self.assertIs(result, returned_result)
         self.assertTrue(self.case_1.was_run)
         self.assertTrue(self.case_2.was_run)
 
     def test_run_suite_call(self):
-        result = unittest.TestResult()
+        result = ResultCollector()
         returned_result = self.suite(result)
         self.assertIs(result, returned_result)
         self.assertTrue(self.case_1.was_run)
@@ -561,7 +562,7 @@ class TestRunningTestSuite(ResetClassStateMixin, unittest.TestCase):
 
     def test_run_suite_setup_error(self):
         self.case_1.__class__.setup_raise = True
-        result = unittest.TestResult()
+        result = ResultCollector()
         returned_result = self.suite.run(result)
         self.assertIs(result, returned_result)
         self.assertFalse(self.case_1.was_run)
@@ -584,7 +585,7 @@ class TestRunningTestSuite(ResetClassStateMixin, unittest.TestCase):
                 ),
             ],
         )
-        result = unittest.TestResult()
+        result = ResultCollector()
         suite.run(result)
         self.assertEqual(MockTestCaseSetupTeardown.setup_count, 1)
         self.assertEqual(MockTestCaseSetupTeardown.teardown_count, 1)
