@@ -6,7 +6,7 @@
 # of the 3-clause BSD license.  See the LICENSE.txt file for details.
 from __future__ import absolute_import, unicode_literals
 
-from datetime import datetime
+from datetime import datetime, timedelta
 from enum import Enum
 from functools import wraps
 import locale
@@ -106,10 +106,20 @@ class TestDuration(object):
 
     """
 
-    def __init__(self, start_time, stop_time):
-        self._start_time = start_time
-        self._stop_time = stop_time
-        self._duration = stop_time - start_time
+    def __init__(self, start_time, stop_time=None):
+        if stop_time is not None:
+            self._start_time = start_time
+            self._stop_time = stop_time
+            self._duration = stop_time - start_time
+        else:
+            # Once calculations are done, start & stop are meaningless
+            self._start_time = None
+            self._stop_time = None
+            duration = start_time
+            if not isinstance(duration, timedelta):
+                duration = timedelta(seconds=float(start_time))
+            self._duration = duration
+        self._total_seconds = None
 
     @property
     def start_time(self):
@@ -123,24 +133,32 @@ class TestDuration(object):
     def duration(self):
         return self._duration
 
+    @property
+    def total_seconds(self):
+        if self._total_seconds is None:
+            if sys.version_info < (2, 7):
+                delta = self._duration
+                total_seconds = delta.microseconds / 1000000.0 + delta.seconds
+                total_seconds += delta.days * 24 * 60 * 60
+            else:
+                total_seconds = self._duration.total_seconds()
+            self._total_seconds = total_seconds
+        return self._total_seconds
+
     def __repr__(self):
         return '<TestDuration {0}>'.format(str(self))
 
-    if sys.version_info < (2, 7):
-        def _total_seconds(self, delta):
-            seconds = delta.microseconds / 1000000.0 + delta.seconds
-            seconds += delta.days * 24 * 60 * 60
-            return seconds
-    else:
-        def _total_seconds(self, delta):
-            return delta.total_seconds()
-
     def __str__(self):
-        template = '{hours: >3.0f}:{minutes:0>2.0f}:{seconds:0>2.3f}'
-        minutes, seconds = divmod(self._total_seconds(self.duration), 60)
+        hours_template = '{hours: >3.0f}:'
+        template = '{hours_fmt}{minutes:0>2.0f}:{seconds:0>6.3f}'
+        minutes, seconds = divmod(self.total_seconds, 60)
         hours, minutes = divmod(minutes, 60)
+        if hours > 0:
+            hours_fmt = hours_template.format(hours=hours)
+        else:
+            hours_fmt = ''
         return template.format(
-            hours=hours,
+            hours_fmt=hours_fmt,
             minutes=minutes,
             seconds=seconds,
         )
@@ -171,6 +189,20 @@ class TestDuration(object):
 
     def __hash__(self):
         return hash((self._start_time, self._stop_time))
+
+    # To support statistics.mean() on TestDuration objects
+    def as_integer_ratio(self):
+        return self.total_seconds.as_integer_ratio()
+
+    def __add__(self, other):
+        if not isinstance(other, TestDuration):
+            return NotImplemented
+        return TestDuration(self.duration + other.duration)
+
+    def __truediv__(self, divisor):
+        if not isinstance(self, TestDuration) and isinstance(divisor, int):
+            return NotImplemented
+        return TestDuration(self.duration / divisor)
 
 
 class TestResult(object):

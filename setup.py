@@ -106,7 +106,7 @@ if not is_released:
 
 if __name__ == "__main__":
     install_requires = ['six']
-    common_requires = ['enum34']
+    common_requires = ['enum34', 'statistics']
     py26_requires = [
         'stevedore >= 1.0.0, < 1.10.0',
         'unittest2',
@@ -169,7 +169,7 @@ if __name__ == "__main__":
                 'default = haas.plugins.result_handler:StandardTestResultHandler',  # noqa
                 'quiet = haas.plugins.result_handler:QuietTestResultHandler',
                 'verbose = haas.plugins.result_handler:VerboseTestResultHandler',  # noqa
-                'slow = haas.plugins.result_handler:SlowTestsResultHandler',
+                'timing = haas.plugins.result_handler:TimingResultHandler',
             ]
         },
         extras_require={
