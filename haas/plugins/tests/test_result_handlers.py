@@ -286,13 +286,13 @@ class TestTimingResultHandler(ExcInfoFixture, unittest.TestCase):
             ['Std Dev', str(stdev).strip()],
             ['Median', str(median).strip()],
             ['80%', str(TestDuration(
-                durations_secs[percentile_99_index])).strip()],
-            ['90%', str(TestDuration(
-                durations_secs[percentile_95_index])).strip()],
-            ['95%', str(TestDuration(
-                durations_secs[percentile_90_index])).strip()],
-            ['99%', str(TestDuration(
                 durations_secs[percentile_80_index])).strip()],
+            ['90%', str(TestDuration(
+                durations_secs[percentile_90_index])).strip()],
+            ['95%', str(TestDuration(
+                durations_secs[percentile_95_index])).strip()],
+            ['99%', str(TestDuration(
+                durations_secs[percentile_99_index])).strip()],
         ]
 
         return _format_stat_table(pairs)
