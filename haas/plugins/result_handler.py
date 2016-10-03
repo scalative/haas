@@ -330,10 +330,10 @@ class TimingResultHandler(IResultHandlerPlugin):
             ['Mean', str(mean).strip()],
             ['Std Dev', str(stdev).strip()],
             ['Median', str(median).strip()],
-            ['80%', str(tests_by_time[percentile_99_index].duration).strip()],
-            ['90%', str(tests_by_time[percentile_95_index].duration).strip()],
-            ['95%', str(tests_by_time[percentile_90_index].duration).strip()],
-            ['99%', str(tests_by_time[percentile_80_index].duration).strip()],
+            ['80%', str(tests_by_time[percentile_80_index].duration).strip()],
+            ['90%', str(tests_by_time[percentile_90_index].duration).strip()],
+            ['95%', str(tests_by_time[percentile_95_index].duration).strip()],
+            ['99%', str(tests_by_time[percentile_99_index].duration).strip()],
         ]
         stat_table = _format_stat_table(pairs)
         stream.writeln(stat_table)
