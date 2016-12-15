@@ -6,7 +6,7 @@
 # of the 3-clause BSD license.  See the LICENSE.txt file for details.
 import sys  # pragma: no cover
 
-from .main import main  # pragma: no cover
+from haas.main import main  # pragma: no cover
 
 
 if __name__ == '__main__':
