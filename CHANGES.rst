@@ -34,6 +34,7 @@ Bugs Fixed
 * The sort order of plugins is now stable, producing consistent output
   (#149).
 * Spelling of class ``ResultCollector`` is now correct (#153).
+* Fix crash under Python 3 on Windows (#163).
 
 
 Version 0.7.0
