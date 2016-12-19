@@ -16,7 +16,7 @@ Introduction
 ============
 
 ``haas`` is intended to iron out some of the wrinkles in Python's
-``unittest` test runner.  ``haas`` features and improved test discover
+``unittest`` test runner.  ``haas`` features an improved test discover
 and loading mechanism, allowing the same base command to be used to
 discover tests in packages as well as run individual test cases.  In the
 future, ``haas`` will feature a plugin system allowing the use of
