@@ -2,14 +2,20 @@
  ``haas`` CHANGELOG
 ====================
 
-Changes since version 0.7.0
+Changes since version 0.8.0
 ===========================
+
+
+Version 0.8.0
+=============
 
 Enhancements
 ------------
 
 * The ParallelTestRunner now has an option to force a new process for
   each test case, enforcing isolation between tests (#138).
+* A new output plugin summarizing the slowest tests and overall test
+  speed (#90).
 
 Bugs Fixed
 ----------
@@ -18,6 +24,18 @@ Bugs Fixed
 * Haas no longer passes the test name to TestCase using a keyword
   argument, allowing it to create test cases from subclasses that
   rename arguments (#135).
+* Haas no longer emits errors loading plugins when running on Windows
+  (#141).
+* Haas no longer ignores tests derived from ``unittest.TestCase`` when
+  ``unittest2`` is installed (#143).
+* Haas no longer propagates its internal logging to the root logger,
+  avoiding polluting logs when running tests that have a logger
+  configured (#148).
+* The sort order of plugins is now stable, producing consistent output
+  (#149).
+* Spelling of class ``ResultCollector`` is now correct (#153).
+* Fix crash under Python 3 on Windows (#163).
+
 
 Version 0.7.0
 =============
