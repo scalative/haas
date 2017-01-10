@@ -58,6 +58,7 @@ def _create_log_level_parser():
 
 def _add_log_level_option(parser):
     parser.add_argument('--log-level', default=None,
+                        type=lambda level_name: level_name.lower(),
                         choices=['critical', 'fatal', 'error', 'warning',
                                  'info', 'debug'],
                         help='Log level for haas logging')
