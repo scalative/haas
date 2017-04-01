@@ -253,6 +253,9 @@ class TestHaasApplication(unittest.TestCase):
     def test_with_logging(self, get_logger, runner_class, result_class,
                           plugin_manager):
         # Given
+        logger = Mock()
+        get_logger.side_effect = lambda name: logger
+
         with self._basic_test_fixture() as package_name:
             run, result = self._run_with_arguments(
                 runner_class, result_class, '--log-level', 'debug',
@@ -261,6 +264,36 @@ class TestHaasApplication(unittest.TestCase):
 
         # Then
         get_logger.assert_called_once_with(haas.__name__)
+        logger.setLevel.assert_called_once_with(logging.DEBUG)
+        args = runner_class.from_args.call_args
+        args, kwargs = args
+        ns, dest = args
+        self.assertIsInstance(ns, Namespace)
+        self.assertEqual(ns.verbosity, 1)
+        self.assertFalse(ns.failfast)
+        self.assertFalse(ns.buffer)
+
+        run.assert_called_once_with(result, suite)
+        result.wasSuccessful.assert_called_once_with()
+
+    @patch('logging.getLogger')
+    @with_patched_test_runner
+    def test_with_logging_uppercase_loglevel(self, get_logger,
+                                             runner_class, result_class,
+                                             plugin_manager):
+        # Given
+        logger = Mock()
+        get_logger.side_effect = lambda name: logger
+
+        with self._basic_test_fixture() as package_name:
+            run, result = self._run_with_arguments(
+                runner_class, result_class, '--log-level', 'WARNING',
+                plugin_manager=plugin_manager)
+            suite = Discoverer(Loader()).discover(package_name)
+
+        # Then
+        get_logger.assert_called_once_with(haas.__name__)
+        logger.setLevel.assert_called_once_with(logging.WARNING)
         args = runner_class.from_args.call_args
         args, kwargs = args
         ns, dest = args
