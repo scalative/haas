@@ -130,9 +130,9 @@ if __name__ == "__main__":
     setup(
         name='haas',
         version=__version__,
-        url='https://github.com/sjagoe/haas',
+        url='https://github.com/scalative/haas',
         author='Simon Jagoe',
-        author_email='simon@simonjagoe.com',
+        author_email='simon@scalative.com',
         classifiers=[
             'Development Status :: 3 - Alpha',
             'Intended Audience :: Developers',
