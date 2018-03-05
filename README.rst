@@ -2,7 +2,7 @@
 haas: Extensible Python Test Runner
 ===================================
 
-.. image:: https://pypip.in/wheel/haas/badge.png
+.. image:: https://img.shields.io/pypi/wheel/haas.svg
    :target: https://pypi.python.org/pypi/haas/
    :alt: Wheel Status
 
