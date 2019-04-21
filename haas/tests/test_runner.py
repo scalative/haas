@@ -1,3 +1,5 @@
+from argparse import ArgumentParser
+
 from mock import Mock, patch
 
 from ..plugins.runner import BaseTestRunner
@@ -82,3 +84,22 @@ class TestBaseTestRunner(unittest.TestCase):
         filterwarnings.assert_called_once_with(
             'module', category=DeprecationWarning,
             message='Please use assert\w+ instead.')
+
+    def test_init_from_args(self):
+        # Given
+        parser = ArgumentParser()
+        BaseTestRunner.add_parser_arguments(parser, None, None)
+
+        # When
+        args = parser.parse_args()
+        runner = BaseTestRunner.from_args(args, None)
+
+        # Then
+        self.assertIsNone(runner.warnings)
+
+        # When
+        args = parser.parse_args(["--warnings", "ignore"])
+        runner = BaseTestRunner.from_args(args, None)
+
+        # Then
+        self.assertEqual(runner.warnings, "ignore")
