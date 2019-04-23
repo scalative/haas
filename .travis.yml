@@ -25,6 +25,8 @@ install:
   - python setup.py develop
   - pip install coverage
   - pip install -r test_requirements.txt
+  - pip --version
+  - python -V
 
 script:
   - |
