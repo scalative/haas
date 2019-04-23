@@ -16,6 +16,10 @@ cache:
   directories:
     - $HOME/.cache/pip
 
+branches:
+  only:
+    - master
+
 install:
   - if [[ $TRAVIS_PYTHON_VERSION == '2.6' ]]; then pip install unittest2 ; fi
   - python setup.py develop
