@@ -44,7 +44,8 @@ class TestLoadTest(LoaderTestMixin, unittest.TestCase):
 
     def test_create_custom_class(self):
         loader = Loader(test_case_class=_test_case_data.TestCaseSubclass)
-        test = loader.load_test(_test_case_data.TestCaseSubclass, 'test_method')
+        test = loader.load_test(
+            _test_case_data.TestCaseSubclass, 'test_method')
         self.assertIsInstance(test, _test_case_data.TestCaseSubclass)
 
     def test_create_custom_class_raises(self):
