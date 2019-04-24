@@ -41,6 +41,7 @@ install:
        brew update
        brew install python
     fi
+  - pip install wheel
   - python setup.py develop
   - pip install coverage
   - pip install -r test_requirements.txt
