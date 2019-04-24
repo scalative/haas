@@ -38,8 +38,11 @@ install:
   - if [[ $TRAVIS_PYTHON_VERSION == '2.6' ]]; then pip install unittest2 ; fi
   - |
     if [[ ${TRAVIS_OS_NAME} == 'osx' ]]; then
-       brew upgrade python
-       brew upgrade python@2
+       if [[ $TRAVIS_PYTHON_VERSION == '2.7' ]]; then
+          brew upgrade python@2
+       else
+          brew upgrade python
+       fi
     fi
   - pip install wheel
   - python setup.py develop
