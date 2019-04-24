@@ -68,5 +68,6 @@ notifications:
     - travis-ci@simonjagoe.com
 
 after_success:
+  - if [[ $TRAVIS_PYTHON_VERSION == '2.6' ]]; then pip install "idna < 2.8"; fi
   - pip install coveralls
   - coveralls
