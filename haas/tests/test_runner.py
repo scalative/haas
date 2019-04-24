@@ -91,7 +91,7 @@ class TestBaseTestRunner(unittest.TestCase):
         BaseTestRunner.add_parser_arguments(parser, None, None)
 
         # When
-        args = parser.parse_args()
+        args = parser.parse_args([])
         runner = BaseTestRunner.from_args(args, None)
 
         # Then
