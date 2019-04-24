@@ -16,6 +16,24 @@ matrix:
       python: 3.7
     - python: pypy
     - python: pypy3
+    - os: osx
+      language: shell
+      python: 2.7
+      addons:
+        homebrew:
+          packages:
+            - python@2
+        update: true
+    - os: osx
+      language: shell
+      python: 3.7
+      addons:
+        homebrew:
+          packages:
+            - python
+        update: true
+
+
 
 cache:
   directories:
