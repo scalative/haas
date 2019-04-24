@@ -83,7 +83,7 @@ class TestBaseTestRunner(unittest.TestCase):
         simplefilter.assert_called_once_with('always')
         filterwarnings.assert_called_once_with(
             'module', category=DeprecationWarning,
-            message='Please use assert\w+ instead.')
+            message=r'Please use assert\w+ instead.')
 
     def test_init_from_args(self):
         # Given
