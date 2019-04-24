@@ -3,3 +3,4 @@ refactordoc
 sphinx
 sphinx-rtd-theme
 wheel
+tox
