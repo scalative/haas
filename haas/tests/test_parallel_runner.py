@@ -74,7 +74,7 @@ class TestChildResultHandler(unittest.TestCase):
 
         # Then
         self.assertGreaterEqual(handler.start_time, start_time)
-        self.assertLess(handler.start_time, stop_time)
+        self.assertLessEqual(handler.start_time, stop_time)
         self.assertGreaterEqual(handler.stop_time, stop_time)
         self.assertEqual(handler.results, [test_result])
 
