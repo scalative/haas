@@ -3,7 +3,7 @@ language: python
 env:
   global:
       PYTHONUNBUFFERED="1"
-      TOX_REQUIREMENT="tox"
+
 matrix:
   include:
     - python: "2.6"
@@ -54,16 +54,8 @@ addons:
 before_cache:
     - brew cleanup
 
-install:
-  - |
-    if [[ $TRAVIS_PYTHON_VERSION == 'pypy' ]]; then
-      python -m pip install -q -U pip
-      pip install --progress-bar off -rtox-requirements.txt
-    else
-      pip install -rtox-requirements.txt
-    fi
-script:
-  - tox -v
+install: pip install -q -rtox-requirements.txt
+script: tox -v
 
 notifications:
   email:
