@@ -8,7 +8,7 @@ matrix:
   include:
     - python: "2.6"
       env: TESTENVS="cp26"
-    - python: "2.7
+    - python: "2.7"
       env: TESTENVS="cp27"
     - python: "3.3"
       env: TESTENVS="cp33"
@@ -28,11 +28,11 @@ matrix:
     - os: osx
       language: shell
       env: TOXPY37="/usr/local/bin/python2" TESTENVS="cp27"
-      python: 2.7
+      python: "2.7"
     - os: osx
       language: shell
       env: TOXPY36="/usr/local/bin/python3" TESTENVS="cp36"
-      python: 3.6
+      python: "3.6"
 
 cache:
   directories:
