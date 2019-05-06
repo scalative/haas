@@ -27,7 +27,7 @@ matrix:
       env: TOXENV="pp3"
     - os: osx
       language: shell
-      env: TOXPY37="/usr/local/bin/python2" TOXENV="cp27"
+      env: TOXPY27="/usr/local/bin/python2" TOXENV="cp27"
       python: "2.7"
     - os: osx
       language: shell
