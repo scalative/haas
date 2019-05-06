@@ -18,11 +18,12 @@ matrix:
     # - python: pypy3
     - os: osx
       language: shell
+      env: TOXPY37='/usr/local/bin/python2' TESTENVS='cp27'
       python: 2.7
     - os: osx
       language: shell
+      env: TOXPY37='/usr/local/bin/python3' TESTENVS='cp37'
       python: 3.7
-
 
 cache:
   directories:
@@ -45,36 +46,10 @@ before_cache:
     - brew cleanup
 
 install:
-  - if [[ $TRAVIS_PYTHON_VERSION == '2.6' ]]; then pip install unittest2 ; fi
-  - |
-    if [[ ${TRAVIS_OS_NAME} == 'osx' ]]; then
-       if [[ $TRAVIS_PYTHON_VERSION == '2.7' ]]; then
-          python2 -m pip install --upgrade pip
-          python2 -m pip install virtualenv
-          which python2
-          source defaul/bin/activate
-       else
-          python3 -m pip install --upgrade pip
-          python3 -m pip install virtualenv
-          which python3
-       fi
-    fi
-  - pip install wheel
-  - python setup.py develop
-  - pip install coverage
-  - pip install -r test_requirements.txt
-  - pip --version
-  - python -V
+  - pip install tox
 
 script:
-  - |
-    if [[ $TRAVIS_PYTHON_VERSION == '2.6' ]]; then
-       coverage run --branch -m unittest2.__main__ discover -v -t . haas
-       python -m haas.__main__
-    else
-       coverage run --branch -m unittest discover -v -t . haas
-       python -m haas
-    fi
+  - tox -e ${TESTENVS}
 
 notifications:
   email:
