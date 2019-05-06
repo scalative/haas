@@ -51,13 +51,12 @@ install:
        if [[ $TRAVIS_PYTHON_VERSION == '2.7' ]]; then
           python2 -m pip install --upgrade pip
           python2 -m pip install virtualenv
-          virtaulenv default
+          which(python2)
           source defaul/bin/activate
        else
           python3 -m pip install --upgrade pip
           python3 -m pip install virtualenv
-          virtaulenv default
-          source defaul/bin/activate
+          which(python3)
        fi
     fi
   - pip install wheel
