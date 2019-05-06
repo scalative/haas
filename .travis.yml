@@ -40,8 +40,14 @@ install:
     if [[ ${TRAVIS_OS_NAME} == 'osx' ]]; then
        if [[ $TRAVIS_PYTHON_VERSION == '2.7' ]]; then
           brew upgrade python@2
+	  python2 -m pip install virtualenv
+	  python2 -m virtaulenv default
+	  source defaul/bin/activate
        else
-          brew upgrade python
+          brew upgrade python@3
+	  python3 -m pip install virtualenv
+	  python3 -m virtaulenv default
+	  source defaul/bin/activate
        fi
     fi
   - pip install wheel
