@@ -58,7 +58,7 @@ install:
   - pip install tox
 
 script:
-  - tox -e ${TESTENVS}
+  - tox -v -e ${TESTENVS}
 
 notifications:
   email:
