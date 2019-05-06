@@ -11,7 +11,7 @@ matrix:
     - python: "2.7"
       env: TESTENVS="cp27"
     - python: "3.3"
-      env: TESTENVS="cp33" TOX_REQUIREMENT="tox<3.0.0" VIRTUAL_ENV_NO_PIP="1"
+      env: TESTENVS="cp33" TOX_REQUIREMENT="tox<3.0.0" VIRTUALENV_NO_PIP="1"
     - python: "3.4"
       env: TESTENVS="cp34"
     - python: "3.5"
