@@ -3,15 +3,15 @@ language: python
 env:
   global:
       PYTHONUNBUFFERED="1"
-
+      TOX_REQUIREMENT="tox"
 matrix:
   include:
     - python: "2.6"
-      env: TESTENVS="cp26"
+      env: TESTENVS="cp26" TOX_REQUIREMENT="tox<3.0.0"
     - python: "2.7"
       env: TESTENVS="cp27"
     - python: "3.3"
-      env: TESTENVS="cp33"
+      env: TESTENVS="cp33" TOX_REQUIREMENT="tox<3.0.0"
     - python: "3.4"
       env: TESTENVS="cp34"
     - python: "3.5"
@@ -55,10 +55,10 @@ before_cache:
     - brew cleanup
 
 install:
-  - pip install tox
+  - pip install "$TOX_REQUIREMENT"
 
 script:
-  - tox -v -e ${TESTENVS}
+  - tox -v -e "${TESTENVS}"
 
 notifications:
   email:
