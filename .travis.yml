@@ -55,9 +55,13 @@ before_cache:
     - brew cleanup
 
 install:
-  - if [[ $TRAVIS_PYTHON_VERSION == 'pypy' ]]; then python -m pip install -U pip; fi
-  - pip --progress-bar ascii install -rtox-requirements.txt
-
+  - |
+    if [[ $TRAVIS_PYTHON_VERSION == 'pypy' ]]; then
+      python -m pip install -U pip
+      pip install -rtox-requirements.txt --progress-bar off
+    else
+      pip install -rtox-requirements.txt
+    fi
 script:
   - tox -v
 
