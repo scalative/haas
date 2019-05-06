@@ -27,6 +27,7 @@ matrix:
 cache:
   directories:
     - $HOME/.cache/pip
+    - $HOME/Library/Caches/Homebrew
 
 branches:
   only:
@@ -34,17 +35,24 @@ branches:
     - /^maintenance\/.*$/
     - /^v\d+\.\d+\.\d+.*$/
 
+addons:
+  homebrew:
+    packages:
+    - python@2
+    - python@3
+
+before_cache:
+    - brew cleanup
+
 install:
   - if [[ $TRAVIS_PYTHON_VERSION == '2.6' ]]; then pip install unittest2 ; fi
   - |
     if [[ ${TRAVIS_OS_NAME} == 'osx' ]]; then
        if [[ $TRAVIS_PYTHON_VERSION == '2.7' ]]; then
-          brew upgrade python@2
           python2 -m pip install virtualenv
           python2 -m virtaulenv default
           source defaul/bin/activate
        else
-          brew upgrade python@3
           python3 -m pip install virtualenv
           python3 -m virtaulenv default
           source defaul/bin/activate
