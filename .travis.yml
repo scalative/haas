@@ -18,11 +18,11 @@ matrix:
     # - python: pypy3
     - os: osx
       language: shell
-      env: TOXPY37='/usr/local/bin/python2' TESTENVS='cp27'
+      env: TOXPY37="/usr/local/bin/python2" TESTENVS="cp27"
       python: 2.7
     - os: osx
       language: shell
-      env: TOXPY37='/usr/local/bin/python3' TESTENVS='cp37'
+      env: TOXPY37="/usr/local/bin/python3" TESTENVS="cp37"
       python: 3.7
 
 cache:
