@@ -20,11 +20,21 @@ class BaseTestRunner(IRunnerPlugin):
 
     @classmethod
     def from_args(cls, args, arg_prefix):
-        return cls()
+        return cls(warnings=args.warnings)
 
     @classmethod
     def add_parser_arguments(self, parser, option_prefix, dest_prefix):
-        pass
+        parser.add_argument(
+            "--warnings",
+            default=None,
+            choices=[
+                "default", "error", "ignore", "always", "module", "once"
+            ],
+            help=("Warnings filter action, specifying whether warnings "
+                  "during tests are ignored, displayed, or turned into "
+                  "errors. The interpretation of the different choices "
+                  "matches Python's warnings module.")
+        )
 
     def run(self, result_collector, test):
         """Run the given test case or test suite.

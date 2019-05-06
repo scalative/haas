@@ -116,9 +116,11 @@ class TestPluginManager(unittest.TestCase):
 
         # Then
         actions = parser._actions
-        self.assertEqual(len(actions), 1)
-        action, = actions
-        self.assertEqual(action.option_strings, ['--runner'])
+        self.assertEqual(len(actions), 2)
+        runner_action, warnings_action = sorted(
+            actions, key=lambda action: action.dest)
+        self.assertEqual(runner_action.option_strings, ['--runner'])
+        self.assertEqual(warnings_action.option_strings, ['--warnings'])
 
     def test_get_default_driver(self):
         # Given
