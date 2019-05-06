@@ -7,11 +7,11 @@ env:
 matrix:
   include:
     - python: "2.6"
-      env: TESTENVS="cp26" TOX_REQUIREMENT="tox<3.0.0"
+      env: TESTENVS="cp26"
     - python: "2.7"
       env: TESTENVS="cp27"
     - python: "3.3"
-      env: TESTENVS="cp33" TOX_REQUIREMENT="tox<3.0.0 virtualenv==16.0.0"
+      env: TESTENVS="cp33"
     - python: "3.4"
       env: TESTENVS="cp34"
     - python: "3.5"
@@ -55,7 +55,7 @@ before_cache:
     - brew cleanup
 
 install:
-  - pip install "$TOX_REQUIREMENT"
+  - pip install -rtox-requirements.txt
 
 script:
   - tox -v -e "${TESTENVS}"
