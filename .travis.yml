@@ -6,24 +6,24 @@ env:
 
 matrix:
   include:
-    - python: 2.6
+    - python: "2.6"
       env: TESTENVS="cp26"
-    - python: 2.7
+    - python: "2.7
       env: TESTENVS="cp27"
-    - python: 3.3
+    - python: "3.3"
       env: TESTENVS="cp33"
-    - python: 3.4
+    - python: "3.4"
       env: TESTENVS="cp34"
-    - python: 3.5
+    - python: "3.5"
       env: TESTENVS="cp35"
-    - python: 3.6
+    - python: "3.6"
       env: TESTENVS="cp36"
     - dist: xenial
-      python: 3.7
+      python: "3.7"
       env: TESTENVS="cp37"
-    - python: pypy
+    - python: "pypy"
       env: TESTENVS="pypy"
-    - python: pypy3
+    - python: "pypy3"
       env: TESTENVS="pypy3"
     - os: osx
       language: shell
