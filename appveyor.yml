@@ -39,7 +39,7 @@ cache:
 init:
   - ps: $Env:path = $Env:PYTHON + ";" + $Env:PYTHON + "/Scripts;" + $Env:path
 install:
-  - cmd: dir c:\
+  - cmd: dir C:\Python26-x64\
   - cmd: python -m pip install -rtox-requirements.txt
 test_script:
   - python -m tox -v
