@@ -57,7 +57,7 @@ before_cache:
 install:
   - |
     if [[ $TRAVIS_PYTHON_VERSION == 'pypy' ]]; then
-      python -m pip install -U pip
+      python -m pip install -U pip --progress-bar off
       pip install -rtox-requirements.txt --progress-bar off
     else
       pip install -rtox-requirements.txt
