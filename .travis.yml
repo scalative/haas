@@ -49,10 +49,12 @@ install:
   - |
     if [[ ${TRAVIS_OS_NAME} == 'osx' ]]; then
        if [[ $TRAVIS_PYTHON_VERSION == '2.7' ]]; then
+          python2 -m pip install --upgrade pip
           python2 -m pip install virtualenv
           python2 -m virtaulenv default
           source defaul/bin/activate
        else
+          python3 -m pip install --upgrade pip
           python3 -m pip install virtualenv
           python3 -m virtaulenv default
           source defaul/bin/activate
