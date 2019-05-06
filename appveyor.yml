@@ -34,10 +34,10 @@ cache:
   - C:\Users\appveyor\AppData\Local\pip\Cache -> appveyor-cache.txt
 
 init:
-  - ps: $Env:path = $:Env:TOXPY27 + ";" + $Env:path
+  - ps: $Env:path = $:Env:TOXPY33 + ";" + $Env:path
 install:
   - cmd: python -m pip install --upgrade pip wheel
-  - cmd: pip install tox
+  - cmd: pip install -rtox_requirements.txt
 test_script:
   - tox
 on_success:
