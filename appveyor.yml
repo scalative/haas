@@ -16,6 +16,7 @@ environment:
       TOXPY35: "C:/Python35-x64/python.exe"
       TOXPY36: "C:/Python36-x64/python.exe"
       TOXPY37: "C:/Python37-x64/python.exe"
+      PYTHON: "C:/Python33-x64/
     - TOXPY26: "C:/Python26/python.exe"
       TOXPY27: "C:/Python27/python.exe"
       TOXPY33: "C:/Python33/python.exe"
@@ -23,6 +24,7 @@ environment:
       TOXPY35: "C:/Python35/python.exe"
       TOXPY36: "C:/Python36/python.exe"
       TOXPY37: "C:/Python37/python.exe"
+      PYTHON: "C:/Python33-x64/
 
 matrix:
   fast_finish: true
@@ -35,7 +37,7 @@ cache:
   - C:\Users\appveyor\AppData\Local\pip\Cache -> appveyor-cache.txt
 
 init:
-  - ps: $Env:path = $:Env:TOXPY33 + ";" + $Env:path
+  - ps: $Env:path = $:Env:PYTHON + ";" + $Env:path
 install:
   - cmd: python -m pip install --upgrade pip wheel
   - cmd: python -m pip install -rtox-requirements.txt
