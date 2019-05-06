@@ -5,16 +5,18 @@ skip_branch_with_pr: true
 environment:
 
   pythonunbuffered: "1"
-  toxenv: "cp27,cp33,cp34,cp35,cp36,cp37"
+  toxenv: "cp26,cp27,cp33,cp34,cp35,cp36,cp37"
 
   matrix:
-    - TOXPY27: "C:/Python27-x64/python.exe"
+    - TOXPY26: "C:/Python26-x64/python.exe"
+      TOXPY27: "C:/Python27-x64/python.exe"
       TOXPY33: "C:/Python33-x64/python.exe"
       TOXPY34: "C:/Python34-x64/python.exe"
       TOXPY35: "C:/Python35-x64/python.exe"
       TOXPY36: "C:/Python36-x64/python.exe"
       TOXPY37: "C:/Python37-x64/python.exe"
-    - TOXPY27: "C:/Python27/python.exe"
+    - TOXPY26: "C:/Python26/python.exe"
+      TOXPY27: "C:/Python27/python.exe"
       TOXPY33: "C:/Python33/python.exe"
       TOXPY34: "C:/Python34/python.exe"
       TOXPY35: "C:/Python35/python.exe"
