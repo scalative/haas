@@ -7,31 +7,31 @@ env:
 matrix:
   include:
     - python: "2.6"
-      env: TESTENVS="cp26"
+      env: TOXENV="cp26"
     - python: "2.7"
-      env: TESTENVS="cp27"
+      env: TOXENV="cp27"
     - python: "3.3"
-      env: TESTENVS="cp33"
+      env: TOXENV="cp33"
     - python: "3.4"
-      env: TESTENVS="cp34"
+      env: TOXENV="cp34"
     - python: "3.5"
-      env: TESTENVS="cp35"
+      env: TOXENV="cp35"
     - python: "3.6"
-      env: TESTENVS="cp36"
+      env: TOXENV="cp36"
     - dist: xenial
       python: "3.7"
-      env: TESTENVS="cp37"
+      env: TOXENV="cp37"
     - python: "pypy"
-      env: TESTENVS="pp2"
+      env: TOXENV="pp2"
     - python: "pypy3"
-      env: TESTENVS="pp3"
+      env: TOXENV="pp3"
     - os: osx
       language: shell
-      env: TOXPY37="/usr/local/bin/python2" TESTENVS="cp27"
+      env: TOXPY37="/usr/local/bin/python2" TOXENV="cp27"
       python: "2.7"
     - os: osx
       language: shell
-      env: TOXPY36="/usr/local/bin/python3" TESTENVS="cp36"
+      env: TOXPY36="/usr/local/bin/python3" TOXENV="cp36"
       python: "3.6"
 
 cache:
@@ -58,7 +58,7 @@ install:
   - pip install -rtox-requirements.txt
 
 script:
-  - tox -v -e "${TESTENVS}"
+  - tox -v
 
 notifications:
   email:
