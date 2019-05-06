@@ -1,7 +1,7 @@
 build: false
 shallow_clone: true
 skip_branch_with_pr: true
-image: Visual Studio 2013
+image: Visual Studio 2015
 
 environment:
 
@@ -16,7 +16,7 @@ environment:
       TOXPY35: "C:/Python35-x64/python.exe"
       TOXPY36: "C:/Python36-x64/python.exe"
       TOXPY37: "C:/Python37-x64/python.exe"
-      PYTHON: "C:/Python27-x64"
+      PYTHON: "C:/Python33-x64"
     - TOXPY26: "C:/Python26/python.exe"
       TOXPY27: "C:/Python27/python.exe"
       TOXPY33: "C:/Python33/python.exe"
