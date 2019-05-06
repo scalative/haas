@@ -22,9 +22,9 @@ matrix:
       python: "3.7"
       env: TESTENVS="cp37"
     - python: "pypy"
-      env: TESTENVS="pypy"
+      env: TESTENVS="pp2"
     - python: "pypy3"
-      env: TESTENVS="pypy3"
+      env: TESTENVS="pp3"
     - os: osx
       language: shell
       env: TOXPY37="/usr/local/bin/python2" TESTENVS="cp27"
