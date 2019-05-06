@@ -37,7 +37,7 @@ cache:
   - C:\Users\appveyor\AppData\Local\pip\Cache -> appveyor-cache.txt
 
 init:
-  - ps: $Env:path = $Env:PYTHON + ";" + $Env:path
+  - ps: $Env:path = $Env:PYTHON + ";" + $Env:PYTHON + "/Scripts;" + $Env:path
 install:
   - cmd: python -m pip install --upgrade pip wheel
   - cmd: python -m pip install -rtox-requirements.txt
