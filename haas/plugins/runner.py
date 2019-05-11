@@ -53,7 +53,7 @@ class BaseTestRunner(IRunnerPlugin):
                     warnings.filterwarnings(
                         'module',
                         category=DeprecationWarning,
-                        message='Please use assert\w+ instead.')
+                        message=r'Please use assert\w+ instead.')
             result_collector.startTestRun()
             try:
                 test(result_collector)
