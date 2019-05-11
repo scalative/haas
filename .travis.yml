@@ -34,6 +34,9 @@ matrix:
       env: TOXPY36="/usr/local/bin/python3" TOXENV="cp36"
       python: "3.6"
 
+  allow_failures:
+    - os: osx
+
 cache:
   directories:
     - $HOME/.cache/pip
