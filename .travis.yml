@@ -39,7 +39,6 @@ matrix:
 
   allow_failures:
     - os: osx
-    - env: TOXENV="flake8"
 
 cache:
   directories:
