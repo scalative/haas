@@ -9,14 +9,14 @@ from __future__ import absolute_import, unicode_literals
 import sys
 import logging
 
+from stevedore.extension import ExtensionManager
+
+from .utils import uncamelcase
+
 if sys.version_info < (2, 7):  # pragma: no cover
     from ordereddict import OrderedDict
 else:  # pragma: no cover
     from collections import OrderedDict
-
-from stevedore.extension import ExtensionManager
-
-from .utils import uncamelcase
 
 logger = logging.getLogger(__name__)
 
