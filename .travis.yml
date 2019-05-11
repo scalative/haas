@@ -33,9 +33,13 @@ matrix:
       language: shell
       env: TOXPY36="/usr/local/bin/python3" TOXENV="cp36"
       python: "3.6"
+    - dist: xenial
+      python: "3.7"
+      env: TOXENV="flake8"
 
   allow_failures:
     - os: osx
+    - env: TOXENV="flake8"
 
 cache:
   directories:
