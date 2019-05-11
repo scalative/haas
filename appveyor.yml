@@ -6,7 +6,7 @@ image: Visual Studio 2015
 environment:
 
   pythonunbuffered: "1"
-  toxenv: "cp26-win,cp27,cp33,cp34,cp35,cp36,cp37"
+  toxenv: "cp27,cp33,cp34,cp35,cp36,cp37"
 
   matrix:
     - TOXPY26: "C:/Python26-x64/python.exe"
