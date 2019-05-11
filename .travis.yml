@@ -1,40 +1,70 @@
 language: python
 
+env:
+  global:
+      PYTHONUNBUFFERED="1"
+
 matrix:
   include:
-    - python: 2.6
-      sudo: false
-    - python: 2.7
-      sudo: false
-    - python: 3.3
-      sudo: false
-    - python: 3.4
-      sudo: false
-    - python: 3.5
-      sudo: false
-    - python: pypy
-      sudo: required
-      dist: trusty
-    - python: pypy3
-      sudo: required
-      dist: trusty
+    - python: "2.6"
+      env: TOXENV="cp26"
+    - python: "2.7"
+      env: TOXENV="cp27"
+    - python: "3.3"
+      env: TOXENV="cp33"
+    - python: "3.4"
+      env: TOXENV="cp34"
+    - python: "3.5"
+      env: TOXENV="cp35"
+    - python: "3.6"
+      env: TOXENV="cp36"
+    - dist: xenial
+      python: "3.7"
+      env: TOXENV="cp37"
+    - python: "pypy"
+      env: TOXENV="pp2"
+    - python: "pypy3"
+      env: TOXENV="pp3"
+    - os: osx
+      language: shell
+      env: TOXPY27="/usr/local/bin/python2" TOXENV="cp27"
+      python: "2.7"
+    - os: osx
+      language: shell
+      env: TOXPY36="/usr/local/bin/python3" TOXENV="cp36"
+      python: "3.6"
 
-install:
-  - if [[ $TRAVIS_PYTHON_VERSION == '2.6' ]]; then pip install unittest2 ; fi
-  - pip install coverage
-  - pip install coveralls
-  - python setup.py develop
-  - pip install -r test_requirements.txt
+  allow_failures:
+    - os: osx
 
-script:
-  - if [[ $TRAVIS_PYTHON_VERSION == '2.6' ]]; then coverage run --branch -m unittest2.__main__ discover -v -t . haas; fi
-  - if [[ $TRAVIS_PYTHON_VERSION != '2.6' ]]; then coverage run --branch -m unittest discover -v -t . haas; fi
-  - if [[ $TRAVIS_PYTHON_VERSION == '2.6' ]]; then python -m haas.__main__; fi
-  - if [[ $TRAVIS_PYTHON_VERSION != '2.6' ]]; then python -m haas; fi
+cache:
+  directories:
+    - $HOME/.cache/pip
+    - $HOME/Library/Caches/Homebrew
+
+branches:
+  only:
+    - master
+    - /^maintenance\/.*$/
+    - /^v\d+\.\d+\.\d+.*$/
+
+addons:
+  homebrew:
+    packages:
+    - python@2
+    - python@3
+
+before_cache:
+    - brew cleanup
+
+install: pip install -q -rtox-requirements.txt
+script: tox -v
 
 notifications:
   email:
     - travis-ci@simonjagoe.com
 
 after_success:
-  coveralls
+  - if [[ $TRAVIS_PYTHON_VERSION == '2.6' ]]; then pip install "idna < 2.8"; fi
+  - pip install coveralls
+  - coveralls
