@@ -1,5 +1,8 @@
+from __future__ import print_function
+
 from argparse import ArgumentParser
 from datetime import datetime, timedelta
+import sys
 import time
 
 from mock import Mock, patch
@@ -25,6 +28,7 @@ class AsyncResult(object):
 
 
 def apply_async(func, args=None, kwargs=None, callback=None):
+    """ Run the given function serially (rather than in parallel) """
     if args is None:
         args = ()
     if kwargs is None:
@@ -276,6 +280,35 @@ class TestParallelTestRunner(unittest.TestCase):
             maxtasksperchild=None)
         pool.close.assert_called_once_with()
         pool.join.assert_called_once_with()
+
+    @patch('haas.plugins.parallel_runner.Pool')
+    def test_parallel_runner_stdout(self, pool_class):
+        # Given
+        pool = Mock()
+        pool_class.return_value = pool
+        pool.apply_async.side_effect = apply_async
+
+        def test_method():
+            print("STDOUT side effect of `test_method()`")
+            print("STDERR side effect", file=sys.stderr)
+        test_case = _test_cases.TestCase('test_method')
+        test_case.test_method = test_method
+        test_suite = TestSuite([test_case])
+
+        result_collector = ResultCollector()
+        runner = ParallelTestRunner()
+
+        patch_stdout = patch('sys.stdout', new=StringIO())
+        patch_stderr = patch('sys.stderr', new=StringIO())
+
+        # When
+        with patch_stdout as mock_stdout, patch_stderr as mock_stderr:
+            runner.run(result_collector, test_suite)
+
+        # Then
+        self.assertEqual(
+            mock_stdout.getvalue(), "STDOUT side effect of `test_method()`\n")
+        self.assertEqual(mock_stderr.getvalue(), "STDERR side effect\n")
 
 
 class TestParallelRunnerImportError(unittest.TestCase):
