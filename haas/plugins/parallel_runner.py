@@ -130,7 +130,6 @@ class ParallelTestRunner(BaseTestRunner):
                 if isinstance(test_case, ModuleImportError):
                     error_tests.append(test_case)
                 else:
-                    # print result.buffer, result.failfast
                     call_result = pool.apply_async(
                         _run_test_in_process, args=(test_case, result.buffer),
                         callback=callback)
