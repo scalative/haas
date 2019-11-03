@@ -295,7 +295,7 @@ class TestParallelTestRunner(unittest.TestCase):
         test_case.test_method = test_method
         test_suite = TestSuite([test_case])
 
-        result_collector = ResultCollector()
+        result_collector = ResultCollector(buffer=False)
         runner = ParallelTestRunner()
 
         patch_stdout = patch('sys.stdout', new=StringIO())
