@@ -1,12 +1,12 @@
 from datetime import datetime, timedelta
 import statistics
 
-from mock import patch
 from six.moves import StringIO
 
 from haas.result import TestResult, TestCompletionStatus, TestDuration
 from haas.testing import unittest
 from haas.tests import _test_cases
+from haas.tests.compat import mock
 from haas.tests.fixtures import ExcInfoFixture
 from ..result_handler import (
     QuietTestResultHandler,
@@ -19,7 +19,7 @@ from ..result_handler import (
 
 class TestTimingResultHandler(ExcInfoFixture, unittest.TestCase):
 
-    @patch('sys.stderr', new_callable=StringIO)
+    @mock.patch('sys.stderr', new_callable=StringIO)
     def test_output_start_test_run(self, stderr):
         # Given
         handler = TimingResultHandler(number_to_summarize=5)
@@ -31,7 +31,7 @@ class TestTimingResultHandler(ExcInfoFixture, unittest.TestCase):
         output = stderr.getvalue()
         self.assertEqual(output, '')
 
-    @patch('sys.stderr', new_callable=StringIO)
+    @mock.patch('sys.stderr', new_callable=StringIO)
     def test_output_stop_test_run_success(self, stderr):
         # Given
         start_time = datetime(2015, 12, 23, 8, 14, 12)
@@ -56,8 +56,8 @@ class TestTimingResultHandler(ExcInfoFixture, unittest.TestCase):
         self.assertRegexpMatches(
             output.replace('\n', ''), r'--+.*?00:10\.123 test_method \(')
 
-    @patch('time.ctime')
-    @patch('sys.stderr', new_callable=StringIO)
+    @mock.patch('time.ctime')
+    @mock.patch('sys.stderr', new_callable=StringIO)
     def test_output_start_test(self, stderr, mock_ctime):
         # Given
         case = _test_cases.TestCase('test_method')
@@ -70,7 +70,7 @@ class TestTimingResultHandler(ExcInfoFixture, unittest.TestCase):
         output = stderr.getvalue()
         self.assertEqual(output, '')
 
-    @patch('sys.stderr', new_callable=StringIO)
+    @mock.patch('sys.stderr', new_callable=StringIO)
     def test_no_output_stop_test(self, stderr):
         # Given
         handler = TimingResultHandler(number_to_summarize=5)
@@ -83,7 +83,7 @@ class TestTimingResultHandler(ExcInfoFixture, unittest.TestCase):
         output = stderr.getvalue()
         self.assertEqual(output, '')
 
-    @patch('sys.stderr', new_callable=StringIO)
+    @mock.patch('sys.stderr', new_callable=StringIO)
     def test_output_on_error(self, stderr):
         # Given
         start_time = datetime(2015, 12, 23, 8, 14, 12)
@@ -105,7 +105,7 @@ class TestTimingResultHandler(ExcInfoFixture, unittest.TestCase):
         output = stderr.getvalue()
         self.assertEqual(output, '')
 
-    @patch('sys.stderr', new_callable=StringIO)
+    @mock.patch('sys.stderr', new_callable=StringIO)
     def test_output_on_failure(self, stderr):
         # Given
         start_time = datetime(2015, 12, 23, 8, 14, 12)
@@ -127,7 +127,7 @@ class TestTimingResultHandler(ExcInfoFixture, unittest.TestCase):
         output = stderr.getvalue()
         self.assertEqual(output, '')
 
-    @patch('sys.stderr', new_callable=StringIO)
+    @mock.patch('sys.stderr', new_callable=StringIO)
     def test_output_on_success(self, stderr):
         # Given
         start_time = datetime(2015, 12, 23, 8, 14, 12)
@@ -147,7 +147,7 @@ class TestTimingResultHandler(ExcInfoFixture, unittest.TestCase):
         output = stderr.getvalue()
         self.assertEqual(output, '')
 
-    @patch('sys.stderr', new_callable=StringIO)
+    @mock.patch('sys.stderr', new_callable=StringIO)
     def test_output_on_skip(self, stderr):
         # Given
         start_time = datetime(2015, 12, 23, 8, 14, 12)
@@ -168,7 +168,7 @@ class TestTimingResultHandler(ExcInfoFixture, unittest.TestCase):
         output = stderr.getvalue()
         self.assertEqual(output, '')
 
-    @patch('sys.stderr', new_callable=StringIO)
+    @mock.patch('sys.stderr', new_callable=StringIO)
     def test_output_on_expected_fail(self, stderr):
         # Given
         start_time = datetime(2015, 12, 23, 8, 14, 12)
@@ -190,7 +190,7 @@ class TestTimingResultHandler(ExcInfoFixture, unittest.TestCase):
         output = stderr.getvalue()
         self.assertEqual(output, '')
 
-    @patch('sys.stderr', new_callable=StringIO)
+    @mock.patch('sys.stderr', new_callable=StringIO)
     def test_output_on_unexpected_success(self, stderr):
         # Given
         start_time = datetime(2015, 12, 23, 8, 14, 12)
@@ -210,7 +210,7 @@ class TestTimingResultHandler(ExcInfoFixture, unittest.TestCase):
         output = stderr.getvalue()
         self.assertEqual(output, '')
 
-    @patch('sys.stderr', new_callable=StringIO)
+    @mock.patch('sys.stderr', new_callable=StringIO)
     def test_output_with_error_on_stop_test_run(self, stderr):
         # Given
         start_time = datetime(2015, 12, 23, 8, 14, 12)
@@ -237,7 +237,7 @@ class TestTimingResultHandler(ExcInfoFixture, unittest.TestCase):
         self.assertRegexpMatches(
             output.replace('\n', ''), r'--+.*?1543:00:12\.234 test_method \(')
 
-    @patch('sys.stderr', new_callable=StringIO)
+    @mock.patch('sys.stderr', new_callable=StringIO)
     def test_output_with_failure_on_stop_test_run(self, stderr):
         # Given
         start_time = datetime(2015, 12, 23, 8, 14, 12)
@@ -297,7 +297,7 @@ class TestTimingResultHandler(ExcInfoFixture, unittest.TestCase):
 
         return _format_stat_table(pairs)
 
-    @patch('sys.stderr', new_callable=StringIO)
+    @mock.patch('sys.stderr', new_callable=StringIO)
     def test_output_multiple_tests(self, stderr):
         # Given
         tests_start_time = datetime(2015, 12, 23, 8, 14, 12)

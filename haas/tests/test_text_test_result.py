@@ -8,8 +8,6 @@ from __future__ import absolute_import, unicode_literals
 
 from datetime import datetime, timedelta
 
-from mock import Mock, patch
-
 from ..plugins.i_result_handler_plugin import IResultHandlerPlugin
 from ..result import (
     ResultCollector, TestResult, TestCompletionStatus, TestDuration
@@ -17,13 +15,14 @@ from ..result import (
 from ..testing import unittest
 from . import _test_cases, _test_case_data
 from .fixtures import ExcInfoFixture, MockDateTime
+from .compat import mock
 
 
 class TestTextTestResult(ExcInfoFixture, unittest.TestCase):
 
     def test_result_collector_calls_handlers_start_stop_methods(self):
         # Given
-        handler = Mock(spec=IResultHandlerPlugin)
+        handler = mock.Mock(spec=IResultHandlerPlugin)
         collector = ResultCollector()
         collector.add_result_handler(handler)
         case = _test_cases.TestCase('test_method')
@@ -74,7 +73,7 @@ class TestTextTestResult(ExcInfoFixture, unittest.TestCase):
 
     def test_unicode_traceback(self):
         # Given
-        handler = Mock(spec=IResultHandlerPlugin)
+        handler = mock.Mock(spec=IResultHandlerPlugin)
         collector = ResultCollector()
         collector.add_result_handler(handler)
         start_time = datetime(2015, 12, 23, 8, 14, 12)
@@ -84,7 +83,7 @@ class TestTextTestResult(ExcInfoFixture, unittest.TestCase):
         case = _test_cases.TestCase('test_method')
 
         # When
-        with patch('haas.result.datetime', new=MockDateTime(start_time)):
+        with mock.patch('haas.result.datetime', new=MockDateTime(start_time)):
             collector.startTest(case)
 
         # Then
@@ -98,7 +97,7 @@ class TestTextTestResult(ExcInfoFixture, unittest.TestCase):
                 case, TestCompletionStatus.error, expected_duration,
                 exception=exc_info)
             # When
-            with patch('haas.result.datetime', new=MockDateTime(end_time)):
+            with mock.patch('haas.result.datetime', new=MockDateTime(end_time)):
                 collector.addError(case, exc_info)
 
         # Then
@@ -111,7 +110,7 @@ class TestTextTestResult(ExcInfoFixture, unittest.TestCase):
 
     def test_result_collector_calls_handlers_on_error(self):
         # Given
-        handler = Mock(spec=IResultHandlerPlugin)
+        handler = mock.Mock(spec=IResultHandlerPlugin)
         collector = ResultCollector()
         collector.add_result_handler(handler)
         start_time = datetime(2015, 12, 23, 8, 14, 12)
@@ -121,7 +120,7 @@ class TestTextTestResult(ExcInfoFixture, unittest.TestCase):
         case = _test_cases.TestCase('test_method')
 
         # When
-        with patch('haas.result.datetime', new=MockDateTime(start_time)):
+        with mock.patch('haas.result.datetime', new=MockDateTime(start_time)):
             collector.startTest(case)
 
         # Then
@@ -136,7 +135,7 @@ class TestTextTestResult(ExcInfoFixture, unittest.TestCase):
                 exception=exc_info)
 
             # When
-            with patch('haas.result.datetime', new=MockDateTime(end_time)):
+            with mock.patch('haas.result.datetime', new=MockDateTime(end_time)):
                 collector.addError(case, exc_info)
 
         # Then
@@ -149,7 +148,7 @@ class TestTextTestResult(ExcInfoFixture, unittest.TestCase):
 
     def test_result_collector_calls_handlers_on_failure(self):
         # Given
-        handler = Mock(spec=IResultHandlerPlugin)
+        handler = mock.Mock(spec=IResultHandlerPlugin)
         collector = ResultCollector()
         collector.add_result_handler(handler)
         start_time = datetime(2015, 12, 23, 8, 14, 12)
@@ -159,7 +158,7 @@ class TestTextTestResult(ExcInfoFixture, unittest.TestCase):
         case = _test_cases.TestCase('test_method')
 
         # When
-        with patch('haas.result.datetime', new=MockDateTime(start_time)):
+        with mock.patch('haas.result.datetime', new=MockDateTime(start_time)):
             collector.startTest(case)
 
         # Then
@@ -173,7 +172,7 @@ class TestTextTestResult(ExcInfoFixture, unittest.TestCase):
                 exception=exc_info)
 
             # When
-            with patch('haas.result.datetime', new=MockDateTime(end_time)):
+            with mock.patch('haas.result.datetime', new=MockDateTime(end_time)):
                 collector.addFailure(case, exc_info)
 
         # Then
@@ -186,7 +185,7 @@ class TestTextTestResult(ExcInfoFixture, unittest.TestCase):
 
     def test_result_collector_calls_handlers_on_success(self):
         # Given
-        handler = Mock(spec=IResultHandlerPlugin)
+        handler = mock.Mock(spec=IResultHandlerPlugin)
         collector = ResultCollector()
         collector.add_result_handler(handler)
         start_time = datetime(2015, 12, 23, 8, 14, 12)
@@ -196,7 +195,7 @@ class TestTextTestResult(ExcInfoFixture, unittest.TestCase):
         case = _test_cases.TestCase('test_method')
 
         # When
-        with patch('haas.result.datetime', new=MockDateTime(start_time)):
+        with mock.patch('haas.result.datetime', new=MockDateTime(start_time)):
             collector.startTest(case)
 
         # Then
@@ -208,7 +207,7 @@ class TestTextTestResult(ExcInfoFixture, unittest.TestCase):
             case, TestCompletionStatus.success, expected_duration)
 
         # When
-        with patch('haas.result.datetime', new=MockDateTime(end_time)):
+        with mock.patch('haas.result.datetime', new=MockDateTime(end_time)):
             collector.addSuccess(case)
 
         # Then
@@ -221,7 +220,7 @@ class TestTextTestResult(ExcInfoFixture, unittest.TestCase):
 
     def test_result_collector_calls_handlers_on_skip(self):
         # Given
-        handler = Mock(spec=IResultHandlerPlugin)
+        handler = mock.Mock(spec=IResultHandlerPlugin)
         collector = ResultCollector()
         collector.add_result_handler(handler)
         start_time = datetime(2015, 12, 23, 8, 14, 12)
@@ -231,7 +230,7 @@ class TestTextTestResult(ExcInfoFixture, unittest.TestCase):
         case = _test_cases.TestCase('test_method')
 
         # When
-        with patch('haas.result.datetime', new=MockDateTime(start_time)):
+        with mock.patch('haas.result.datetime', new=MockDateTime(start_time)):
             collector.startTest(case)
 
         # Then
@@ -244,7 +243,7 @@ class TestTextTestResult(ExcInfoFixture, unittest.TestCase):
             message='reason')
 
         # When
-        with patch('haas.result.datetime', new=MockDateTime(end_time)):
+        with mock.patch('haas.result.datetime', new=MockDateTime(end_time)):
             collector.addSkip(case, 'reason')
 
         # Then
@@ -257,7 +256,7 @@ class TestTextTestResult(ExcInfoFixture, unittest.TestCase):
 
     def test_result_collector_calls_handlers_on_expected_fail(self):
         # Given
-        handler = Mock(spec=IResultHandlerPlugin)
+        handler = mock.Mock(spec=IResultHandlerPlugin)
         collector = ResultCollector()
         collector.add_result_handler(handler)
         start_time = datetime(2015, 12, 23, 8, 14, 12)
@@ -267,7 +266,7 @@ class TestTextTestResult(ExcInfoFixture, unittest.TestCase):
         case = _test_cases.TestCase('test_method')
 
         # When
-        with patch('haas.result.datetime', new=MockDateTime(start_time)):
+        with mock.patch('haas.result.datetime', new=MockDateTime(start_time)):
             collector.startTest(case)
 
         # Then
@@ -281,7 +280,7 @@ class TestTextTestResult(ExcInfoFixture, unittest.TestCase):
                 exception=exc_info)
 
             # When
-            with patch('haas.result.datetime', new=MockDateTime(end_time)):
+            with mock.patch('haas.result.datetime', new=MockDateTime(end_time)):
                 collector.addExpectedFailure(case, exc_info)
 
         # Then
@@ -294,7 +293,7 @@ class TestTextTestResult(ExcInfoFixture, unittest.TestCase):
 
     def test_result_collector_calls_handlers_on_unexpected_success(self):
         # Given
-        handler = Mock(spec=IResultHandlerPlugin)
+        handler = mock.Mock(spec=IResultHandlerPlugin)
         collector = ResultCollector()
         collector.add_result_handler(handler)
         start_time = datetime(2015, 12, 23, 8, 14, 12)
@@ -304,7 +303,7 @@ class TestTextTestResult(ExcInfoFixture, unittest.TestCase):
         case = _test_cases.TestCase('test_method')
 
         # When
-        with patch('haas.result.datetime', new=MockDateTime(start_time)):
+        with mock.patch('haas.result.datetime', new=MockDateTime(start_time)):
             collector.startTest(case)
 
         # Then
@@ -316,7 +315,7 @@ class TestTextTestResult(ExcInfoFixture, unittest.TestCase):
             case, TestCompletionStatus.unexpected_success, expected_duration)
 
         # When
-        with patch('haas.result.datetime', new=MockDateTime(end_time)):
+        with mock.patch('haas.result.datetime', new=MockDateTime(end_time)):
             collector.addUnexpectedSuccess(case)
 
         # Then
@@ -350,7 +349,7 @@ class TestTextTestResult(ExcInfoFixture, unittest.TestCase):
         tear_down_end_time = datetime(2016, 4, 12, 8, 17, 39)
 
         # When
-        with patch('haas.result.datetime',
+        with mock.patch('haas.result.datetime',
                    new=MockDateTime([start_time, test_end_time,
                                      tear_down_end_time])):
             case.run(collector)

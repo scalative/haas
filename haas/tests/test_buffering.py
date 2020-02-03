@@ -9,9 +9,9 @@ from __future__ import absolute_import, unicode_literals
 from datetime import datetime, timedelta
 import sys
 
-from mock import Mock, patch
 from six.moves import StringIO
 
+from haas.tests.compat import mock
 from ..plugins.i_result_handler_plugin import IResultHandlerPlugin
 from ..result import (
     ResultCollector, TestResult, TestCompletionStatus, TestDuration
@@ -23,10 +23,10 @@ from .fixtures import ExcInfoFixture, MockDateTime
 
 class TestBuffering(ExcInfoFixture, unittest.TestCase):
 
-    @patch('sys.stderr', new_callable=StringIO)
+    @mock.patch('sys.stderr', new_callable=StringIO)
     def test_buffering_stderr(self, stderr):
         # Given
-        handler = Mock(spec=IResultHandlerPlugin)
+        handler = mock.Mock(spec=IResultHandlerPlugin)
         collector = ResultCollector(buffer=True)
         collector.add_result_handler(handler)
         test_stderr = 'My Test Output'
@@ -37,7 +37,7 @@ class TestBuffering(ExcInfoFixture, unittest.TestCase):
         case = _test_cases.TestCase('test_method')
 
         # When
-        with patch('haas.result.datetime', new=MockDateTime(start_time)):
+        with mock.patch('haas.result.datetime', new=MockDateTime(start_time)):
             collector.startTest(case)
 
         # Then
@@ -56,7 +56,7 @@ class TestBuffering(ExcInfoFixture, unittest.TestCase):
                 case, TestCompletionStatus.error, expected_duration,
                 exception=exc_info, stderr=test_stderr)
             # When
-            with patch('haas.result.datetime', new=MockDateTime(end_time)):
+            with mock.patch('haas.result.datetime', new=MockDateTime(end_time)):
                 collector.addError(case, exc_info)
         collector.stopTest(case)
 
@@ -64,10 +64,10 @@ class TestBuffering(ExcInfoFixture, unittest.TestCase):
         self.assertIn(test_stderr, expected_result.exception)
         handler.assert_called_once_with(expected_result)
 
-    @patch('sys.stdout', new_callable=StringIO)
+    @mock.patch('sys.stdout', new_callable=StringIO)
     def test_buffering_stdout(self, stdout):
         # Given
-        handler = Mock(spec=IResultHandlerPlugin)
+        handler = mock.Mock(spec=IResultHandlerPlugin)
         collector = ResultCollector(buffer=True)
         collector.add_result_handler(handler)
         test_stdout = 'My Test Output'
@@ -78,7 +78,7 @@ class TestBuffering(ExcInfoFixture, unittest.TestCase):
         case = _test_cases.TestCase('test_method')
 
         # When
-        with patch('haas.result.datetime', new=MockDateTime(start_time)):
+        with mock.patch('haas.result.datetime', new=MockDateTime(start_time)):
             collector.startTest(case)
 
         # Then
@@ -98,7 +98,7 @@ class TestBuffering(ExcInfoFixture, unittest.TestCase):
                 exception=exc_info, stdout=test_stdout)
 
             # When
-            with patch('haas.result.datetime', new=MockDateTime(end_time)):
+            with mock.patch('haas.result.datetime', new=MockDateTime(end_time)):
                 collector.addError(case, exc_info)
         collector.stopTest(case)
 

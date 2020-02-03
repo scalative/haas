@@ -8,7 +8,6 @@ from __future__ import absolute_import, unicode_literals
 
 from datetime import datetime, timedelta
 
-from mock import patch
 from six.moves import StringIO
 
 from ..plugins.result_handler import QuietTestResultHandler
@@ -17,11 +16,12 @@ from ..result import (
 from ..testing import unittest
 from . import _test_cases
 from .fixtures import ExcInfoFixture
+from .compat import mock
 
 
 class TestQuietResultHandler(ExcInfoFixture, unittest.TestCase):
 
-    @patch('sys.stderr', new_callable=StringIO)
+    @mock.patch('sys.stderr', new_callable=StringIO)
     def test_no_output_start_test_run(self, stderr):
         # Given
         handler = QuietTestResultHandler(test_count=1)
@@ -33,7 +33,7 @@ class TestQuietResultHandler(ExcInfoFixture, unittest.TestCase):
         output = stderr.getvalue()
         self.assertEqual(output, '')
 
-    @patch('sys.stderr', new_callable=StringIO)
+    @mock.patch('sys.stderr', new_callable=StringIO)
     def test_output_stop_test_run(self, stderr):
         # Given
         handler = QuietTestResultHandler(test_count=1)
@@ -49,7 +49,7 @@ class TestQuietResultHandler(ExcInfoFixture, unittest.TestCase):
         self.assertRegexpMatches(
             output.replace('\n', ''), r'--+.*?Ran 0 tests.*?OK')
 
-    @patch('sys.stderr', new_callable=StringIO)
+    @mock.patch('sys.stderr', new_callable=StringIO)
     def test_no_output_start_test(self, stderr):
         # Given
         handler = QuietTestResultHandler(test_count=1)
@@ -62,7 +62,7 @@ class TestQuietResultHandler(ExcInfoFixture, unittest.TestCase):
         output = stderr.getvalue()
         self.assertEqual(output, '')
 
-    @patch('sys.stderr', new_callable=StringIO)
+    @mock.patch('sys.stderr', new_callable=StringIO)
     def test_no_output_stop_test(self, stderr):
         # Given
         handler = QuietTestResultHandler(test_count=1)
@@ -75,7 +75,7 @@ class TestQuietResultHandler(ExcInfoFixture, unittest.TestCase):
         output = stderr.getvalue()
         self.assertEqual(output, '')
 
-    @patch('sys.stderr', new_callable=StringIO)
+    @mock.patch('sys.stderr', new_callable=StringIO)
     def test_no_output_on_error(self, stderr):
         # Given
         start_time = datetime(2015, 12, 23, 8, 14, 12)
@@ -97,7 +97,7 @@ class TestQuietResultHandler(ExcInfoFixture, unittest.TestCase):
         output = stderr.getvalue()
         self.assertEqual(output, '')
 
-    @patch('sys.stderr', new_callable=StringIO)
+    @mock.patch('sys.stderr', new_callable=StringIO)
     def test_no_output_on_failure(self, stderr):
         # Given
         start_time = datetime(2015, 12, 23, 8, 14, 12)
@@ -119,7 +119,7 @@ class TestQuietResultHandler(ExcInfoFixture, unittest.TestCase):
         output = stderr.getvalue()
         self.assertEqual(output, '')
 
-    @patch('sys.stderr', new_callable=StringIO)
+    @mock.patch('sys.stderr', new_callable=StringIO)
     def test_no_output_on_success(self, stderr):
         # Given
         start_time = datetime(2015, 12, 23, 8, 14, 12)
@@ -139,7 +139,7 @@ class TestQuietResultHandler(ExcInfoFixture, unittest.TestCase):
         output = stderr.getvalue()
         self.assertEqual(output, '')
 
-    @patch('sys.stderr', new_callable=StringIO)
+    @mock.patch('sys.stderr', new_callable=StringIO)
     def test_no_output_on_skip(self, stderr):
         # Given
         start_time = datetime(2015, 12, 23, 8, 14, 12)
@@ -160,7 +160,7 @@ class TestQuietResultHandler(ExcInfoFixture, unittest.TestCase):
         output = stderr.getvalue()
         self.assertEqual(output, '')
 
-    @patch('sys.stderr', new_callable=StringIO)
+    @mock.patch('sys.stderr', new_callable=StringIO)
     def test_no_output_on_expected_fail(self, stderr):
         # Given
         start_time = datetime(2015, 12, 23, 8, 14, 12)
@@ -182,7 +182,7 @@ class TestQuietResultHandler(ExcInfoFixture, unittest.TestCase):
         output = stderr.getvalue()
         self.assertEqual(output, '')
 
-    @patch('sys.stderr', new_callable=StringIO)
+    @mock.patch('sys.stderr', new_callable=StringIO)
     def test_no_output_on_unexpected_success(self, stderr):
         # Given
         start_time = datetime(2015, 12, 23, 8, 14, 12)
@@ -202,7 +202,7 @@ class TestQuietResultHandler(ExcInfoFixture, unittest.TestCase):
         output = stderr.getvalue()
         self.assertEqual(output, '')
 
-    @patch('sys.stderr', new_callable=StringIO)
+    @mock.patch('sys.stderr', new_callable=StringIO)
     def test_no_output_with_error_on_stop_test_run(self, stderr):
         # Given
         start_time = datetime(2015, 12, 23, 8, 14, 12)
@@ -230,7 +230,7 @@ class TestQuietResultHandler(ExcInfoFixture, unittest.TestCase):
             output, '{0}.*?Traceback.*?RuntimeError'.format(
                 description))
 
-    @patch('sys.stderr', new_callable=StringIO)
+    @mock.patch('sys.stderr', new_callable=StringIO)
     def test_no_output_with_failure_on_stop_test_run(self, stderr):
         # Given
         start_time = datetime(2015, 12, 23, 8, 14, 12)

@@ -12,11 +12,10 @@ import sys
 import tempfile
 import unittest as python_unittest
 
-from mock import Mock, patch
-
 from haas.testing import unittest
 
 from haas.tests import _test_cases, builder
+from haas.tests.compat import mock
 from haas.loader import Loader
 from haas.module_import_error import ModuleImportError
 from haas.suite import find_test_cases, TestSuite
@@ -100,7 +99,7 @@ class TestFindTopLevelDirectory(TestDiscoveryMixin, unittest.TestCase):
                 return path
             return os_path_dirname(path)
 
-        with patch('os.path.dirname', dirname):
+        with mock.patch('os.path.dirname', dirname):
             with self.assertRaises(ValueError):
                 find_top_level_directory(os.path.join(self.tmpdir, *self.dirs))
 
@@ -450,9 +449,9 @@ class TestDiscoverFilteredTests(TestDiscoveryMixin, unittest.TestCase):
         self.assertEqual(test._testMethodName, 'test_method')
 
     def test_discover_no_top_level(self):
-        getcwd = Mock()
+        getcwd = mock.Mock()
         getcwd.return_value = self.tmpdir
-        with patch.object(os, 'getcwd', getcwd):
+        with mock.patch.object(os, 'getcwd', getcwd):
             suite = self.discoverer.discover(
                 'TestCase',
             )

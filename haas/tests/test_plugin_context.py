@@ -6,11 +6,10 @@
 # of the 3-clause BSD license.  See the LICENSE.txt file for details.
 from __future__ import absolute_import, unicode_literals
 
-from mock import Mock
 
 from ..plugin_context import PluginContext
 from ..testing import unittest
-
+from .compat import mock
 
 class TestPluginContext(unittest.TestCase):
 
@@ -36,9 +35,9 @@ class TestPluginContext(unittest.TestCase):
             pass
 
     def test_plugin_context_with_plugin(self):
-        plugin = Mock()
-        plugin.setup = Mock()
-        plugin.teardown = Mock()
+        plugin = mock.Mock()
+        plugin.setup = mock.Mock()
+        plugin.teardown = mock.Mock()
         context = PluginContext([plugin])
         self.assertEqual(context.hooks, (plugin,))
         # This should not raise
