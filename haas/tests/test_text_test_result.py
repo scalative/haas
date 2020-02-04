@@ -97,7 +97,8 @@ class TestTextTestResult(ExcInfoFixture, unittest.TestCase):
                 case, TestCompletionStatus.error, expected_duration,
                 exception=exc_info)
             # When
-            with mock.patch('haas.result.datetime', new=MockDateTime(end_time)):
+            with mock.patch(
+                    'haas.result.datetime', new=MockDateTime(end_time)):
                 collector.addError(case, exc_info)
 
         # Then
@@ -135,7 +136,8 @@ class TestTextTestResult(ExcInfoFixture, unittest.TestCase):
                 exception=exc_info)
 
             # When
-            with mock.patch('haas.result.datetime', new=MockDateTime(end_time)):
+            with mock.patch(
+                    'haas.result.datetime', new=MockDateTime(end_time)):
                 collector.addError(case, exc_info)
 
         # Then
@@ -172,7 +174,8 @@ class TestTextTestResult(ExcInfoFixture, unittest.TestCase):
                 exception=exc_info)
 
             # When
-            with mock.patch('haas.result.datetime', new=MockDateTime(end_time)):
+            with mock.patch(
+                    'haas.result.datetime', new=MockDateTime(end_time)):
                 collector.addFailure(case, exc_info)
 
         # Then
@@ -280,7 +283,8 @@ class TestTextTestResult(ExcInfoFixture, unittest.TestCase):
                 exception=exc_info)
 
             # When
-            with mock.patch('haas.result.datetime', new=MockDateTime(end_time)):
+            with mock.patch(
+                    'haas.result.datetime', new=MockDateTime(end_time)):
                 collector.addExpectedFailure(case, exc_info)
 
         # Then
@@ -349,9 +353,10 @@ class TestTextTestResult(ExcInfoFixture, unittest.TestCase):
         tear_down_end_time = datetime(2016, 4, 12, 8, 17, 39)
 
         # When
-        with mock.patch('haas.result.datetime',
-                   new=MockDateTime([start_time, test_end_time,
-                                     tear_down_end_time])):
+        with mock.patch(
+                'haas.result.datetime',
+                new=MockDateTime(
+                    [start_time, test_end_time, tear_down_end_time])):
             case.run(collector)
 
         # Then

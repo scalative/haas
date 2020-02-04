@@ -1,4 +1,4 @@
 try:
-    from unittest import mock
+    from unittest import mock  # noqa
 except ImportError:
-    import mock
+    import mock  # noqa

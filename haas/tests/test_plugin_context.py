@@ -11,6 +11,7 @@ from ..plugin_context import PluginContext
 from ..testing import unittest
 from .compat import mock
 
+
 class TestPluginContext(unittest.TestCase):
 
     def test_empty_plugin_context(self):

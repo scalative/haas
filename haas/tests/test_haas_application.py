@@ -16,7 +16,6 @@ import tempfile
 import types
 
 from testfixtures import LogCapture
-
 from stevedore.extension import ExtensionManager, Extension
 
 import haas
@@ -48,7 +47,8 @@ def with_patched_test_runner(fn):
     @wraps(fn)
     def wrapper(*args):
         with mock.patch('haas.haas_application.ResultCollector') as result_cls:
-            with mock.patch('haas.plugins.runner.BaseTestRunner') as runner_class:
+            with mock.patch(
+                    'haas.plugins.runner.BaseTestRunner') as runner_class:
                 environment_manager = ExtensionManager.make_test_instance(
                     [], namespace=PluginManager.ENVIRONMENT_HOOK,
                 )

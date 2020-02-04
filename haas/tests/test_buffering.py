@@ -56,7 +56,8 @@ class TestBuffering(ExcInfoFixture, unittest.TestCase):
                 case, TestCompletionStatus.error, expected_duration,
                 exception=exc_info, stderr=test_stderr)
             # When
-            with mock.patch('haas.result.datetime', new=MockDateTime(end_time)):
+            with mock.patch(
+                    'haas.result.datetime', new=MockDateTime(end_time)):
                 collector.addError(case, exc_info)
         collector.stopTest(case)
 
@@ -98,7 +99,8 @@ class TestBuffering(ExcInfoFixture, unittest.TestCase):
                 exception=exc_info, stdout=test_stdout)
 
             # When
-            with mock.patch('haas.result.datetime', new=MockDateTime(end_time)):
+            with mock.patch(
+                    'haas.result.datetime', new=MockDateTime(end_time)):
                 collector.addError(case, exc_info)
         collector.stopTest(case)
 

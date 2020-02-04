@@ -12,6 +12,7 @@ from ..testing import unittest
 from ..utils import configure_logging
 from .compat import mock
 
+
 class TestConfigureLogging(unittest.TestCase):
 
     @mock.patch('logging.getLogger')
