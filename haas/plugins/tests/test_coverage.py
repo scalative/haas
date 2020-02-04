@@ -13,21 +13,21 @@ except ImportError:
     coverage = None
     Coverage = None
 
-from mock import Mock, patch
 
 from haas.testing import unittest
+from haas.tests.compat import mock
 
 
 @unittest.skipIf(coverage is None, 'Coverage is not installed')
 class TestCoverage(unittest.TestCase):
 
-    @patch('coverage.coverage')
+    @mock.patch('coverage.coverage')
     def test_coverage(self, coverage_func):
-        coverage_object = Mock()
+        coverage_object = mock.Mock()
         coverage_func.return_value = coverage_object
-        coverage_object.start = Mock()
-        coverage_object.stop = Mock()
-        coverage_object.save = Mock()
+        coverage_object.start = mock.Mock()
+        coverage_object.stop = mock.Mock()
+        coverage_object.save = mock.Mock()
 
         cov = Coverage('coverage', True, 'coverage')
         self.assertFalse(coverage_func.called)

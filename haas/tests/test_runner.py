@@ -1,16 +1,15 @@
 from argparse import ArgumentParser
 
-from mock import Mock, patch
-
 from ..plugins.runner import BaseTestRunner
 from ..testing import unittest
+from .compat import mock
 
 
 class TestBaseTestRunner(unittest.TestCase):
 
-    @patch('warnings.filterwarnings')
-    @patch('warnings.simplefilter')
-    @patch('warnings.catch_warnings')
+    @mock.patch('warnings.filterwarnings')
+    @mock.patch('warnings.simplefilter')
+    @mock.patch('warnings.catch_warnings')
     def test_run_tests_no_warning_capture(self, catch_warnings, simplefilter,
                                           filterwarnings):
         # Given
@@ -18,7 +17,7 @@ class TestBaseTestRunner(unittest.TestCase):
         def test(result):
             self.test_result = result
         self.test_result = None
-        result_collector = Mock()
+        result_collector = mock.Mock()
         test_runner = BaseTestRunner()
 
         # When
@@ -33,9 +32,9 @@ class TestBaseTestRunner(unittest.TestCase):
         self.assertFalse(simplefilter.called)
         self.assertFalse(filterwarnings.called)
 
-    @patch('warnings.filterwarnings')
-    @patch('warnings.simplefilter')
-    @patch('warnings.catch_warnings')
+    @mock.patch('warnings.filterwarnings')
+    @mock.patch('warnings.simplefilter')
+    @mock.patch('warnings.catch_warnings')
     def test_run_tests_ignore_warnings(self, catch_warnings, simplefilter,
                                        filterwarnings):
         # Given
@@ -43,7 +42,7 @@ class TestBaseTestRunner(unittest.TestCase):
         def test(result):
             self.test_result = result
         self.test_result = None
-        result_collector = Mock()
+        result_collector = mock.Mock()
         test_runner = BaseTestRunner(warnings='ignore')
 
         # When
@@ -58,9 +57,9 @@ class TestBaseTestRunner(unittest.TestCase):
         simplefilter.assert_called_once_with('ignore')
         self.assertFalse(filterwarnings.called)
 
-    @patch('warnings.filterwarnings')
-    @patch('warnings.simplefilter')
-    @patch('warnings.catch_warnings')
+    @mock.patch('warnings.filterwarnings')
+    @mock.patch('warnings.simplefilter')
+    @mock.patch('warnings.catch_warnings')
     def test_run_tests_always_warn(self, catch_warnings, simplefilter,
                                    filterwarnings):
         # Given
@@ -68,7 +67,7 @@ class TestBaseTestRunner(unittest.TestCase):
         def test(result):
             self.test_result = result
         self.test_result = None
-        result_collector = Mock()
+        result_collector = mock.Mock()
         test_runner = BaseTestRunner(warnings='always')
 
         # When

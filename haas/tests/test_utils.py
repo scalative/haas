@@ -6,16 +6,16 @@
 # of the 3-clause BSD license.  See the LICENSE.txt file for details.
 from __future__ import absolute_import, unicode_literals
 
-from mock import patch
 
 import haas
 from ..testing import unittest
 from ..utils import configure_logging
+from .compat import mock
 
 
 class TestConfigureLogging(unittest.TestCase):
 
-    @patch('logging.getLogger')
+    @mock.patch('logging.getLogger')
     def test_configure_logging(self, get_logger):
         configure_logging('debug')
         get_logger.assert_called_once_with(haas.__name__)

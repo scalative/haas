@@ -9,7 +9,6 @@ from __future__ import absolute_import, unicode_literals
 from datetime import datetime, timedelta
 from time import ctime
 
-from mock import patch
 from six.moves import StringIO
 
 from ..plugins.result_handler import VerboseTestResultHandler
@@ -18,11 +17,12 @@ from ..result import (
 from ..testing import unittest
 from . import _test_cases
 from .fixtures import ExcInfoFixture
+from .compat import mock
 
 
 class TestVerboseResultHandler(ExcInfoFixture, unittest.TestCase):
 
-    @patch('sys.stderr', new_callable=StringIO)
+    @mock.patch('sys.stderr', new_callable=StringIO)
     def test_output_start_test_run(self, stderr):
         # Given
         handler = VerboseTestResultHandler(test_count=1)
@@ -34,7 +34,7 @@ class TestVerboseResultHandler(ExcInfoFixture, unittest.TestCase):
         output = stderr.getvalue()
         self.assertEqual(output, '')
 
-    @patch('sys.stderr', new_callable=StringIO)
+    @mock.patch('sys.stderr', new_callable=StringIO)
     def test_no_output_stop_test_run(self, stderr):
         # Given
         handler = VerboseTestResultHandler(test_count=1)
@@ -50,8 +50,8 @@ class TestVerboseResultHandler(ExcInfoFixture, unittest.TestCase):
         self.assertRegexpMatches(
             output.replace('\n', ''), r'--+.*?Ran 0 tests.*?OK')
 
-    @patch('time.ctime')
-    @patch('sys.stderr', new_callable=StringIO)
+    @mock.patch('time.ctime')
+    @mock.patch('sys.stderr', new_callable=StringIO)
     def test_output_start_test(self, stderr, mock_ctime):
         # Given
         case = _test_cases.TestCase('test_method')
@@ -68,7 +68,7 @@ class TestVerboseResultHandler(ExcInfoFixture, unittest.TestCase):
             output, '[{0}] (1/1) {1} ... '.format(
                 expected_time, expected_description))
 
-    @patch('sys.stderr', new_callable=StringIO)
+    @mock.patch('sys.stderr', new_callable=StringIO)
     def test_no_output_stop_test(self, stderr):
         # Given
         handler = VerboseTestResultHandler(test_count=1)
@@ -81,7 +81,7 @@ class TestVerboseResultHandler(ExcInfoFixture, unittest.TestCase):
         output = stderr.getvalue()
         self.assertEqual(output, '')
 
-    @patch('sys.stderr', new_callable=StringIO)
+    @mock.patch('sys.stderr', new_callable=StringIO)
     def test_output_on_error(self, stderr):
         # Given
         start_time = datetime(2015, 12, 23, 8, 14, 12)
@@ -103,7 +103,7 @@ class TestVerboseResultHandler(ExcInfoFixture, unittest.TestCase):
         output = stderr.getvalue()
         self.assertEqual(output, 'ERROR\n')
 
-    @patch('sys.stderr', new_callable=StringIO)
+    @mock.patch('sys.stderr', new_callable=StringIO)
     def test_output_on_failure(self, stderr):
         # Given
         start_time = datetime(2015, 12, 23, 8, 14, 12)
@@ -125,7 +125,7 @@ class TestVerboseResultHandler(ExcInfoFixture, unittest.TestCase):
         output = stderr.getvalue()
         self.assertEqual(output, 'FAIL\n')
 
-    @patch('sys.stderr', new_callable=StringIO)
+    @mock.patch('sys.stderr', new_callable=StringIO)
     def test_output_on_success(self, stderr):
         # Given
         start_time = datetime(2015, 12, 23, 8, 14, 12)
@@ -145,7 +145,7 @@ class TestVerboseResultHandler(ExcInfoFixture, unittest.TestCase):
         output = stderr.getvalue()
         self.assertEqual(output, 'ok\n')
 
-    @patch('sys.stderr', new_callable=StringIO)
+    @mock.patch('sys.stderr', new_callable=StringIO)
     def test_output_on_skip(self, stderr):
         # Given
         start_time = datetime(2015, 12, 23, 8, 14, 12)
@@ -166,7 +166,7 @@ class TestVerboseResultHandler(ExcInfoFixture, unittest.TestCase):
         output = stderr.getvalue()
         self.assertEqual(output, 'skipped \'reason\'\n')
 
-    @patch('sys.stderr', new_callable=StringIO)
+    @mock.patch('sys.stderr', new_callable=StringIO)
     def test_output_on_expected_fail(self, stderr):
         # Given
         start_time = datetime(2015, 12, 23, 8, 14, 12)
@@ -188,7 +188,7 @@ class TestVerboseResultHandler(ExcInfoFixture, unittest.TestCase):
         output = stderr.getvalue()
         self.assertEqual(output, 'expected failure\n')
 
-    @patch('sys.stderr', new_callable=StringIO)
+    @mock.patch('sys.stderr', new_callable=StringIO)
     def test_output_on_unexpected_success(self, stderr):
         # Given
         start_time = datetime(2015, 12, 23, 8, 14, 12)
@@ -208,7 +208,7 @@ class TestVerboseResultHandler(ExcInfoFixture, unittest.TestCase):
         output = stderr.getvalue()
         self.assertEqual(output, 'unexpected success\n')
 
-    @patch('sys.stderr', new_callable=StringIO)
+    @mock.patch('sys.stderr', new_callable=StringIO)
     def test_output_with_error_on_stop_test_run(self, stderr):
         # Given
         start_time = datetime(2015, 12, 23, 8, 14, 12)
@@ -236,7 +236,7 @@ class TestVerboseResultHandler(ExcInfoFixture, unittest.TestCase):
             output, '{0}.*?Traceback.*?RuntimeError'.format(
                 description))
 
-    @patch('sys.stderr', new_callable=StringIO)
+    @mock.patch('sys.stderr', new_callable=StringIO)
     def test_output_with_failure_on_stop_test_run(self, stderr):
         # Given
         start_time = datetime(2015, 12, 23, 8, 14, 12)

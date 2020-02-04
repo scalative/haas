@@ -15,9 +15,7 @@ import shutil
 import tempfile
 import types
 
-from mock import Mock, patch
 from testfixtures import LogCapture
-
 from stevedore.extension import ExtensionManager, Extension
 
 import haas
@@ -28,6 +26,7 @@ from ..plugins.discoverer import Discoverer
 from ..suite import TestSuite
 from ..testing import unittest
 from ..utils import cd
+from .compat import mock
 from . import builder
 
 
@@ -47,8 +46,9 @@ class MockLambda(object):
 def with_patched_test_runner(fn):
     @wraps(fn)
     def wrapper(*args):
-        with patch('haas.haas_application.ResultCollector') as result_cls:
-            with patch('haas.plugins.runner.BaseTestRunner') as runner_class:
+        with mock.patch('haas.haas_application.ResultCollector') as result_cls:
+            with mock.patch(
+                    'haas.plugins.runner.BaseTestRunner') as runner_class:
                 environment_manager = ExtensionManager.make_test_instance(
                     [], namespace=PluginManager.ENVIRONMENT_HOOK,
                 )
@@ -90,13 +90,13 @@ class TestHaasApplication(unittest.TestCase):
 
     def _run_with_arguments(self, runner_class, result_class, *args, **kwargs):
         plugin_manager = kwargs.get('plugin_manager')
-        runner = Mock()
+        runner = mock.Mock()
         runner_class.from_args.return_value = runner
 
-        result = Mock()
-        result.wasSuccessful = Mock()
+        result = mock.Mock()
+        result.wasSuccessful = mock.Mock()
         result_class.return_value = result
-        run_method = Mock(return_value=result)
+        run_method = mock.Mock(return_value=result)
         runner.run = run_method
 
         app = HaasApplication(['argv0'] + list(args))
@@ -177,13 +177,13 @@ class TestHaasApplication(unittest.TestCase):
         run.assert_called_once_with(result, suite)
         result.wasSuccessful.assert_called_once_with()
 
-    @patch('sys.stdout')
-    @patch('sys.stderr')
-    @patch('haas.plugins.runner.BaseTestRunner')
+    @mock.patch('sys.stdout')
+    @mock.patch('sys.stderr')
+    @mock.patch('haas.plugins.runner.BaseTestRunner')
     def test_main_quiet_and_verbose_not_allowed(self,
                                                 runner_class, stdout, stderr):
         with self.assertRaises(SystemExit):
-            self._run_with_arguments(runner_class, Mock(), '-q', '-v')
+            self._run_with_arguments(runner_class, mock.Mock(), '-q', '-v')
 
     @with_patched_test_runner
     def test_main_verbose(self, runner_class, result_class, plugin_manager):
@@ -248,12 +248,12 @@ class TestHaasApplication(unittest.TestCase):
         run.assert_called_once_with(result, suite)
         result.wasSuccessful.assert_called_once_with()
 
-    @patch('logging.getLogger')
+    @mock.patch('logging.getLogger')
     @with_patched_test_runner
     def test_with_logging(self, get_logger, runner_class, result_class,
                           plugin_manager):
         # Given
-        logger = Mock()
+        logger = mock.Mock()
         get_logger.side_effect = lambda name: logger
 
         with self._basic_test_fixture() as package_name:
@@ -276,13 +276,13 @@ class TestHaasApplication(unittest.TestCase):
         run.assert_called_once_with(result, suite)
         result.wasSuccessful.assert_called_once_with()
 
-    @patch('logging.getLogger')
+    @mock.patch('logging.getLogger')
     @with_patched_test_runner
     def test_with_logging_uppercase_loglevel(self, get_logger,
                                              runner_class, result_class,
                                              plugin_manager):
         # Given
-        logger = Mock()
+        logger = mock.Mock()
         get_logger.side_effect = lambda name: logger
 
         with self._basic_test_fixture() as package_name:
@@ -305,15 +305,15 @@ class TestHaasApplication(unittest.TestCase):
         run.assert_called_once_with(result, suite)
         result.wasSuccessful.assert_called_once_with()
 
-    @patch('sys.stdout')
-    @patch('sys.stderr')
-    @patch('coverage.coverage')
-    @patch('haas.plugins.runner.BaseTestRunner')
+    @mock.patch('sys.stdout')
+    @mock.patch('sys.stderr')
+    @mock.patch('coverage.coverage')
+    @mock.patch('haas.plugins.runner.BaseTestRunner')
     def test_with_coverage_plugin(self, runner_class, coverage,
                                   stdout, stderr):
         # When
         run, result = self._run_with_arguments(
-            runner_class, Mock(), '--with-coverage')
+            runner_class, mock.Mock(), '--with-coverage')
 
         # Then
         coverage.assert_called_once_with()

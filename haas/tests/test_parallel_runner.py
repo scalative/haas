@@ -2,7 +2,6 @@ from argparse import ArgumentParser
 from datetime import datetime, timedelta
 import time
 
-from mock import Mock, patch
 from six.moves import StringIO
 
 from ..plugins.discoverer import _create_import_error_test
@@ -13,6 +12,7 @@ from ..suite import TestSuite
 from ..testing import unittest
 from . import _test_cases
 from .fixtures import MockDateTime
+from .compat import mock
 
 
 class AsyncResult(object):
@@ -37,8 +37,8 @@ def apply_async(func, args=None, kwargs=None, callback=None):
 
 class TestChildResultHandler(unittest.TestCase):
 
-    @patch('sys.stderr', new_callable=StringIO)
-    @patch('sys.stdout', new_callable=StringIO)
+    @mock.patch('sys.stderr', new_callable=StringIO)
+    @mock.patch('sys.stdout', new_callable=StringIO)
     def test_basic_workflow(self, stdout, stderr):
         # Given
         handler = ChildResultHandler()
@@ -85,10 +85,10 @@ class TestChildResultHandler(unittest.TestCase):
 
 class TestParallelTestRunner(unittest.TestCase):
 
-    @patch('haas.plugins.parallel_runner.Pool')
+    @mock.patch('haas.plugins.parallel_runner.Pool')
     def test_parallel_test_runner_mock_subprocess(self, pool_class):
         # Given
-        pool = Mock()
+        pool = mock.Mock()
         pool_class.return_value = pool
         pool.apply_async.side_effect = apply_async
 
@@ -111,7 +111,7 @@ class TestParallelTestRunner(unittest.TestCase):
         runner = ParallelTestRunner(processes)
 
         # When
-        with patch('haas.result.datetime', new=MockDateTime(
+        with mock.patch('haas.result.datetime', new=MockDateTime(
                 [start_time, end_time])):
             runner.run(result_collector, test_suite)
 
@@ -123,17 +123,17 @@ class TestParallelTestRunner(unittest.TestCase):
         pool.close.assert_called_once_with()
         pool.join.assert_called_once_with()
 
-    @patch('haas.plugins.parallel_runner.Pool')
+    @mock.patch('haas.plugins.parallel_runner.Pool')
     def test_parallel_runner_single_start_stop_test_run(self, pool_class):
         # Given
-        pool = Mock()
+        pool = mock.Mock()
         pool_class.return_value = pool
         pool.apply_async.side_effect = apply_async
 
         test_case = _test_cases.TestCase('test_method')
         test_suite = TestSuite([test_case])
 
-        result_collector = Mock()
+        result_collector = mock.Mock()
         runner = ParallelTestRunner()
 
         # When
@@ -148,11 +148,11 @@ class TestParallelTestRunner(unittest.TestCase):
         result_collector.startTestRun.assert_called_once_with()
         result_collector.stopTestRun.assert_called_once_with()
 
-    @patch('haas.plugins.parallel_runner.Pool')
+    @mock.patch('haas.plugins.parallel_runner.Pool')
     def test_parallel_runner_initializer(self, pool_class):
         # Given
-        initializer = Mock()
-        pool = Mock()
+        initializer = mock.Mock()
+        pool = mock.Mock()
         pool_class.return_value = pool
         pool.apply_async.side_effect = apply_async
 
@@ -175,7 +175,7 @@ class TestParallelTestRunner(unittest.TestCase):
         runner = ParallelTestRunner(processes, initializer=initializer)
 
         # When
-        with patch('haas.result.datetime', new=MockDateTime(
+        with mock.patch('haas.result.datetime', new=MockDateTime(
                 [start_time, end_time])):
             runner.run(result_collector, test_suite)
 
@@ -187,10 +187,10 @@ class TestParallelTestRunner(unittest.TestCase):
         pool.close.assert_called_once_with()
         pool.join.assert_called_once_with()
 
-    @patch('haas.plugins.parallel_runner.Pool')
+    @mock.patch('haas.plugins.parallel_runner.Pool')
     def test_parallel_runner_constructor_processes(self, pool_class):
         # Given
-        pool = Mock()
+        pool = mock.Mock()
         pool_class.return_value = pool
         pool.apply_async.side_effect = apply_async
 
@@ -219,7 +219,7 @@ class TestParallelTestRunner(unittest.TestCase):
         runner = ParallelTestRunner.from_args(args, dest_prefix)
 
         # When
-        with patch('haas.result.datetime', new=MockDateTime(
+        with mock.patch('haas.result.datetime', new=MockDateTime(
                 [start_time, end_time])):
             runner.run(result_collector, test_suite)
 
@@ -230,10 +230,10 @@ class TestParallelTestRunner(unittest.TestCase):
         pool.close.assert_called_once_with()
         pool.join.assert_called_once_with()
 
-    @patch('haas.plugins.parallel_runner.Pool')
+    @mock.patch('haas.plugins.parallel_runner.Pool')
     def test_parallel_runner_constructor_initializer(self, pool_class):
         # Given
-        pool = Mock()
+        pool = mock.Mock()
         pool_class.return_value = pool
         pool.apply_async.side_effect = apply_async
 
@@ -263,7 +263,7 @@ class TestParallelTestRunner(unittest.TestCase):
         runner = ParallelTestRunner.from_args(args, dest_prefix)
 
         # When
-        with patch('haas.result.datetime', new=MockDateTime(
+        with mock.patch('haas.result.datetime', new=MockDateTime(
                 [start_time, end_time])):
             runner.run(result_collector, test_suite)
 
@@ -280,10 +280,10 @@ class TestParallelTestRunner(unittest.TestCase):
 
 class TestParallelRunnerImportError(unittest.TestCase):
 
-    @patch('haas.plugins.parallel_runner.Pool')
+    @mock.patch('haas.plugins.parallel_runner.Pool')
     def test_parallel_distribute_module_import_error(self, pool_class):
         # Given
-        pool = Mock()
+        pool = mock.Mock()
         pool_class.return_value = pool
 
         try:
