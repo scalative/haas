@@ -349,7 +349,7 @@ def _format_stat_table(pairs):
     column_template = '{item: >{len}}'
     header = ' | '.join(header_template.format(item=h, len=l)
                         for h, l in zip(headers, column_lengths))
-    separator = '-+-'.join('-' * l for l in column_lengths)
+    separator = '-+-'.join('-' * length for length in column_lengths)
     row = ' | '.join(column_template.format(item=i, len=l)
                      for i, l in zip(columns, column_lengths))
     return ' {0}\n-{1}-\n {2}'.format(header, separator, row)
