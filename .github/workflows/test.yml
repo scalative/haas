@@ -14,11 +14,11 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        continue-on-error: [false]
         include:
           - os: ubuntu-18.04
             python: "2.7"
             toxenv: cp27
+            continue-on-error: false
           - os: ubuntu-18.04
             python: "3.3"
             toxenv: cp33
@@ -26,29 +26,37 @@ jobs:
           - os: ubuntu-18.04
             python: "3.4"
             toxenv: cp34
+            continue-on-error: false
           - os: ubuntu-18.04
             python: "3.5"
             toxenv: cp35
+            continue-on-error: false
 
           - os: ubuntu-18.04
             python: "pypy2"
             toxenv: pp2
+            continue-on-error: false
           - os: ubuntu-18.04
             python: "pypy3"
             toxenv: pp3
+            continue-on-error: false
 
           - os: ubuntu-20.04
             python: "2.7"
             toxenv: cp27
+            continue-on-error: false
           - os: ubuntu-20.04
             python: "3.5"
             toxenv: cp35
+            continue-on-error: false
           - os: ubuntu-20.04
             python: "pypy2"
             toxenv: pp2
+            continue-on-error: false
           - os: ubuntu-20.04
             python: "pypy3"
             toxenv: pp3
+            continue-on-error: false
 
           - os: macos-10.15
             python: "3.5"
@@ -61,6 +69,7 @@ jobs:
           - os: windows-2019
             python: "3.5"
             toxenv: cp35
+            continue-on-error: false
 
     steps:
       - uses: actions/checkout@v2
