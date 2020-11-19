@@ -20,16 +20,28 @@ jobs:
             toxenv: cp27
             continue-on-error: false
           - os: ubuntu-18.04
-            python: "3.3"
-            toxenv: cp33
-            continue-on-error: true
-          - os: ubuntu-18.04
             python: "3.4"
             toxenv: cp34
             continue-on-error: false
           - os: ubuntu-18.04
             python: "3.5"
             toxenv: cp35
+            continue-on-error: false
+          - os: ubuntu-18.04
+            python: "3.6"
+            toxenv: cp36
+            continue-on-error: false
+          - os: ubuntu-18.04
+            python: "3.7"
+            toxenv: cp37
+            continue-on-error: false
+          - os: ubuntu-18.04
+            python: "3.8"
+            toxenv: cp38
+            continue-on-error: false
+          - os: ubuntu-18.04
+            python: "3.9"
+            toxenv: cp39
             continue-on-error: false
 
           - os: ubuntu-18.04
