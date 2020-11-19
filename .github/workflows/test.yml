@@ -98,7 +98,7 @@ jobs:
           - os: macos-11.0
             python: "3.10.0-alpha.2"
             toxenv: "cp310"
-            continue-on-error: false
+            continue-on-error: true
           - os: windows-2019
             python: "3.10.0-alpha.2"
             toxenv: "cp310"
