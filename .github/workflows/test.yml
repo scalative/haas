@@ -5,7 +5,7 @@ on:
     branches:
       - master
       - maintenance/**
-  push: {}
+  push:
     branches:
       - master
       - maintenance/**
