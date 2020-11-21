@@ -46,9 +46,9 @@ class ChildResultHandler(IResultHandlerPlugin):
         self.results.append(result)
 
 
-def _run_test_in_process(test_case):
+def _run_test_in_process(test_case, buffer):
     result_handler = ChildResultHandler()
-    result_collector = ResultCollector(buffer=True)
+    result_collector = ResultCollector(buffer=buffer)
     result_collector.add_result_handler(result_handler)
     runner = BaseTestRunner()
     runner.run(result_collector, test_case)
@@ -131,12 +131,13 @@ class ParallelTestRunner(BaseTestRunner):
                     error_tests.append(test_case)
                 else:
                     call_result = pool.apply_async(
-                        _run_test_in_process, args=(test_case,),
+                        _run_test_in_process, args=(test_case, result.buffer),
                         callback=callback)
                     call_results.append(call_result)
 
             for test_case in error_tests:
-                collected_result = _run_test_in_process(test_case)
+                collected_result = _run_test_in_process(
+                    test_case, result.buffer)
                 callback(collected_result)
         finally:
             pool.close()
