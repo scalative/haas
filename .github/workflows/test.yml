@@ -90,19 +90,40 @@ jobs:
             toxenv: cp35
             continue-on-error: false
 
-          # 3.10 Alpha
+          # 3.10
           - os: ubuntu-18.04
-            python: "3.10.0-alpha.2"
+            python: "3.10"
             toxenv: "cp310"
             continue-on-error: false
           - os: macos-11.0
-            python: "3.10.0-alpha.2"
+            python: "3.10"
             toxenv: "cp310"
             continue-on-error: true
           - os: windows-2019
-            python: "3.10.0-alpha.2"
+            python: "3.10"
             toxenv: "cp310"
             continue-on-error: true
+
+          # 3.11
+          - os: ubuntu-18.04
+            python: "3.11"
+            toxenv: "cp311"
+          - os: macos-11.0
+            python: "3.11"
+            toxenv: "cp311"
+          - os: windows-2019
+            python: "3.11"
+            toxenv: "cp311"
+
+          # 3.12
+          - os: ubuntu-18.04
+            python: "3.12"
+          - os: macos-11.0
+            python: "3.12"
+            toxenv: "cp312"
+          - os: windows-2019
+            python: "3.12"
+            toxenv: "cp312"
 
     steps:
       - uses: actions/checkout@v2
