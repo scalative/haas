@@ -51,31 +51,31 @@ jobs:
             toxenv: "cp312"
             continue-on-error: false
 
-          - os: umacos-11.0
+          - os: macos-11.0
             python: "3.7"
             toxenv: cp37
             continue-on-error: false
-          - os: umacos-11.0
+          - os: macos-11.0
             python: "3.8"
             toxenv: cp38
             continue-on-error: false
-          - os: umacos-11.0
+          - os: macos-11.0
             python: "3.9"
             toxenv: cp39
             continue-on-error: false
-          - os: umacos-11.0
+          - os: macos-11.0
             python: "3.10"
             toxenv: "cp310"
             continue-on-error: false
-          - os: umacos-11.0
+          - os: macos-11.0
             python: "3.11"
             toxenv: "cp311"
             continue-on-error: false
-          - os: umacos-11.0
+          - os: macos-11.0
             python: "3.11"
             toxenv: "cp311"
             continue-on-error: false
-          - os: umacos-11.0
+          - os: macos-11.0
             python: "3.12"
             toxenv: "cp312"
             continue-on-error: false
