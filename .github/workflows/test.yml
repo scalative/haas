@@ -22,108 +22,101 @@ jobs:
       fail-fast: false
       matrix:
         include:
-          - os: ubuntu-18.04
-            python: "2.7"
-            toxenv: cp27
-            continue-on-error: false
-          - os: ubuntu-18.04
-            python: "3.4"
-            toxenv: cp34
-            continue-on-error: false
-          - os: ubuntu-18.04
-            python: "3.5"
-            toxenv: cp35
-            continue-on-error: false
-          - os: ubuntu-18.04
-            python: "3.6"
-            toxenv: cp36
-            continue-on-error: false
-          - os: ubuntu-18.04
+          - os: ubuntu-20.04
             python: "3.7"
             toxenv: cp37
             continue-on-error: false
-          - os: ubuntu-18.04
+          - os: ubuntu-20.04
             python: "3.8"
             toxenv: cp38
             continue-on-error: false
-          - os: ubuntu-18.04
+          - os: ubuntu-20.04
             python: "3.9"
             toxenv: cp39
             continue-on-error: false
+          - os: ubuntu-20.04
+            python: "3.10"
+            toxenv: "cp310"
+            continue-on-error: false
+          - os: ubuntu-20.04
+            python: "3.11"
+            toxenv: "cp311"
+            continue-on-error: false
+          - os: ubuntu-20.04
+            python: "3.11"
+            toxenv: "cp311"
+            continue-on-error: false
+          - os: ubuntu-20.04
+            python: "3.12"
+            toxenv: "cp312"
+            continue-on-error: false
 
-          - os: ubuntu-18.04
+          - os: umacos-11.0
+            python: "3.7"
+            toxenv: cp37
+            continue-on-error: false
+          - os: umacos-11.0
+            python: "3.8"
+            toxenv: cp38
+            continue-on-error: false
+          - os: umacos-11.0
+            python: "3.9"
+            toxenv: cp39
+            continue-on-error: false
+          - os: umacos-11.0
+            python: "3.10"
+            toxenv: "cp310"
+            continue-on-error: false
+          - os: umacos-11.0
+            python: "3.11"
+            toxenv: "cp311"
+            continue-on-error: false
+          - os: umacos-11.0
+            python: "3.11"
+            toxenv: "cp311"
+            continue-on-error: false
+          - os: umacos-11.0
+            python: "3.12"
+            toxenv: "cp312"
+            continue-on-error: false
+
+          - os: windows-2019
+            python: "3.7"
+            toxenv: cp37
+            continue-on-error: false
+          - os: windows-2019
+            python: "3.8"
+            toxenv: cp38
+            continue-on-error: false
+          - os: windows-2019
+            python: "3.9"
+            toxenv: cp39
+            continue-on-error: false
+          - os: windows-2019
+            python: "3.10"
+            toxenv: "cp310"
+            continue-on-error: false
+          - os: windows-2019
+            python: "3.11"
+            toxenv: "cp311"
+            continue-on-error: false
+          - os: windows-2019
+            python: "3.11"
+            toxenv: "cp311"
+            continue-on-error: false
+          - os: windows-2019
+            python: "3.12"
+            toxenv: "cp312"
+            continue-on-error: false
+            
+          - os: ubuntu-20.04
             python: "pypy2"
             toxenv: pp2
             continue-on-error: false
-          - os: ubuntu-18.04
-            python: "pypy3"
-            toxenv: pp3
-            continue-on-error: false
-
-          - os: ubuntu-20.04
-            python: "2.7"
-            toxenv: cp27
-            continue-on-error: false
-          - os: ubuntu-20.04
-            python: "3.5"
-            toxenv: cp35
-            continue-on-error: false
-          - os: ubuntu-20.04
-            python: "pypy2"
-            toxenv: pp2
-            continue-on-error: false
           - os: ubuntu-20.04
             python: "pypy3"
             toxenv: pp3
             continue-on-error: false
-
-          - os: macos-10.15
-            python: "3.5"
-            toxenv: cp35
-            continue-on-error: true
-          - os: macos-11.0
-            python: "3.5"
-            toxenv: cp35
-            continue-on-error: true
-          - os: windows-2019
-            python: "3.5"
-            toxenv: cp35
-            continue-on-error: false
-
-          # 3.10
-          - os: ubuntu-18.04
-            python: "3.10"
-            toxenv: "cp310"
-            continue-on-error: false
-          - os: macos-11.0
-            python: "3.10"
-            toxenv: "cp310"
-            continue-on-error: true
-          - os: windows-2019
-            python: "3.10"
-            toxenv: "cp310"
-            continue-on-error: true
-
-          # 3.11
-          - os: ubuntu-18.04
-            python: "3.11"
-            toxenv: "cp311"
-          - os: macos-11.0
-            python: "3.11"
-            toxenv: "cp311"
-          - os: windows-2019
-            python: "3.11"
-            toxenv: "cp311"
-
-          # 3.12
-          - os: ubuntu-18.04
-            python: "3.12"
-          - os: macos-11.0
-            python: "3.12"
-            toxenv: "cp312"
-          - os: windows-2019
-            python: "3.12"
-            toxenv: "cp312"
 
     steps:
       - uses: actions/checkout@v2
