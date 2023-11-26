@@ -22,6 +22,7 @@ jobs:
       matrix:
         python-version: [3.7, 3.8, 3.9, "3.10", "3.11", '3.12', 'pypy2', 'pypy3']
         os: [windows-2019, ubuntu-20.4, macos-11]
+      fail-fast: false
     runs-on: ${{ matrix.os }}  
     steps:
     - uses: actions/checkout@v4
@@ -35,7 +36,7 @@ jobs:
         pip install -r "test_requirements.txt"
         pip --version
     - name: Run tests
-      continue-on-error: true
+      continue-on-error: false
       run: |
         python -m unittest discover haas
         python -m haas haas
