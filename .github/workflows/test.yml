@@ -38,6 +38,7 @@ jobs:
     - name: Run tests
       continue-on-error: false
       run: |
+        cd ci
         python -m unittest discover haas
         python -m haas haas
   lint:
