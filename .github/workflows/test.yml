@@ -38,7 +38,7 @@ jobs:
     - name: Run tests
       continue-on-error: false
       run: |
-        cd ci
+        cd .github/workflows
         python -m unittest discover haas
         python -m haas haas
   lint:
