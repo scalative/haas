@@ -37,8 +37,8 @@ jobs:
         pip --version
     - name: Run tests
       continue-on-error: false
+      working-directory: .github
       run: |
-        cd .github/workflows
         python -m unittest discover haas
         python -m haas haas
   lint:
