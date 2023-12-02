@@ -31,10 +31,14 @@ jobs:
         pip install -e .
         pip install -r "test_requirements.txt"
         pip --version
-    - name: Run tests
+    - name: Run tests with unittest
       run: |
         coverage run --branch -m unittest discover -v -t . haas
+    - name: Run tests with haas
+      run: |
         python -m haas haas
+    - name: Print coverage report
+      run: |
         coverage report
 
   lint:
