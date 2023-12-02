@@ -34,8 +34,9 @@ jobs:
         pip --version
     - name: Run tests
       run: |
-        python -m unittest discover -v -t . haas
+        coverage run --branch -m unittest discover -v -t . haas
         python -m haas haas
+        coverage report
   lint:
     runs-on: ubuntu-latest
     steps:
