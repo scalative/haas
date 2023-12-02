@@ -105,7 +105,6 @@ if not is_released:
 
 if __name__ == "__main__":
     install_requires = [
-        'six',
         'enum34',
         'statistics',
         'stevedore >= 4.1.0, < 5.0.0',

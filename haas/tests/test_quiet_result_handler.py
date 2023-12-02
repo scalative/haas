@@ -8,7 +8,7 @@ from __future__ import absolute_import, unicode_literals
 
 from datetime import datetime, timedelta
 
-from six.moves import StringIO
+from io import StringIO
 
 from ..plugins.result_handler import QuietTestResultHandler
 from ..result import (

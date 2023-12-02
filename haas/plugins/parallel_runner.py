@@ -1,10 +1,10 @@
+from importlib import import_module
 from multiprocessing import Pool
 import time
 
 from haas.module_import_error import ModuleImportError
 from haas.suite import find_test_cases
 from haas.result import ResultCollector
-from haas.utils import get_module_by_name
 from .i_result_handler_plugin import IResultHandlerPlugin
 from .runner import BaseTestRunner
 
@@ -82,7 +82,7 @@ class ParallelTestRunner(BaseTestRunner):
             initializer = None
         else:
             module_name, initializer_name = initializer_spec.rsplit('.', 1)
-            init_module = get_module_by_name(module_name)
+            init_module = import_module(module_name)
             initializer = getattr(init_module, initializer_name)
         return cls(process_count=args.processes, initializer=initializer,
                    maxtasksperchild=args.process_max_tasks)

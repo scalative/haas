@@ -8,13 +8,10 @@ from __future__ import absolute_import, unicode_literals
 
 from abc import ABCMeta, abstractmethod
 
-from six import add_metaclass
-
 from haas.utils import abstractclassmethod
 
 
-@add_metaclass(ABCMeta)
-class IDiscovererPlugin(object):
+class IDiscovererPlugin(object, metaclass=ABCMeta):
 
     @abstractclassmethod
     def from_args(cls, args, arg_prefix, loader):

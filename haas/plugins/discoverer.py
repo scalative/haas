@@ -7,6 +7,7 @@
 from __future__ import absolute_import, unicode_literals
 
 from fnmatch import fnmatch
+from importlib import import_module
 import logging
 import os
 import sys
@@ -16,7 +17,6 @@ from haas.exceptions import DotInModuleNameError
 from haas.module_import_error import ModuleImportError
 from haas.suite import find_test_cases
 from haas.testing import unittest
-from haas.utils import get_module_by_name
 from .i_discoverer_plugin import IDiscovererPlugin
 
 logger = logging.getLogger(__name__)
@@ -77,7 +77,7 @@ def find_module_by_name(full_name):
     module_attributes = []
     while True:
         try:
-            module = get_module_by_name(module_name)
+            module = import_module(module_name)
         except ImportError:
             if '.' in module_name:
                 module_name, attribute = module_name.rsplit('.', 1)
@@ -365,7 +365,7 @@ class Discoverer(IDiscovererPlugin):
         module_name = get_module_name(top_level_directory, filepath)
         logger.debug('Loading tests from %r', module_name)
         try:
-            module = get_module_by_name(module_name)
+            module = import_module(module_name)
         except Exception:
             test = _create_import_error_test(module_name)
         else:

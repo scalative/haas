@@ -1,7 +1,7 @@
 from datetime import datetime, timedelta
 import statistics
 
-from six.moves import StringIO
+from io import StringIO
 
 from haas.result import TestResult, TestCompletionStatus, TestDuration
 from haas.testing import unittest

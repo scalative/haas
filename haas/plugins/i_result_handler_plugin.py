@@ -8,13 +8,10 @@ from __future__ import absolute_import, unicode_literals
 
 from abc import ABCMeta, abstractmethod
 
-from six import add_metaclass
-
 from haas.utils import abstractclassmethod
 
 
-@add_metaclass(ABCMeta)
-class IResultHandlerPlugin(object):
+class IResultHandlerPlugin(object, metaclass=ABCMeta):
 
     @abstractclassmethod
     def from_args(cls, args, name, dest_prefix, test_count):
