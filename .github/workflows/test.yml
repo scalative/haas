@@ -14,7 +14,6 @@ env:
 
 jobs:
   test:
-    needs: [lint]
     strategy:
       matrix:
         python-version: ["3.7", "3.8", "3.9", "3.10", "3.11", "3.12", "pypy2", "pypy3"]
@@ -37,6 +36,7 @@ jobs:
         coverage run --branch -m unittest discover -v -t . haas
         python -m haas haas
         coverage report
+
   lint:
     runs-on: ubuntu-latest
     steps:
