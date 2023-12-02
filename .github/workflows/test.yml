@@ -20,7 +20,7 @@ jobs:
     needs: [lint]
     strategy:
       matrix:
-        python: [3.7, 3.8, 3.9, "3.10", "3.11", '3.12', 'pypy2', 'pypy3']
+        python-version: ["3.7", "3.8", "3.9", "3.10", "3.11", "3.12", "pypy2", "pypy3"]
         os: [windows-2019, ubuntu-22.04, macos-11]
       fail-fast: false
     runs-on: ${{ matrix.os }}  
@@ -36,10 +36,8 @@ jobs:
         pip install -r "test_requirements.txt"
         pip --version
     - name: Run tests
-      continue-on-error: false
-      working-directory: .github
       run: |
-        python -m unittest discover haas
+        python -m unittest discover -v -t . haas
         python -m haas haas
   lint:
     runs-on: ubuntu-latest
