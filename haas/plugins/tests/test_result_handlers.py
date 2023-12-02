@@ -53,7 +53,7 @@ class TestTimingResultHandler(ExcInfoFixture, unittest.TestCase):
         output = stderr.getvalue()
         output_start = '\n\nTest timing report\n' + handler.separator2
         self.assertTrue(output.startswith(output_start))
-        self.assertRegexpMatches(
+        self.assertRegex(
             output.replace('\n', ''), r'--+.*?00:10\.123 test_method \(')
 
     @mock.patch('time.ctime')
@@ -234,7 +234,7 @@ class TestTimingResultHandler(ExcInfoFixture, unittest.TestCase):
         output = stderr.getvalue()
         output_start = '\n\nTest timing report\n' + handler.separator2
         self.assertTrue(output.startswith(output_start))
-        self.assertRegexpMatches(
+        self.assertRegex(
             output.replace('\n', ''), r'--+.*?1543:00:12\.234 test_method \(')
 
     @mock.patch('sys.stderr', new_callable=StringIO)
@@ -261,7 +261,7 @@ class TestTimingResultHandler(ExcInfoFixture, unittest.TestCase):
         output = stderr.getvalue()
         output_start = '\n\nTest timing report\n' + handler.separator2
         self.assertTrue(output.startswith(output_start))
-        self.assertRegexpMatches(
+        self.assertRegex(
             output.replace('\n', ''), r'--+.*?1:01:14\.567 test_method \(')
 
     def _calculate_statistics(self, test_durations):
@@ -341,7 +341,7 @@ class TestTimingResultHandler(ExcInfoFixture, unittest.TestCase):
         output = stderr.getvalue()
         output_start = '\n\nTest timing report\n' + handler.separator2
         self.assertTrue(output.startswith(output_start))
-        self.assertRegexpMatches(
+        self.assertRegex(
             output.replace('\n', ''), r'--+.*?00:09\.123 test_method \(')
         self.assertIn(expected_stats, output)
 
