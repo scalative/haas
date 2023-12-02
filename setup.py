@@ -107,7 +107,7 @@ if __name__ == "__main__":
     install_requires = [
         'enum34',
         'statistics',
-        'stevedore >= 4.1.0, < 5.0.0',
+        'stevedore >= 3.5.2, < 5.0.0',
     ]
 
     write_version_py()
