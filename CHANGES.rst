@@ -5,6 +5,12 @@
 Changes since version 0.9.0
 ===========================
 
+Packaging
+---------
+
+* Replace ``setup.py`` and setuptools with ``pyproject.toml`` and
+  poetry (#198).
+
 
 Version 0.9.0
 =============
