@@ -5,6 +5,35 @@
 Changes since version 0.8.0
 ===========================
 
+Behaviour changes
+-----------------
+
+* Dropped support for long out-of-support Python versions prior to
+  Python 3.7 (#188, #194, #193):
+  * Python 2.6
+  * Python 2.7
+  * Python 3.3
+  * Python 3.4
+  * Python 3.5
+  * Python 3.6
+
+Enhancements
+------------
+
+* Allow log-level names to be case-insensitive (#166)
+* Add command-line argument for Python warning levels (#174)
+* Fixed compatibility with Python 3.12 (#194)
+* Added testing of Python 3.6 and 3.7 (#175)
+* Added testing of Python 3.8 and 3.9 and 3.10 (#192)
+* Added testing of Python 3.11 and 3.12 (#193)
+
+Bugs Fixed
+----------
+
+* Adding missing LICENSE and docs to source distribution (#185)
+* Fix path handling and normalization on MacOS when discovering tests
+  by directory (#194, #193)
+
 
 Version 0.8.0
 =============
