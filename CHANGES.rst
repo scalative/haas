@@ -2,8 +2,8 @@
  ``haas`` CHANGELOG
 ====================
 
-Changes since version 0.8.0
-===========================
+Version 0.9.0
+=============
 
 Behaviour changes
 -----------------
