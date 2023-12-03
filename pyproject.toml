@@ -1,0 +1,42 @@
+[tool.poetry]
+name = "haas"
+version = "0.10.0.dev"
+description = "Extensible Python Test Runner"
+authors = ["Simon Jagoe <simon@scalative.com>"]
+license = "BSD"
+readme = "README.rst"
+repository = "https://github.com/scalative/haas"
+classifiers = [
+    "Development Status :: 3 - Alpha",
+    "Intended Audience :: Developers",
+    "License :: OSI Approved :: BSD License",
+    "Operating System :: MacOS",
+    "Operating System :: Microsoft :: Windows",
+    "Operating System :: OS Independent",
+    "Operating System :: POSIX",
+    "Operating System :: Unix",
+    "Topic :: Software Development",
+    "Topic :: Software Development :: Testing",
+]
+
+[tool.poetry.dependencies]
+python = "^3.7"
+statistics = "^1.0.3.5"
+stevedore = [
+    { version = "^3.5.2", python = "<3.8" },
+    { version = "^4.1.1", python = ">=3.8" }
+]
+
+[tool.poetry.group.dev.dependencies]
+coverage = [
+    { version = "^7.2.7", python = "<3.8" },
+    { version = "^7.3.2", python = ">=3.8" }
+]
+testfixtures = "^7.2.2"
+refactordoc = "^0.3.1"
+sphinx = { version = "^7.2.6", python = ">=3.9" }
+sphinx-rtd-theme = "^2.0.0"
+
+[build-system]
+requires = ["poetry-core"]
+build-backend = "poetry.core.masonry.api"
