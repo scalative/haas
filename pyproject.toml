@@ -1,0 +1,74 @@
+[project]
+name = "haas"
+dynamic = ["version"]
+description = "Extensible Python Test Runner"
+authors = [
+    { name = "Simon Jagoe", email = "simon@scalative.com" },
+]
+license = { file = "LICENSE.txt" }
+readme = "README.rst"
+requires-python = ">= 3.7"
+classifiers = [
+    "Development Status :: 3 - Alpha",
+    "Intended Audience :: Developers",
+    "License :: OSI Approved :: BSD License",
+    "Operating System :: MacOS",
+    "Operating System :: Microsoft :: Windows",
+    "Operating System :: OS Independent",
+    "Operating System :: POSIX",
+    "Operating System :: Unix",
+    "Topic :: Software Development",
+    "Topic :: Software Development :: Testing",
+]
+dependencies = [
+    "statistics",
+    "stevedore",
+]
+
+[project.optional-dependencies]
+test = [
+    "coverage",
+    "testfixtures",
+]
+docs = [
+    "refactordoc",
+    "sphinx",
+    "sphinx-rtd-theme",
+]
+
+[project.urls]
+Repository = "https://github.com/scalative/haas"
+
+[tool.setuptools]
+packages = [
+    "haas",
+    "haas.plugins",
+    "haas.tests",
+    "haas.plugins.tests",
+]
+
+[project.scripts]
+haas = "haas.main:main"
+
+[project.entry-points."haas.hooks.environment"]
+coverage = "haas.plugins.coverage:Coverage"
+
+[project.entry-points."haas.discovery"]
+default = "haas.plugins.discoverer:Discoverer"
+
+[project.entry-points."haas.runner"]
+default = "haas.plugins.runner:BaseTestRunner"
+parallel = "haas.plugins.parallel_runner:ParallelTestRunner"
+
+[project.entry-points."haas.result.handler"]
+default = "haas.plugins.result_handler:StandardTestResultHandler"
+quiet = "haas.plugins.result_handler:QuietTestResultHandler"
+verbose = "haas.plugins.result_handler:VerboseTestResultHandler"
+timing = "haas.plugins.result_handler:TimingResultHandler"
+
+[build-system]
+requires = ["setuptools", "setuptools-scm"]
+build-backend = "setuptools.build_meta"
+
+[tool.setuptools_scm]
+version_file = "haas/_version.py"
