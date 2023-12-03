@@ -18,6 +18,12 @@ classifiers = [
     "Topic :: Software Development",
     "Topic :: Software Development :: Testing",
 ]
+include = [
+    { path = "docs", format = "sdist" },
+    { path = "*.rst", format = "sdist" },
+    { path = "*requirements.txt", format = "sdist" },
+    { path = "tox.ini", format = "sdist" },
+]
 
 [tool.poetry.dependencies]
 python = "^3.7"
