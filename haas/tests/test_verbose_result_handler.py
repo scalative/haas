@@ -9,7 +9,7 @@ from __future__ import absolute_import, unicode_literals
 from datetime import datetime, timedelta
 from time import ctime
 
-from six.moves import StringIO
+from io import StringIO
 
 from ..plugins.result_handler import VerboseTestResultHandler
 from ..result import (
@@ -47,7 +47,7 @@ class TestVerboseResultHandler(ExcInfoFixture, unittest.TestCase):
         output = stderr.getvalue()
         self.assertTrue(output.startswith('\n' + handler.separator2))
         self.assertTrue(output.endswith('OK\n'))
-        self.assertRegexpMatches(
+        self.assertRegex(
             output.replace('\n', ''), r'--+.*?Ran 0 tests.*?OK')
 
     @mock.patch('time.ctime')
@@ -232,7 +232,7 @@ class TestVerboseResultHandler(ExcInfoFixture, unittest.TestCase):
         output = stderr.getvalue().replace('\n', '')
         description = handler.get_test_description(
             case).replace('(', r'\(').replace(')', r'\)')
-        self.assertRegexpMatches(
+        self.assertRegex(
             output, '{0}.*?Traceback.*?RuntimeError'.format(
                 description))
 
@@ -260,7 +260,7 @@ class TestVerboseResultHandler(ExcInfoFixture, unittest.TestCase):
         output = stderr.getvalue().replace('\n', '')
         description = handler.get_test_description(
             case).replace('(', r'\(').replace(')', r'\)').replace('\n', '')
-        self.assertRegexpMatches(
+        self.assertRegex(
             output, '{0}.*?Traceback.*?AssertionError'.format(
                 description))
         # The contents of unittest.TestCase should not be in the traceback

@@ -9,8 +9,6 @@ from __future__ import absolute_import, unicode_literals
 from datetime import datetime, timedelta
 import sys
 
-import six
-
 from ..result import TestDuration
 from ..testing import unittest
 
@@ -76,11 +74,11 @@ class TestTestDurationOrdering(unittest.TestCase):
         self.assertEqual(duration1, duration2)
         self.assertLessEqual(duration1, duration2)
         self.assertGreaterEqual(duration1, duration2)
-        with six.assertRaisesRegex(
-                self, self.failureException, 'not less than'):
+        with self.assertRaisesRegex(
+                self.failureException, 'not less than'):
             self.assertLess(duration1, duration2)
-        with six.assertRaisesRegex(
-                self, self.failureException, 'not greater than'):
+        with self.assertRaisesRegex(
+                self.failureException, 'not greater than'):
             self.assertGreater(duration1, duration2)
 
         self.assertNotEqual(duration1, object())
@@ -99,11 +97,11 @@ class TestTestDurationOrdering(unittest.TestCase):
         self.assertEqual(duration1, duration2)
         self.assertLessEqual(duration1, duration2)
         self.assertGreaterEqual(duration1, duration2)
-        with six.assertRaisesRegex(
-                self, self.failureException, 'not less than'):
+        with self.assertRaisesRegex(
+                self.failureException, 'not less than'):
             self.assertLess(duration1, duration2)
-        with six.assertRaisesRegex(
-                self, self.failureException, 'not greater than'):
+        with self.assertRaisesRegex(
+                self.failureException, 'not greater than'):
             self.assertGreater(duration1, duration2)
 
     def test_lessthan(self):
@@ -122,11 +120,11 @@ class TestTestDurationOrdering(unittest.TestCase):
         self.assertNotEqual(duration1, duration2)
         self.assertLess(duration1, duration2)
         self.assertLessEqual(duration1, duration2)
-        with six.assertRaisesRegex(
-                self, self.failureException, 'not greater than or equal to'):
+        with self.assertRaisesRegex(
+                self.failureException, 'not greater than or equal to'):
             self.assertGreaterEqual(duration1, duration2)
-        with six.assertRaisesRegex(
-                self, self.failureException, 'not greater than'):
+        with self.assertRaisesRegex(
+                self.failureException, 'not greater than'):
             self.assertGreater(duration1, duration2)
 
     def test_greaterthan(self):
@@ -145,9 +143,9 @@ class TestTestDurationOrdering(unittest.TestCase):
         self.assertNotEqual(duration1, duration2)
         self.assertGreater(duration1, duration2)
         self.assertGreaterEqual(duration1, duration2)
-        with six.assertRaisesRegex(
-                self, self.failureException, 'not less than or equal to'):
+        with self.assertRaisesRegex(
+                self.failureException, 'not less than or equal to'):
             self.assertLessEqual(duration1, duration2)
-        with six.assertRaisesRegex(
-                self, self.failureException, 'not less than'):
+        with self.assertRaisesRegex(
+                self.failureException, 'not less than'):
             self.assertLess(duration1, duration2)

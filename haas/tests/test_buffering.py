@@ -9,7 +9,7 @@ from __future__ import absolute_import, unicode_literals
 from datetime import datetime, timedelta
 import sys
 
-from six.moves import StringIO
+from io import StringIO
 
 from haas.tests.compat import mock
 from ..plugins.i_result_handler_plugin import IResultHandlerPlugin

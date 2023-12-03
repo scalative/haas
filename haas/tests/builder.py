@@ -10,13 +10,10 @@ import abc
 import os
 import textwrap
 
-from six import add_metaclass
-
 from ..testing import unittest
 
 
-@add_metaclass(abc.ABCMeta)
-class Importable(object):
+class Importable(object, metaclass=abc.ABCMeta):
 
     def __init__(self, name, contents=()):
         self.name = name

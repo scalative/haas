@@ -8,10 +8,8 @@ from __future__ import absolute_import, unicode_literals
 
 import logging
 import os
-import sys
 import re
-
-import six
+import sys
 
 import haas
 
@@ -38,18 +36,6 @@ def configure_logging(level):
     logger.setLevel(actual_level)
     logger.info('Logging configured for haas at level %r',
                 logging.getLevelName(actual_level))
-
-
-if six.PY2:
-    def get_module_by_name(name):
-        """Import a module and return the imported module object.
-
-        """
-        __import__(name)
-        return sys.modules[name]
-else:
-    import importlib
-    get_module_by_name = importlib.import_module
 
 
 UNCAMELCASE_FIRST_PASS = re.compile(

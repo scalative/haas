@@ -1,5 +1,4 @@
 coverage
 unittest2; python_version == '2.6'
 mock; python_version < '3.3'
-six
 testfixtures

@@ -2,7 +2,7 @@ from argparse import ArgumentParser
 from datetime import datetime, timedelta
 import time
 
-from six.moves import StringIO
+from io import StringIO
 
 from ..plugins.discoverer import _create_import_error_test
 from ..plugins.parallel_runner import ChildResultHandler, ParallelTestRunner
