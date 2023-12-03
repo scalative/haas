@@ -34,13 +34,13 @@ jobs:
         poetry install --with=dev
     - name: Run tests with unittest
       run: |
-        coverage run --branch -m unittest discover -v -t . haas
+        poetry run coverage run --branch -m unittest discover -v -t . haas
     - name: Run tests with haas
       run: |
-        python -m haas haas
+        poetry run python -m haas haas
     - name: Print coverage report
       run: |
-        coverage report
+        poetry run coverage report
 
   lint:
     runs-on: ubuntu-latest
