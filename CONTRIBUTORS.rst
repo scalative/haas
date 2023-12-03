@@ -2,7 +2,10 @@
  Contributors to ``haas``
 ==========================
 
-- Simon Jagoe
 - Ioannis Tziakos
-- Mark Dickinson
+- John Vandenberg
 - Joris Vankerschaver
+- Mark Dickinson
+- Michael Overmeyer
+- Mikalai Saskavets
+- Simon Jagoe
