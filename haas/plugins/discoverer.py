@@ -7,6 +7,7 @@
 from __future__ import absolute_import, unicode_literals
 
 from fnmatch import fnmatch
+from pathlib import Path
 import logging
 import os
 import sys
@@ -41,9 +42,11 @@ def _create_import_error_test(module_name):
 
 
 def get_relpath(top_level_directory, fullpath):
-    normalized = os.path.normpath(fullpath)
-    relpath = os.path.relpath(normalized, top_level_directory)
-    if os.path.isabs(relpath) or relpath.startswith('..'):
+    top_level = Path(top_level_directory).resolve()
+    normalized = Path(fullpath).resolve()
+    try:
+        relpath = str(normalized.relative_to(top_level))
+    except ValueError:
         raise ValueError('Path not within project: {0}'.format(fullpath))
     return relpath
 
