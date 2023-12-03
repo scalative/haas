@@ -8,6 +8,7 @@ from __future__ import absolute_import, unicode_literals
 
 from fnmatch import fnmatch
 from importlib import import_module
+from os import getcwd
 from pathlib import Path
 import logging
 import os
@@ -424,7 +425,7 @@ class Discoverer(IDiscovererPlugin):
         """
         if top_level_directory is None:
             top_level_directory = find_top_level_directory(
-                os.getcwd())
+                getcwd())
 
         logger.debug('Discovering filtered tests: filter_name=%r, '
                      'top_level_directory=%r, pattern=%r', top_level_directory,

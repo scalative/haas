@@ -20,6 +20,7 @@ from haas.loader import Loader
 from haas.module_import_error import ModuleImportError
 from haas.suite import find_test_cases, TestSuite
 from haas.utils import cd
+from haas.plugins import discoverer
 from ..discoverer import (
     Discoverer,
     filter_test_suite,
@@ -451,7 +452,7 @@ class TestDiscoverFilteredTests(TestDiscoveryMixin, unittest.TestCase):
     def test_discover_no_top_level(self):
         getcwd = mock.Mock()
         getcwd.return_value = self.tmpdir
-        with mock.patch.object(os, 'getcwd', getcwd):
+        with mock.patch.object(discoverer, 'getcwd', getcwd):
             suite = self.discoverer.discover(
                 'TestCase',
             )
