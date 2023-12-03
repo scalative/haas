@@ -1,6 +1,6 @@
 [tool.poetry]
 name = "haas"
-version = "0.10.0.dev"
+version = "0.0.0"
 description = "Extensible Python Test Runner"
 authors = ["Simon Jagoe <simon@scalative.com>"]
 license = "BSD"
@@ -63,5 +63,10 @@ sphinx = { version = "^7.2.6", python = ">=3.9" }
 sphinx-rtd-theme = "^2.0.0"
 
 [build-system]
-requires = ["poetry-core"]
-build-backend = "poetry.core.masonry.api"
+requires = ["poetry-core>=1.0.0", "poetry-dynamic-versioning>=1.0.0,<2.0.0"]
+build-backend = "poetry_dynamic_versioning.backend"
+
+[tool.poetry-dynamic-versioning]
+enable = true
+
+[tool.poetry-dynamic-versioning.substitution]
