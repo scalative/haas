@@ -25,6 +25,25 @@ include = [
     { path = "tox.ini", format = "sdist" },
 ]
 
+[tool.poetry.scripts]
+haas = "haas.main:main"
+
+[tool.poetry.plugins."haas.hooks.environment"]
+coverage = "haas.plugins.coverage:Coverage"
+
+[tool.poetry.plugins."haas.discovery"]
+default = "haas.plugins.discoverer:Discoverer"
+
+[tool.poetry.plugins."haas.runner"]
+default = "haas.plugins.runner:BaseTestRunner"
+parallel = "haas.plugins.parallel_runner:ParallelTestRunner"
+
+[tool.poetry.plugins."haas.result.handler"]
+default = "haas.plugins.result_handler:StandardTestResultHandler"
+quiet = "haas.plugins.result_handler:QuietTestResultHandler"
+verbose = "haas.plugins.result_handler:VerboseTestResultHandler"
+timing = "haas.plugins.result_handler:TimingResultHandler"
+
 [tool.poetry.dependencies]
 python = "^3.7"
 statistics = "^1.0.3.5"
