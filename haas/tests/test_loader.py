@@ -8,8 +8,6 @@ from __future__ import absolute_import, unicode_literals
 
 import unittest as python_unittest
 
-import six
-
 from haas.testing import unittest
 
 from . import _test_cases
@@ -111,8 +109,7 @@ class TestLoadModule(LoaderTestMixin, unittest.TestCase):
 
     def test_find_all_cases_in_module(self):
         cases = self.loader.get_test_cases_from_module(_test_cases)
-        six.assertCountEqual(
-            self,
+        self.assertCountEqual(
             cases, [_test_cases.TestCase, _test_cases.PythonTestCase])
 
     def test_load_all_cases_in_module(self):

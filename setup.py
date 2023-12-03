@@ -5,7 +5,6 @@
 # This software may be modified and distributed under the terms
 # of the 3-clause BSD license.  See the LICENSE.txt file for details.
 import os
-import sys
 import subprocess
 
 from setuptools import setup
@@ -105,21 +104,11 @@ if not is_released:
 
 
 if __name__ == "__main__":
-    install_requires = ['six']
-    common_requires = ['enum34', 'statistics']
-    py26_requires = [
-        'stevedore >= 1.0.0, < 1.10.0',
-        'unittest2',
-        'argparse',
-        'ordereddict'] + common_requires
-    py34_requires = ['stevedore >= 1.0.0, < 1.12.0']
-    py33_requires = py34_requires + common_requires
-    if sys.version_info < (2, 7):
-        install_requires += py26_requires
-    elif sys.version_info < (3, 4):
-        install_requires += py33_requires
-    else:
-        install_requires = py34_requires
+    install_requires = [
+        'enum34',
+        'statistics',
+        'stevedore >= 3.5.2, < 5.0.0',
+    ]
 
     write_version_py()
     from haas import __version__
@@ -143,13 +132,14 @@ if __name__ == "__main__":
             'Operating System :: POSIX',
             'Operating System :: Unix',
             'Programming Language :: Python',
-            'Programming Language :: Python :: 2',
-            'Programming Language :: Python :: 2.7',
             'Programming Language :: Python :: 3',
-            'Programming Language :: Python :: 3.4',
-            'Programming Language :: Python :: 3.5',
-            'Programming Language :: Python :: 3.6',
+            'Programming Language :: Python :: 3 :: Only',
             'Programming Language :: Python :: 3.7',
+            'Programming Language :: Python :: 3.8',
+            'Programming Language :: Python :: 3.9',
+            'Programming Language :: Python :: 3.10',
+            'Programming Language :: Python :: 3.11',
+            'Programming Language :: Python :: 3.12',
             'Topic :: Software Development',
             'Topic :: Software Development :: Testing',
         ],
@@ -178,14 +168,5 @@ if __name__ == "__main__":
                 'verbose = haas.plugins.result_handler:VerboseTestResultHandler',  # noqa
                 'timing = haas.plugins.result_handler:TimingResultHandler',
             ]
-        },
-        extras_require={
-            ':python_version=="2.6"': py26_requires,
-            ':python_version=="2.7"': py33_requires,
-            ':python_version=="3.3"': py33_requires,
-            ':python_version=="3.4"': py34_requires,
-            ':python_version=="3.5"': py34_requires,
-            ':python_version=="3.6"': py34_requires,
-            ':python_version=="3.7"': py34_requires,
         },
     )

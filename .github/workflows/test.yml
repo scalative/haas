@@ -2,9 +2,6 @@ name: Test
 
 on:
   pull_request:
-    branches:
-      - master
-      - maintenance/**
   push:
     branches:
       - master
@@ -17,11 +14,10 @@ env:
 
 jobs:
   test:
-    needs: [lint]
     strategy:
       matrix:
-        python: [3.7, 3.8, 3.9, "3.10", "3.11", '3.12', 'pypy2', 'pypy3']
-        os: [windows-2019, ubuntu-22.04, macos-11]
+        python-version: ["3.7", "3.8", "3.9", "3.10", "3.11", "3.12", "pypy3.9", "pypy3.10"]
+        os: [windows-latest, ubuntu-latest, macos-latest]
       fail-fast: false
     runs-on: ${{ matrix.os }}  
     steps:
@@ -29,18 +25,22 @@ jobs:
     - name: Setup python
       uses: actions/setup-python@v4
       with:
-        python-version: ${{ matrix.python }}
+        python-version: ${{ matrix.python-version }}
     - name: Install
       run: |
         pip install -e .
         pip install -r "test_requirements.txt"
         pip --version
-    - name: Run tests
-      continue-on-error: false
-      working-directory: .github
+    - name: Run tests with unittest
       run: |
-        python -m unittest discover haas
+        coverage run --branch -m unittest discover -v -t . haas
+    - name: Run tests with haas
+      run: |
         python -m haas haas
+    - name: Print coverage report
+      run: |
+        coverage report
+
   lint:
     runs-on: ubuntu-latest
     steps:

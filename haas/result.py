@@ -14,8 +14,7 @@ import sys
 import traceback
 import warnings
 
-import six
-from six.moves import StringIO
+from io import StringIO
 
 from .error_holder import ErrorHolder
 
@@ -65,7 +64,7 @@ def _count_relevant_tb_levels(tb):
 
 
 def _decode(line, encoding):
-    if isinstance(line, six.text_type):
+    if isinstance(line, str):
         return line
     try:
         return line.decode(encoding)

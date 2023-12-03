@@ -8,13 +8,10 @@ from __future__ import absolute_import, unicode_literals
 
 import abc
 
-from six import add_metaclass
-
 from haas.utils import abstractclassmethod
 
 
-@add_metaclass(abc.ABCMeta)
-class IRunnerPlugin(object):
+class IRunnerPlugin(object, metaclass=abc.ABCMeta):
 
     @abstractclassmethod
     def from_args(cls, args, arg_prefix):

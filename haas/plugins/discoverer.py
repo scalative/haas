@@ -7,6 +7,9 @@
 from __future__ import absolute_import, unicode_literals
 
 from fnmatch import fnmatch
+from importlib import import_module
+from os import getcwd
+from pathlib import Path
 import logging
 import os
 import sys
@@ -16,7 +19,6 @@ from haas.exceptions import DotInModuleNameError
 from haas.module_import_error import ModuleImportError
 from haas.suite import find_test_cases
 from haas.testing import unittest
-from haas.utils import get_module_by_name
 from .i_discoverer_plugin import IDiscovererPlugin
 
 logger = logging.getLogger(__name__)
@@ -41,9 +43,11 @@ def _create_import_error_test(module_name):
 
 
 def get_relpath(top_level_directory, fullpath):
-    normalized = os.path.normpath(fullpath)
-    relpath = os.path.relpath(normalized, top_level_directory)
-    if os.path.isabs(relpath) or relpath.startswith('..'):
+    top_level = Path(top_level_directory).resolve()
+    normalized = Path(fullpath).resolve()
+    try:
+        relpath = str(normalized.relative_to(top_level))
+    except ValueError:
         raise ValueError('Path not within project: {0}'.format(fullpath))
     return relpath
 
@@ -77,7 +81,7 @@ def find_module_by_name(full_name):
     module_attributes = []
     while True:
         try:
-            module = get_module_by_name(module_name)
+            module = import_module(module_name)
         except ImportError:
             if '.' in module_name:
                 module_name, attribute = module_name.rsplit('.', 1)
@@ -365,7 +369,7 @@ class Discoverer(IDiscovererPlugin):
         module_name = get_module_name(top_level_directory, filepath)
         logger.debug('Loading tests from %r', module_name)
         try:
-            module = get_module_by_name(module_name)
+            module = import_module(module_name)
         except Exception:
             test = _create_import_error_test(module_name)
         else:
@@ -421,7 +425,7 @@ class Discoverer(IDiscovererPlugin):
         """
         if top_level_directory is None:
             top_level_directory = find_top_level_directory(
-                os.getcwd())
+                getcwd())
 
         logger.debug('Discovering filtered tests: filter_name=%r, '
                      'top_level_directory=%r, pattern=%r', top_level_directory,

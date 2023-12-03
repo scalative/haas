@@ -8,13 +8,10 @@ from __future__ import absolute_import, unicode_literals
 
 import abc
 
-from six import add_metaclass
-
 from haas.utils import abstractclassmethod
 
 
-@add_metaclass(abc.ABCMeta)
-class IHookPlugin(object):
+class IHookPlugin(object, metaclass=abc.ABCMeta):
 
     @abc.abstractmethod
     def setup(self):  # pragma: no cover
