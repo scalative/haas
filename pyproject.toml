@@ -67,7 +67,7 @@ verbose = "haas.plugins.result_handler:VerboseTestResultHandler"
 timing = "haas.plugins.result_handler:TimingResultHandler"
 
 [build-system]
-requires = ["setuptools", "setuptools-scm"]
+requires = ["setuptools", "setuptools-scm >= 8.0"]
 build-backend = "setuptools.build_meta"
 
 [tool.setuptools_scm]
