@@ -1,6 +1,0 @@
--r test_requirements.txt
-refactordoc
-sphinx
-sphinx-rtd-theme
-wheel
-tox
