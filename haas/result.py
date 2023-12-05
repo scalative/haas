@@ -605,6 +605,15 @@ class ResultCollector(object):
             test, TestCompletionStatus.unexpected_success)
         self.unexpectedSuccesses.append(result)
 
+    def addDuration(self, test, elapsed):
+        """Called when a test finished to run, regardless of its outcome.
+        *test* is the test case corresponding to the test method.
+        *elapsed* is the time represented in seconds, and it includes the
+        execution of cleanup functions.
+        """
+        # haas already handles measuring test duration. This method is
+        # to silence warnings under Python 3.12
+
     def wasSuccessful(self):
         """Return ``True`` if the run was successful.
 
