@@ -6,6 +6,7 @@ Changes since version 0.9.0
 ===========================
 
 * Replace ``setup.py`` with ``pyproject.toml`` (#199).
+* Automate package publishing (#201).
 
 
 Version 0.9.0
