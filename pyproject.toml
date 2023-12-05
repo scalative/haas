@@ -47,6 +47,9 @@ packages = [
     "haas.plugins.tests",
 ]
 
+[tool.setuptools.dynamic]
+version = {attr = "haas.__version__"}
+
 [project.scripts]
 haas = "haas.main:main"
 
@@ -67,8 +70,5 @@ verbose = "haas.plugins.result_handler:VerboseTestResultHandler"
 timing = "haas.plugins.result_handler:TimingResultHandler"
 
 [build-system]
-requires = ["setuptools", "setuptools-scm >= 8.0"]
+requires = ["setuptools"]
 build-backend = "setuptools.build_meta"
-
-[tool.setuptools_scm]
-version_file = "haas/_version.py"

@@ -8,10 +8,7 @@ from __future__ import absolute_import, unicode_literals
 
 import logging
 
-try:
-    from haas._version import version as __version__
-except ImportError:  # pragma: no cover
-    __version__ = 'notset'
+__version__ = '0.10.0.dev1'
 
 
 class NullHandler(logging.Handler):  # pragma: no cover
