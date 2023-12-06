@@ -19,6 +19,16 @@ from io import StringIO
 from .error_holder import ErrorHolder
 
 
+if sys.version_info >= (3, 12):
+    from datetime import UTC
+
+    def datetime_utcnow():
+        return datetime.now(UTC)
+else:
+    def datetime_utcnow():
+        return datetime.utcnow()
+
+
 class TestCompletionStatus(Enum):
     """Enumeration to represent the status of a single test.
 
@@ -422,7 +432,7 @@ class ResultCollector(object):
 
         """
         if start_time is None:
-            start_time = datetime.utcnow()
+            start_time = datetime_utcnow()
         self._test_timing[self._testcase_to_key(test)] = start_time
         self._mirror_output = False
         self._setup_stdout()
@@ -496,13 +506,13 @@ class ResultCollector(object):
 
         started_time = self._test_timing.get(self._testcase_to_key(test))
         if started_time is None and isinstance(test, ErrorHolder):
-            started_time = datetime.utcnow()
+            started_time = datetime_utcnow()
         elif started_time is None:
             raise RuntimeError(
                 'Missing test start! Please report this error as a bug in '
                 'haas.')
 
-        completion_time = datetime.utcnow()
+        completion_time = datetime_utcnow()
         duration = TestDuration(started_time, completion_time)
         result = TestResult.from_test_case(
             test,
@@ -604,6 +614,15 @@ class ResultCollector(object):
         result = self._handle_result(
             test, TestCompletionStatus.unexpected_success)
         self.unexpectedSuccesses.append(result)
+
+    def addDuration(self, test, elapsed):
+        """Called when a test finished to run, regardless of its outcome.
+        *test* is the test case corresponding to the test method.
+        *elapsed* is the time represented in seconds, and it includes the
+        execution of cleanup functions.
+        """
+        # haas already handles measuring test duration. This method is
+        # to silence warnings under Python 3.12
 
     def wasSuccessful(self):
         """Return ``True`` if the run was successful.

@@ -31,3 +31,6 @@ class MockDateTime(object):
             return next(self.ret)
         except StopIteration:
             raise ValueError('No more mock values!')
+
+    def now(self, tz):
+        return self.utcnow()

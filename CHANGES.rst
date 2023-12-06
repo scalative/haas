@@ -5,7 +5,15 @@
 Changes since version 0.9.0
 ===========================
 
+Packaging
+---------
+
 * Replace ``setup.py`` with ``pyproject.toml`` (#199).
+
+Bugs Fixed
+---------
+
+* Fix deprecation warnings under Python 3.12 (#200).
 
 
 Version 0.9.0
