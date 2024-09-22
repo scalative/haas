@@ -4,14 +4,12 @@
 #
 # This software may be modified and distributed under the terms
 # of the 3-clause BSD license.  See the LICENSE.txt file for details.
-from __future__ import absolute_import, unicode_literals
-
 import os
 import shutil
 import tempfile
 import textwrap
+import unittest
 
-from ..testing import unittest
 from . import builder
 
 

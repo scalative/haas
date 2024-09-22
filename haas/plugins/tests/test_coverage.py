@@ -4,7 +4,8 @@
 #
 # This software may be modified and distributed under the terms
 # of the 3-clause BSD license.  See the LICENSE.txt file for details.
-from __future__ import absolute_import, unicode_literals
+from unittest import mock
+import unittest
 
 try:
     import coverage
@@ -12,10 +13,6 @@ try:
 except ImportError:
     coverage = None
     Coverage = None
-
-
-from haas.testing import unittest
-from haas.tests.compat import mock
 
 
 @unittest.skipIf(coverage is None, 'Coverage is not installed')

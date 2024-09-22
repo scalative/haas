@@ -4,16 +4,16 @@
 #
 # This software may be modified and distributed under the terms
 # of the 3-clause BSD license.  See the LICENSE.txt file for details.
-from __future__ import absolute_import, unicode_literals
-
 from argparse import Namespace
 from contextlib import contextmanager
 from functools import wraps
+from unittest import mock
 import logging
 import os
 import shutil
 import tempfile
 import types
+import unittest
 
 from testfixtures import LogCapture
 from stevedore.extension import ExtensionManager, Extension
@@ -24,13 +24,11 @@ from ..loader import Loader
 from ..plugin_manager import PluginManager
 from ..plugins.discoverer import Discoverer
 from ..suite import TestSuite
-from ..testing import unittest
 from ..utils import cd
-from .compat import mock
 from . import builder
 
 
-class MockLambda(object):
+class MockLambda:
 
     def __eq__(self, other):
         if isinstance(other, types.FunctionType):

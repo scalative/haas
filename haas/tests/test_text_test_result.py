@@ -4,18 +4,16 @@
 #
 # This software may be modified and distributed under the terms
 # of the 3-clause BSD license.  See the LICENSE.txt file for details.
-from __future__ import absolute_import, unicode_literals
-
 from datetime import datetime, timedelta
+from unittest import mock
+import unittest
 
 from ..plugins.i_result_handler_plugin import IResultHandlerPlugin
 from ..result import (
     ResultCollector, TestResult, TestCompletionStatus, TestDuration
 )
-from ..testing import unittest
 from . import _test_cases, _test_case_data
 from .fixtures import ExcInfoFixture, MockDateTime
-from .compat import mock
 
 
 class TestTextTestResult(ExcInfoFixture, unittest.TestCase):

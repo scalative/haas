@@ -4,19 +4,14 @@
 #
 # This software may be modified and distributed under the terms
 # of the 3-clause BSD license.  See the LICENSE.txt file for details.
-from __future__ import absolute_import, unicode_literals
-
+import unittest
 from datetime import datetime, timedelta
-import sys
 
 from ..result import TestDuration
-from ..testing import unittest
 
 
 class TestTestDurationOrdering(unittest.TestCase):
 
-    @unittest.skipIf(sys.version_info < (3,),
-                     'Python 2 does not raise on unorderable types')
     def test_unorderable_types(self):
         start_time = datetime(2015, 12, 23, 8, 14, 12)
         duration = timedelta(seconds=10)

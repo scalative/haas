@@ -1,4 +1,5 @@
-from haas.testing import unittest
+import unittest
+
 from ..suite import TestSuite
 
 
@@ -22,7 +23,7 @@ class BadlySubclassedTestCase(unittest.TestCase):
         pass
 
 
-class TestSuiteNotSubclass(object):
+class TestSuiteNotSubclass:
 
     def __init__(self, tests=()):
         self.tests = tests

@@ -4,9 +4,8 @@
 #
 # This software may be modified and distributed under the terms
 # of the 3-clause BSD license.  See the LICENSE.txt file for details.
-from __future__ import absolute_import, unicode_literals
-
 from argparse import ArgumentParser
+import unittest
 
 from stevedore.extension import ExtensionManager, Extension
 
@@ -14,10 +13,9 @@ from haas.plugins.base_hook_plugin import BaseHookPlugin
 from haas.plugins.runner import BaseTestRunner
 from ..haas_application import create_argument_parser
 from ..plugin_manager import PluginManager
-from ..testing import unittest
 
 
-class InvalidPlugin(object):
+class InvalidPlugin:
     pass
 
 

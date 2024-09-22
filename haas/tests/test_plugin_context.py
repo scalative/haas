@@ -4,12 +4,10 @@
 #
 # This software may be modified and distributed under the terms
 # of the 3-clause BSD license.  See the LICENSE.txt file for details.
-from __future__ import absolute_import, unicode_literals
-
+from unittest import mock
+import unittest
 
 from ..plugin_context import PluginContext
-from ..testing import unittest
-from .compat import mock
 
 
 class TestPluginContext(unittest.TestCase):

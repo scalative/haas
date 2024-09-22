@@ -1,12 +1,11 @@
 from datetime import datetime, timedelta
-import statistics
-
 from io import StringIO
+from unittest import mock
+import statistics
+import unittest
 
 from haas.result import TestResult, TestCompletionStatus, TestDuration
-from haas.testing import unittest
 from haas.tests import _test_cases
-from haas.tests.compat import mock
 from haas.tests.fixtures import ExcInfoFixture
 from ..result_handler import (
     QuietTestResultHandler,

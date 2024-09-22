@@ -2,7 +2,7 @@ from contextlib import contextmanager
 import sys
 
 
-class ExcInfoFixture(object):
+class ExcInfoFixture:
 
     @contextmanager
     def failure_exc_info(self, msg=None):
@@ -19,7 +19,7 @@ class ExcInfoFixture(object):
             yield sys.exc_info()
 
 
-class MockDateTime(object):
+class MockDateTime:
     def __init__(self, ret):
         try:
             self.ret = iter(ret)

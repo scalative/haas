@@ -4,19 +4,16 @@
 #
 # This software may be modified and distributed under the terms
 # of the 3-clause BSD license.  See the LICENSE.txt file for details.
-from __future__ import absolute_import, unicode_literals
-
 from datetime import datetime, timedelta
-
 from io import StringIO
+from unittest import mock
+import unittest
 
 from ..plugins.result_handler import QuietTestResultHandler
 from ..result import (
     TestResult, TestCompletionStatus, TestDuration)
-from ..testing import unittest
 from . import _test_cases
 from .fixtures import ExcInfoFixture
-from .compat import mock
 
 
 class TestQuietResultHandler(ExcInfoFixture, unittest.TestCase):

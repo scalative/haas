@@ -4,11 +4,7 @@
 #
 # This software may be modified and distributed under the terms
 # of the 3-clause BSD license.  See the LICENSE.txt file for details.
-from __future__ import absolute_import, unicode_literals
-
-import unittest as python_unittest
-
-from haas.testing import unittest
+import unittest
 
 from . import _test_cases
 from . import _test_case_data
@@ -16,7 +12,7 @@ from ..loader import Loader
 from ..suite import TestSuite
 
 
-class LoaderTestMixin(object):
+class LoaderTestMixin:
 
     def setUp(self):
         self.loader = Loader()
@@ -29,7 +25,7 @@ class TestLoadTest(LoaderTestMixin, unittest.TestCase):
 
     def test_creates_instance_for_valid_test(self):
         test = self.loader.load_test(_test_cases.TestCase, 'test_method')
-        self.assertIsInstance(test, python_unittest.TestCase)
+        self.assertIsInstance(test, unittest.TestCase)
         self.assertIsInstance(test, _test_cases.TestCase)
 
     def test_raises_for_invalid_test(self):
@@ -54,7 +50,6 @@ class TestLoadTest(LoaderTestMixin, unittest.TestCase):
     def test_load_test_overridden_init(self):
         test = self.loader.load_test(
             _test_case_data.BadlySubclassedTestCase, 'test_method')
-        self.assertIsInstance(test, python_unittest.TestCase)
         self.assertIsInstance(test, unittest.TestCase)
 
 
@@ -110,7 +105,7 @@ class TestLoadModule(LoaderTestMixin, unittest.TestCase):
     def test_find_all_cases_in_module(self):
         cases = self.loader.get_test_cases_from_module(_test_cases)
         self.assertCountEqual(
-            cases, [_test_cases.TestCase, _test_cases.PythonTestCase])
+            cases, [_test_cases.TestCase, _test_cases.AnotherTestCase])
 
     def test_load_all_cases_in_module(self):
         suite = self.loader.load_module(_test_cases)
@@ -121,7 +116,7 @@ class TestLoadModule(LoaderTestMixin, unittest.TestCase):
         for sub_suite in sub_suites:
             self.assertEqual(len(list(sub_suite)), 1)
             for case in sub_suite:
-                self.assertIsInstance(case, python_unittest.TestCase)
+                self.assertIsInstance(case, unittest.TestCase)
                 cases.append(case)
         self.assertEqual(len(cases), 2)
 
