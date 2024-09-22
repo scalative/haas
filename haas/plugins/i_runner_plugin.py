@@ -4,14 +4,10 @@
 #
 # This software may be modified and distributed under the terms
 # of the 3-clause BSD license.  See the LICENSE.txt file for details.
-from __future__ import absolute_import, unicode_literals
-
-import abc
-
-from haas.utils import abstractclassmethod
+from abc import ABC, abstractclassmethod
 
 
-class IRunnerPlugin(object, metaclass=abc.ABCMeta):
+class IRunnerPlugin(ABC):
 
     @abstractclassmethod
     def from_args(cls, args, arg_prefix):

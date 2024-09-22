@@ -4,8 +4,6 @@
 #
 # This software may be modified and distributed under the terms
 # of the 3-clause BSD license.  See the LICENSE.txt file for details.
-from __future__ import absolute_import, unicode_literals
-
 import argparse
 import os
 
@@ -64,7 +62,7 @@ def _add_log_level_option(parser):
                         help='Log level for haas logging')
 
 
-class HaasApplication(object):
+class HaasApplication:
     """Main haas application entry-point.
 
     """

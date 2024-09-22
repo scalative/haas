@@ -3,7 +3,7 @@
 # Copyright the CPython developers and contributors.
 
 
-class ErrorHolder(object):
+class ErrorHolder:
     """
     Placeholder for a TestCase inside a result. As far as a TestResult
     is concerned, this looks exactly like a unit test. Used to insert
@@ -21,15 +21,11 @@ class ErrorHolder(object):
     def id(self):
         return self.description
 
-    @property
-    def _testMethodName(self):
-        return self.description
-
     def shortDescription(self):
         return None
 
     def __repr__(self):
-        return "<ErrorHolder description=%r>" % (self.description,)
+        return f"<ErrorHolder description={self.description!r}>"
 
     def __str__(self):
         return self.id()
@@ -44,3 +40,7 @@ class ErrorHolder(object):
 
     def countTestCases(self):
         return 0
+
+    @property
+    def _testMethodName(self):
+        return self.description
