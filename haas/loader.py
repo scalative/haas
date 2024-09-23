@@ -4,14 +4,12 @@
 #
 # This software may be modified and distributed under the terms
 # of the 3-clause BSD license.  See the LICENSE.txt file for details.
-from __future__ import absolute_import, unicode_literals
-
 import unittest
 
 from .suite import TestSuite
 
 
-class Loader(object):
+class Loader:
     """Load individual test cases from modules and wrap them in the
     :class:`~haas.suite.Suite` container.
 

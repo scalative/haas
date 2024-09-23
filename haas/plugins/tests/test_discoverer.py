@@ -4,18 +4,14 @@
 #
 # This software may be modified and distributed under the terms
 # of the 3-clause BSD license.  See the LICENSE.txt file for details.
-from __future__ import absolute_import, unicode_literals
-
+from unittest import mock
 import os
 import shutil
 import sys
 import tempfile
-import unittest as python_unittest
-
-from haas.testing import unittest
+import unittest
 
 from haas.tests import _test_cases, builder
-from haas.tests.compat import mock
 from haas.loader import Loader
 from haas.module_import_error import ModuleImportError
 from haas.suite import find_test_cases, TestSuite
@@ -35,7 +31,7 @@ class FilterTestCase(_test_cases.TestCase):
     pass
 
 
-class TestDiscoveryMixin(object):
+class TestDiscoveryMixin:
 
     def setUp(self):
         self.tmpdir = os.path.abspath(tempfile.mkdtemp())
@@ -261,7 +257,7 @@ class TestDiscoveryByPath(TestDiscoveryMixin, unittest.TestCase):
         tests = list(self.get_test_cases(suite))
         self.assertEqual(len(tests), 2)
         for test in tests:
-            self.assertIsInstance(test, python_unittest.TestCase)
+            self.assertIsInstance(test, unittest.TestCase)
             self.assertEqual(test._testMethodName, 'test_method')
 
     def test_from_top_level_directory(self):
@@ -346,7 +342,7 @@ class TestDiscoveryByModule(TestDiscoveryMixin, unittest.TestCase):
         tests = list(self.get_test_cases(suite))
         self.assertEqual(len(tests), 2)
         for test in tests:
-            self.assertIsInstance(test, python_unittest.TestCase)
+            self.assertIsInstance(test, unittest.TestCase)
             self.assertEqual(test._testMethodName, 'test_method')
 
     def test_discover_package_no_top_level(self):
@@ -361,7 +357,7 @@ class TestDiscoveryByModule(TestDiscoveryMixin, unittest.TestCase):
         tests = list(self.get_test_cases(suite))
         self.assertEqual(len(tests), 2)
         for test in tests:
-            self.assertIsInstance(test, python_unittest.TestCase)
+            self.assertIsInstance(test, unittest.TestCase)
             self.assertEqual(test._testMethodName, 'test_method')
 
     def test_discover_case(self):
@@ -371,7 +367,7 @@ class TestDiscoveryByModule(TestDiscoveryMixin, unittest.TestCase):
         tests = list(self.get_test_cases(suite))
         self.assertEqual(len(tests), 1)
         test, = tests
-        self.assertIsInstance(test, python_unittest.TestCase)
+        self.assertIsInstance(test, unittest.TestCase)
         self.assertEqual(test._testMethodName, 'test_method')
 
     def test_discover_missing_case(self):
@@ -396,7 +392,7 @@ class TestDiscoveryByModule(TestDiscoveryMixin, unittest.TestCase):
         tests = list(self.get_test_cases(suite))
         self.assertEqual(len(tests), 1)
         test, = tests
-        self.assertIsInstance(test, python_unittest.TestCase)
+        self.assertIsInstance(test, unittest.TestCase)
         self.assertEqual(test._testMethodName, 'test_method')
 
     def test_discover_too_many_components(self):
@@ -424,7 +420,7 @@ class TestDiscoverFilteredTests(TestDiscoveryMixin, unittest.TestCase):
         tests = list(self.get_test_cases(suite))
         self.assertEqual(len(tests), 2)
         for test in tests:
-            self.assertIsInstance(test, python_unittest.TestCase)
+            self.assertIsInstance(test, unittest.TestCase)
             self.assertEqual(test._testMethodName, 'test_method')
 
     def test_discover_test_method(self):
@@ -435,7 +431,7 @@ class TestDiscoverFilteredTests(TestDiscoveryMixin, unittest.TestCase):
         tests = list(self.get_test_cases(suite))
         self.assertEqual(len(tests), 2)
         for test in tests:
-            self.assertIsInstance(test, python_unittest.TestCase)
+            self.assertIsInstance(test, unittest.TestCase)
             self.assertEqual(test._testMethodName, 'test_method')
 
     def test_discover_class(self):
@@ -446,7 +442,7 @@ class TestDiscoverFilteredTests(TestDiscoveryMixin, unittest.TestCase):
         tests = list(self.get_test_cases(suite))
         self.assertEqual(len(tests), 1)
         test, = tests
-        self.assertIsInstance(test, python_unittest.TestCase)
+        self.assertIsInstance(test, unittest.TestCase)
         self.assertEqual(test._testMethodName, 'test_method')
 
     def test_discover_no_top_level(self):
@@ -460,7 +456,7 @@ class TestDiscoverFilteredTests(TestDiscoveryMixin, unittest.TestCase):
             tests = list(self.get_test_cases(suite))
             self.assertEqual(len(tests), 1)
             test, = tests
-            self.assertIsInstance(test, python_unittest.TestCase)
+            self.assertIsInstance(test, unittest.TestCase)
             self.assertEqual(test._testMethodName, 'test_method')
 
     def test_discover_class_and_method(self):
@@ -471,7 +467,7 @@ class TestDiscoverFilteredTests(TestDiscoveryMixin, unittest.TestCase):
         tests = list(self.get_test_cases(suite))
         self.assertEqual(len(tests), 1)
         test, = tests
-        self.assertIsInstance(test, python_unittest.TestCase)
+        self.assertIsInstance(test, unittest.TestCase)
         self.assertEqual(test._testMethodName, 'test_method')
 
     def test_discover_module_and_class_and_method(self):
@@ -482,7 +478,7 @@ class TestDiscoverFilteredTests(TestDiscoveryMixin, unittest.TestCase):
         tests = list(self.get_test_cases(suite))
         self.assertEqual(len(tests), 1)
         test, = tests
-        self.assertIsInstance(test, python_unittest.TestCase)
+        self.assertIsInstance(test, unittest.TestCase)
         self.assertEqual(test._testMethodName, 'test_method')
 
     def test_discover_module_and_class(self):
@@ -493,7 +489,7 @@ class TestDiscoverFilteredTests(TestDiscoveryMixin, unittest.TestCase):
         tests = list(self.get_test_cases(suite))
         self.assertEqual(len(tests), 1)
         test, = tests
-        self.assertIsInstance(test, python_unittest.TestCase)
+        self.assertIsInstance(test, unittest.TestCase)
         self.assertEqual(test._testMethodName, 'test_method')
 
 

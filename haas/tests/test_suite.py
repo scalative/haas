@@ -4,19 +4,17 @@
 #
 # This software may be modified and distributed under the terms
 # of the 3-clause BSD license.  See the LICENSE.txt file for details.
-from __future__ import absolute_import, unicode_literals
-
 from contextlib import contextmanager
 from itertools import count
 import sys
+import unittest
 
 from ._test_cases import TestCase
 from ..result import ResultCollector
 from ..suite import TestSuite, _TestSuiteState
-from ..testing import unittest
 
 
-class MockModule(object):
+class MockModule:
 
     def __init__(self, setup_raise=False, teardown_raise=False):
         self.setup = False
@@ -45,7 +43,7 @@ class MockModuleSetupTeardown(MockModuleSetup, MockModuleTeardown):
     pass
 
 
-class MockTestCase(object):
+class MockTestCase:
 
     setup = False
     teardown = False
@@ -100,7 +98,7 @@ class MockTestCaseSetupTeardown(MockTestCaseSetup, MockTestCaseTeardown):
     pass
 
 
-class ResetClassStateMixin(object):
+class ResetClassStateMixin:
 
     def setUp(self):
         for klass in (MockTestCase, MockTestCaseSetup,

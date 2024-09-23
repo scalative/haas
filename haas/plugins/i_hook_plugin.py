@@ -4,14 +4,10 @@
 #
 # This software may be modified and distributed under the terms
 # of the 3-clause BSD license.  See the LICENSE.txt file for details.
-from __future__ import absolute_import, unicode_literals
-
 import abc
 
-from haas.utils import abstractclassmethod
 
-
-class IHookPlugin(object, metaclass=abc.ABCMeta):
+class IHookPlugin(abc.ABC):
 
     @abc.abstractmethod
     def setup(self):  # pragma: no cover
@@ -21,10 +17,10 @@ class IHookPlugin(object, metaclass=abc.ABCMeta):
     def teardown(self):  # pragma: no cover
         pass
 
-    @abstractclassmethod
+    @abc.abstractclassmethod
     def add_parser_arguments(cls, parser, name, option_prefix, dest_prefix):
         pass
 
-    @abstractclassmethod
+    @abc.abstractclassmethod
     def from_args(cls, args, dest_prefix):
         pass

@@ -4,8 +4,6 @@
 #
 # This software may be modified and distributed under the terms
 # of the 3-clause BSD license.  See the LICENSE.txt file for details.
-from __future__ import absolute_import, unicode_literals
-
 import statistics
 import sys
 import time
@@ -22,7 +20,7 @@ def get_test_description(test, descriptions=True):
         return str(test)
 
 
-class _WritelnDecorator(object):
+class _WritelnDecorator:
     """Used to decorate file-like objects with a handy 'writeln' method"""
     def __init__(self, stream):
         self.stream = stream

@@ -4,8 +4,6 @@
 #
 # This software may be modified and distributed under the terms
 # of the 3-clause BSD license.  See the LICENSE.txt file for details.
-from __future__ import absolute_import, unicode_literals
-
 from fnmatch import fnmatch
 from importlib import import_module
 from os import getcwd
@@ -14,11 +12,11 @@ import logging
 import os
 import sys
 import traceback
+import unittest
 
 from haas.exceptions import DotInModuleNameError
 from haas.module_import_error import ModuleImportError
 from haas.suite import find_test_cases
-from haas.testing import unittest
 from .i_discoverer_plugin import IDiscovererPlugin
 
 logger = logging.getLogger(__name__)

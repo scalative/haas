@@ -4,8 +4,6 @@
 #
 # This software may be modified and distributed under the terms
 # of the 3-clause BSD license.  See the LICENSE.txt file for details.
-from __future__ import absolute_import, unicode_literals  # pragma: no cover
-
 import sys  # pragma: no cover
 
 from .haas_application import HaasApplication  # pragma: no cover

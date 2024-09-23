@@ -4,8 +4,6 @@
 #
 # This software may be modified and distributed under the terms
 # of the 3-clause BSD license.  See the LICENSE.txt file for details.
-from __future__ import absolute_import, unicode_literals
-
 from datetime import datetime, timedelta
 from enum import Enum
 from functools import wraps
@@ -110,7 +108,7 @@ def _format_exception(err, is_failure, stdout=None, stderr=None):
     return ''.join(msgLines)
 
 
-class TestDuration(object):
+class TestDuration:
     """An orderable representation of the duration of an individual test.
 
     """
@@ -214,7 +212,7 @@ class TestDuration(object):
         return TestDuration(self.duration / divisor)
 
 
-class TestResult(object):
+class TestResult:
     """Container object for all information related to the run of a single
     test.  This contains the test itself, the actual status including
     the reason or error associated with status, along with timing
@@ -330,7 +328,7 @@ def failfast(method):
     return inner
 
 
-class ResultCollector(object):
+class ResultCollector:
     """Collecter for test results.  This handles creating
     :class:`~.TestResult` instances and handing them off the registered
     result output handlers.

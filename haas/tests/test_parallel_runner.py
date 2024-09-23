@@ -1,21 +1,20 @@
 from argparse import ArgumentParser
 from datetime import datetime, timedelta
-import time
-
 from io import StringIO
+from unittest import mock
+import unittest
+import time
 
 from ..plugins.discoverer import _create_import_error_test
 from ..plugins.parallel_runner import ChildResultHandler, ParallelTestRunner
 from ..result import (
     ResultCollector, TestCompletionStatus, TestResult, TestDuration)
 from ..suite import TestSuite
-from ..testing import unittest
 from . import _test_cases
 from .fixtures import MockDateTime
-from .compat import mock
 
 
-class AsyncResult(object):
+class AsyncResult:
 
     def ready(self):
         return True

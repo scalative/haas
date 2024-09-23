@@ -21,7 +21,6 @@ classifiers = [
     "Topic :: Software Development :: Testing",
 ]
 dependencies = [
-    "statistics",
     "stevedore",
 ]
 

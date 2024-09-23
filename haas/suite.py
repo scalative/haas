@@ -4,8 +4,6 @@
 #
 # This software may be modified and distributed under the terms
 # of the 3-clause BSD license.  See the LICENSE.txt file for details.
-from __future__ import absolute_import, unicode_literals
-
 import logging
 import sys
 from .error_holder import ErrorHolder
@@ -32,7 +30,7 @@ def find_test_cases(suite):
                 yield test_
 
 
-class _TestSuiteState(object):
+class _TestSuiteState:
 
     def __init__(self, result):
         self._result = result
@@ -147,7 +145,7 @@ class _TestSuiteState(object):
         self._teardown_module(previous_module)
 
 
-class TestSuite(object):
+class TestSuite:
     """A ``TestSuite`` is a container of test cases and allows executing
     many test cases while managing the state of the overall suite.
 

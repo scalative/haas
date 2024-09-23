@@ -4,14 +4,10 @@
 #
 # This software may be modified and distributed under the terms
 # of the 3-clause BSD license.  See the LICENSE.txt file for details.
-from __future__ import absolute_import, unicode_literals
-
-from abc import ABCMeta, abstractmethod
-
-from haas.utils import abstractclassmethod
+from abc import ABC, abstractmethod, abstractclassmethod
 
 
-class IDiscovererPlugin(object, metaclass=ABCMeta):
+class IDiscovererPlugin(ABC):
 
     @abstractclassmethod
     def from_args(cls, args, arg_prefix, loader):

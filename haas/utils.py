@@ -4,12 +4,9 @@
 #
 # This software may be modified and distributed under the terms
 # of the 3-clause BSD license.  See the LICENSE.txt file for details.
-from __future__ import absolute_import, unicode_literals
-
 import logging
 import os
 import re
-import sys
 
 import haas
 
@@ -50,7 +47,7 @@ def uncamelcase(string, sep='_'):
     return UNCAMELCASE_SECOND_PASS.sub(replace, temp).lower()
 
 
-class cd(object):
+class cd:
 
     def __init__(self, destdir):
         self.destdir = destdir
@@ -63,27 +60,3 @@ class cd(object):
     def __exit__(self, exc_type, exc_value, traceback):
         os.chdir(self.startdir)
         self.startdir = None
-
-
-if sys.version_info < (3, 2):  # pragma: no cover
-    # Copied from Python 3.2 abc.py
-    class abstractclassmethod(classmethod):
-        """A decorator indicating abstract classmethods.
-
-        Similar to abstractmethod.
-
-        Usage:
-
-            class C(metaclass=ABCMeta):
-                @abstractclassmethod
-                def my_abstract_classmethod(cls, ...):
-                    ...
-        """
-
-        __isabstractmethod__ = True
-
-        def __init__(self, callable):
-            callable.__isabstractmethod__ = True
-            super(abstractclassmethod, self).__init__(callable)
-else:  # pragma: no cover
-    from abc import abstractclassmethod  # noqa

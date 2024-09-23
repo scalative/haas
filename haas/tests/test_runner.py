@@ -1,8 +1,8 @@
 from argparse import ArgumentParser
+from unittest import mock
+import unittest
 
 from ..plugins.runner import BaseTestRunner
-from ..testing import unittest
-from .compat import mock
 
 
 class TestBaseTestRunner(unittest.TestCase):

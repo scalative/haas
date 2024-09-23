@@ -4,24 +4,17 @@
 #
 # This software may be modified and distributed under the terms
 # of the 3-clause BSD license.  See the LICENSE.txt file for details.
-from __future__ import absolute_import, unicode_literals
-
-import sys
 import logging
+from collections import OrderedDict
 
 from stevedore.extension import ExtensionManager
 
 from .utils import uncamelcase
 
-if sys.version_info < (2, 7):  # pragma: no cover
-    from ordereddict import OrderedDict
-else:  # pragma: no cover
-    from collections import OrderedDict
-
 logger = logging.getLogger(__name__)
 
 
-class PluginManager(object):
+class PluginManager:
 
     ENVIRONMENT_HOOK = 'haas.hooks.environment'
 
