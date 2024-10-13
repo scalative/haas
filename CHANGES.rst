@@ -9,6 +9,7 @@ Packaging
 ---------
 
 * Replace ``setup.py`` with ``pyproject.toml`` (#199).
+* Automate package publishing (#201).
 
 Bugs Fixed
 ---------
